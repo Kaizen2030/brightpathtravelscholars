@@ -482,14 +482,14 @@ function AnalyticsPanel() {
                 </tr>
               </thead>
               <tbody>
-                {analytics.countryPageRows.map((row) => (
-                  <tr key={`${row.path}-${row.label}`}>
-                    <td>{row.label}</td>
-                    <td>{row.views}</td>
-                    <td>{row.visitors}</td>
-                    <td>{formatRelativeTime(row.lastSeen)}</td>
-                  </tr>
-                ))}
+              {analytics.countryPageRows.map((row) => (
+                <tr key={`${row.path}-${row.label}`}>
+                  <td data-label="Page">{row.label}</td>
+                  <td data-label="Views">{row.views}</td>
+                  <td data-label="Visitors">{row.visitors}</td>
+                  <td data-label="Last Seen">{formatRelativeTime(row.lastSeen)}</td>
+                </tr>
+              ))}
               </tbody>
             </table>
             {!analytics.countryPageRows.length ? (
@@ -525,11 +525,11 @@ function AnalyticsPanel() {
             <tbody>
               {analytics.liveSessions.map((session) => (
                 <tr key={session.session_id}>
-                  <td>{session.email || session.user_id || session.session_id.slice(0, 8)}</td>
-                  <td>{session.country_name || 'Unknown'}</td>
-                  <td>{session.current_title || session.current_path || 'Unknown'}</td>
-                  <td>{session.device_type || 'desktop'}</td>
-                  <td>{formatRelativeTime(session.last_seen)}</td>
+                  <td data-label="Visitor">{session.email || session.user_id || session.session_id.slice(0, 8)}</td>
+                  <td data-label="Country">{session.country_name || 'Unknown'}</td>
+                  <td data-label="Current Page">{session.current_title || session.current_path || 'Unknown'}</td>
+                  <td data-label="Device">{session.device_type || 'desktop'}</td>
+                  <td data-label="Last Seen">{formatRelativeTime(session.last_seen)}</td>
                 </tr>
               ))}
             </tbody>

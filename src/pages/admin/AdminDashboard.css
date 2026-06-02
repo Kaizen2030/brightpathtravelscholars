@@ -1082,6 +1082,64 @@
     padding: 0.72rem 0.6rem;
     font-size: 0.84rem;
   }
+
+  .admin-table-wrap {
+    overflow: visible;
+  }
+
+  .admin-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table tbody {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .admin-table tr {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.95rem;
+    border: 1px solid rgba(10, 31, 68, 0.08);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 24px rgba(8, 22, 47, 0.06);
+  }
+
+  .admin-table td {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0;
+    border-bottom: none;
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-table td::before {
+    content: attr(data-label);
+    color: rgba(10, 31, 68, 0.58);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .admin-table td[data-label='Actions'] {
+    gap: 0.45rem;
+  }
+
+  .admin-table td[data-label='Actions'] .admin-action-row {
+    width: 100%;
+  }
+
+  .admin-table td[data-label='Actions'] .admin-btn {
+    width: 100%;
+  }
 }
 
 @media (max-width: 520px) {
@@ -1174,7 +1232,7 @@
   }
 
   .admin-table {
-    min-width: 640px;
+    min-width: 0;
   }
 
   .admin-table th,
@@ -1251,7 +1309,7 @@
   }
 
   .admin-table {
-    min-width: 560px;
+    min-width: 0;
   }
 
   .admin-modal {

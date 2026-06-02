@@ -872,14 +872,14 @@ function AdminDashboard() {
             <tbody>
               {applications.map((application) => (
                 <tr key={application.id}>
-                  <td>{application.full_name}</td>
-                  <td>{application.email}</td>
-                  <td>{application.phone || 'Not provided'}</td>
-                  <td>{extractScholarshipInterest(application.field_of_study) || 'General application'}</td>
-                  <td>{application.destination || 'Pending'}</td>
-                  <td>{application.institution || 'Not specified'}</td>
-                  <td>{application.intake || 'Pending'}</td>
-                  <td>
+                  <td data-label="Name">{application.full_name}</td>
+                  <td data-label="Email">{application.email}</td>
+                  <td data-label="Phone">{application.phone || 'Not provided'}</td>
+                  <td data-label="Scholarship">{extractScholarshipInterest(application.field_of_study) || 'General application'}</td>
+                  <td data-label="Destination">{application.destination || 'Pending'}</td>
+                  <td data-label="University">{application.institution || 'Not specified'}</td>
+                  <td data-label="Intake">{application.intake || 'Pending'}</td>
+                  <td data-label="Status">
                     <select
                       className="admin-select"
                       value={application.status || 'pending'}
@@ -894,7 +894,7 @@ function AdminDashboard() {
                       ))}
                     </select>
                   </td>
-                  <td>{formatDate(application.created_at)}</td>
+                  <td data-label="Date Applied">{formatDate(application.created_at)}</td>
                 </tr>
               ))}
             </tbody>
@@ -931,11 +931,11 @@ function AdminDashboard() {
             <tbody>
               {events.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.title}</td>
-                  <td>{formatDateTime(item.date)}</td>
-                  <td>{item.location || 'Not set'}</td>
-                  <td>{humanizeKey(item.category)}</td>
-                  <td>{item.is_online ? 'Online' : 'In person'}</td>
+                  <td data-label="Title">{item.title}</td>
+                  <td data-label="Date">{formatDateTime(item.date)}</td>
+                  <td data-label="Location">{item.location || 'Not set'}</td>
+                  <td data-label="Category">{humanizeKey(item.category)}</td>
+                  <td data-label="Mode">{item.is_online ? 'Online' : 'In person'}</td>
                 </tr>
               ))}
             </tbody>
@@ -973,12 +973,12 @@ function AdminDashboard() {
             <tbody>
               {posts.map((post) => (
                 <tr key={post.id}>
-                  <td>{post.title}</td>
-                  <td>{post.category || 'General'}</td>
-                  <td>{post.author_name || 'Brightpath Team'}</td>
-                  <td>{post.is_published ? 'Published' : 'Draft'}</td>
-                  <td>{post.view_count || 0}</td>
-                  <td>
+                  <td data-label="Title">{post.title}</td>
+                  <td data-label="Category">{post.category || 'General'}</td>
+                  <td data-label="Author">{post.author_name || 'Brightpath Team'}</td>
+                  <td data-label="Published">{post.is_published ? 'Published' : 'Draft'}</td>
+                  <td data-label="Views">{post.view_count || 0}</td>
+                  <td data-label="Actions">
                     <div className="admin-action-row">
                       <button
                         type="button"
@@ -1082,14 +1082,14 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {teamMembers.map((member) => (
-                  <tr key={member.id}>
-                    <td>{member.name}</td>
-                    <td>{member.role}</td>
-                    <td>{member.order_index ?? 0}</td>
-                    <td>{member.bio || 'No bio added yet.'}</td>
-                    <td>
-                      <div className="admin-action-row">
+              {teamMembers.map((member) => (
+                <tr key={member.id}>
+                  <td data-label="Name">{member.name}</td>
+                  <td data-label="Role">{member.role}</td>
+                  <td data-label="Order">{member.order_index ?? 0}</td>
+                  <td data-label="Bio">{member.bio || 'No bio added yet.'}</td>
+                  <td data-label="Actions">
+                    <div className="admin-action-row">
                         <button
                           type="button"
                           className="admin-btn admin-btn-soft"
@@ -1157,11 +1157,11 @@ function AdminDashboard() {
                     const isAdminUser = foundUser.role === 'admin'
                     return (
                       <tr key={foundUser.id}>
-                        <td>{foundUser.full_name || 'Unnamed user'}</td>
-                        <td>{foundUser.email}</td>
-                        <td>{foundUser.phone || 'Not provided'}</td>
-                        <td>{humanizeKey(foundUser.role || 'user')}</td>
-                        <td>
+                        <td data-label="Name">{foundUser.full_name || 'Unnamed user'}</td>
+                        <td data-label="Email">{foundUser.email}</td>
+                        <td data-label="Phone">{foundUser.phone || 'Not provided'}</td>
+                        <td data-label="Role">{humanizeKey(foundUser.role || 'user')}</td>
+                        <td data-label="Actions">
                           <div className="admin-action-row">
                             <button
                               type="button"
