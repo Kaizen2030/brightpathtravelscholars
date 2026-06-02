@@ -137,7 +137,7 @@ function sortByOrderThenName(items) {
 
 function AdminDashboard() {
   const cachedDashboard = readAdminDashboardCache()
-  const { user, profile, isAdmin, loading: authLoading } = useAuth()
+  const { user, profile, isAdmin, loading: authLoading, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const canRenderAdmin = Boolean(user && isAdmin)
   const [activeSection, setActiveSection] = useState(() => {
@@ -165,6 +165,10 @@ function AdminDashboard() {
   const [teamSaving, setTeamSaving] = useState(false)
   const [editingTeamId, setEditingTeamId] = useState(null)
   const [settingsSaving, setSettingsSaving] = useState(false)
+  const [userSearchEmail, setUserSearchEmail] = useState('')
+  const [userSearchLoading, setUserSearchLoading] = useState(false)
+  const [userSearchResults, setUserSearchResults] = useState([])
+  const [userSearchError, setUserSearchError] = useState('')
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -531,6 +535,74 @@ function AdminDashboard() {
     }
   }
 
+  async function handleUserSearch(event) {
+    event.preventDefault()
+    const emailQuery = userSearchEmail.trim()
+
+    if (!emailQuery) {
+      setUserSearchError('Type an email address to find a user.')
+      setUserSearchResults([])
+      return
+    }
+
+    setUserSearchLoading(true)
+    setUserSearchError('')
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, phone, role, created_at')
+        .ilike('email', `%${emailQuery}%`)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+
+      setUserSearchResults(data ?? [])
+
+      if (!(data?.length ?? 0)) {
+        setUserSearchError('No users matched that email.')
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] User search failed:', error)
+      setUserSearchResults([])
+      setUserSearchError(error.message || 'Could not search users right now.')
+    } finally {
+      setUserSearchLoading(false)
+    }
+  }
+
+  async function handleUserRoleChange(profileId, nextRole) {
+    const previousResults = userSearchResults
+
+    setUserSearchResults((current) =>
+      current.map((item) => (item.id === profileId ? { ...item, role: nextRole } : item)),
+    )
+
+    try {
+      const { error } = await supabase.from('profiles').update({ role: nextRole }).eq('id', profileId)
+
+      if (error) throw error
+
+      if (profile?.id === profileId) {
+        await refreshProfile(profileId)
+        setNotice({
+          type: 'success',
+          text: nextRole === 'admin' ? 'Your access level was updated to admin.' : 'Admin access was removed.',
+        })
+      } else {
+        setNotice({
+          type: 'success',
+          text: nextRole === 'admin' ? 'User promoted to admin.' : 'User changed back to regular user.',
+        })
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to update user role:', error)
+      setUserSearchResults(previousResults)
+      setNotice({ type: 'error', text: error.message || 'Could not update the user role.' })
+    }
+  }
+
   function renderOverview() {
     return (
       <div className="admin-section-stack">
@@ -768,59 +840,128 @@ function AdminDashboard() {
 
   function renderTeam() {
     return (
-      <section className="admin-panel-card">
-        <div className="admin-panel-card-header">
-          <div>
-            <h2>Team Members</h2>
-            <p>{teamMembers.length} team profiles</p>
+      <div className="admin-section-stack">
+        <section className="admin-panel-card">
+          <div className="admin-panel-card-header">
+            <div>
+              <h2>Team Members</h2>
+              <p>{teamMembers.length} team profiles</p>
+            </div>
+            <button type="button" className="admin-btn admin-btn-primary" onClick={() => openTeamEditor(null)}>
+              Add Team Member
+            </button>
           </div>
-          <button type="button" className="admin-btn admin-btn-primary" onClick={() => openTeamEditor(null)}>
-            Add Team Member
-          </button>
-        </div>
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Role</th>
-                <th>Order</th>
-                <th>Bio</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamMembers.map((member) => (
-                <tr key={member.id}>
-                  <td>{member.name}</td>
-                  <td>{member.role}</td>
-                  <td>{member.order_index ?? 0}</td>
-                  <td>{member.bio || 'No bio added yet.'}</td>
-                  <td>
-                    <div className="admin-action-row">
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn-soft"
-                        onClick={() => openTeamEditor(member)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn-danger"
-                        onClick={() => handleTeamDelete(member.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Order</th>
+                  <th>Bio</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {!teamMembers.length ? <p className="admin-empty">No team members available.</p> : null}
-        </div>
-      </section>
+              </thead>
+              <tbody>
+                {teamMembers.map((member) => (
+                  <tr key={member.id}>
+                    <td>{member.name}</td>
+                    <td>{member.role}</td>
+                    <td>{member.order_index ?? 0}</td>
+                    <td>{member.bio || 'No bio added yet.'}</td>
+                    <td>
+                      <div className="admin-action-row">
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-soft"
+                          onClick={() => openTeamEditor(member)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn-danger"
+                          onClick={() => handleTeamDelete(member.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!teamMembers.length ? <p className="admin-empty">No team members available.</p> : null}
+          </div>
+        </section>
+
+        <section className="admin-panel-card">
+          <div className="admin-panel-card-header">
+            <div>
+              <h2>User Access by Email</h2>
+              <p>Search registered users and promote selected accounts to admin.</p>
+            </div>
+          </div>
+
+          <form className="admin-user-search" onSubmit={handleUserSearch}>
+            <label className="admin-field admin-field-full">
+              <span>Email address</span>
+              <input
+                type="email"
+                value={userSearchEmail}
+                onChange={(event) => setUserSearchEmail(event.target.value)}
+                placeholder="find a user by email"
+              />
+            </label>
+
+            <button type="submit" className="admin-btn admin-btn-primary" disabled={userSearchLoading}>
+              {userSearchLoading ? 'Searching...' : 'Search Users'}
+            </button>
+          </form>
+
+          {userSearchError ? <p className="admin-empty admin-search-message">{userSearchError}</p> : null}
+
+          {userSearchResults.length ? (
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userSearchResults.map((foundUser) => {
+                    const isAdminUser = foundUser.role === 'admin'
+                    return (
+                      <tr key={foundUser.id}>
+                        <td>{foundUser.full_name || 'Unnamed user'}</td>
+                        <td>{foundUser.email}</td>
+                        <td>{foundUser.phone || 'Not provided'}</td>
+                        <td>{humanizeKey(foundUser.role || 'user')}</td>
+                        <td>
+                          <div className="admin-action-row">
+                            <button
+                              type="button"
+                              className={`admin-btn ${isAdminUser ? 'admin-btn-soft' : 'admin-btn-primary'}`}
+                              onClick={() => handleUserRoleChange(foundUser.id, isAdminUser ? 'user' : 'admin')}
+                            >
+                              {isAdminUser ? 'Remove Admin' : 'Make Admin'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </section>
+      </div>
     )
   }
 

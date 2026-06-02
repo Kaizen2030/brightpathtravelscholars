@@ -358,6 +358,18 @@
   gap: 1rem;
 }
 
+.admin-user-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: end;
+  margin-top: 1rem;
+}
+
+.admin-search-message {
+  margin-top: 1rem;
+}
+
 .admin-content-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -726,7 +738,8 @@
   .admin-compact-item,
   .admin-modal-actions,
   .admin-content-card-header,
-  .admin-content-actions {
+  .admin-content-actions,
+  .admin-user-search {
     flex-direction: column;
     align-items: stretch;
   }
@@ -734,6 +747,10 @@
   .admin-save-btn,
   .admin-btn {
     width: 100%;
+  }
+
+  .admin-user-search {
+    grid-template-columns: 1fr;
   }
 
   .admin-content-grid {
