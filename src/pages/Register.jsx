@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowRight, LockKeyhole, Mail, Phone, User2 } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Phone, User2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import SEO from '../components/SEO'
 import { usePageSections } from '../hooks/usePageSections'
@@ -21,6 +21,8 @@ function Register() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const hero = sections.hero
   const formSection = sections.form
@@ -177,12 +179,22 @@ function Register() {
                 <div className="auth-input-wrap">
                   <LockKeyhole size={18} />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Create a password"
                     value={form.password}
                     onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))}
                     required
                   />
+                  <button
+                    type="button"
+                    className="auth-password-toggle"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <span>{showPassword ? 'Hide' : 'Show'}</span>
+                  </button>
                 </div>
               </label>
 
@@ -191,12 +203,22 @@ function Register() {
                 <div className="auth-input-wrap">
                   <LockKeyhole size={18} />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Confirm your password"
                     value={form.confirmPassword}
                     onChange={(event) => setForm((current) => ({ ...current, confirmPassword: event.target.value }))}
                     required
                   />
+                  <button
+                    type="button"
+                    className="auth-password-toggle"
+                    onClick={() => setShowConfirmPassword((current) => !current)}
+                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                    aria-pressed={showConfirmPassword}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <span>{showConfirmPassword ? 'Hide' : 'Show'}</span>
+                  </button>
                 </div>
               </label>
 
