@@ -1,0 +1,212 @@
+.blog-post-page {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.blog-post-hero {
+  padding: 4rem 0 4.5rem;
+  background:
+    radial-gradient(circle at top right, rgba(212, 175, 55, 0.18), transparent 22%),
+    linear-gradient(135deg, #351553 0%, #5b2c89 100%);
+  color: var(--white);
+}
+
+.blog-post-breadcrumbs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.94rem;
+}
+
+.blog-post-breadcrumbs a:hover {
+  color: var(--gold);
+}
+
+.blog-post-badge {
+  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.blog-post-hero h1 {
+  margin-top: 1rem;
+  max-width: 52rem;
+  font-size: clamp(2.6rem, 5vw, 4.4rem);
+  line-height: 1.03;
+  letter-spacing: -0.05em;
+}
+
+.blog-post-hero p {
+  max-width: 40rem;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.05rem;
+}
+
+.blog-post-section {
+  padding: 4.5rem 0;
+}
+
+.blog-post-section.alt {
+  background: linear-gradient(180deg, rgba(245, 245, 245, 0.72) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.blog-post-cover {
+  min-height: 24rem;
+  border-radius: 1.8rem;
+  background-size: cover;
+  background-position: center;
+  box-shadow: var(--shadow);
+}
+
+.blog-post-content {
+  max-width: 50rem;
+  margin: 2rem auto 0;
+  padding: 2rem;
+  border-radius: 1.6rem;
+  background: var(--white);
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.blog-post-content h1,
+.blog-post-content h2,
+.blog-post-content h3 {
+  color: var(--navy);
+  line-height: 1.15;
+}
+
+.blog-post-content h2,
+.blog-post-content h3,
+.blog-post-content p,
+.blog-post-content ul,
+.blog-post-content ol,
+.blog-post-content blockquote {
+  margin-top: 1rem;
+}
+
+.blog-post-content p,
+.blog-post-content li,
+.blog-post-content blockquote {
+  color: rgba(26, 26, 46, 0.76);
+  line-height: 1.8;
+}
+
+.blog-post-content ul,
+.blog-post-content ol {
+  padding-left: 1.2rem;
+}
+
+.blog-post-content blockquote {
+  padding: 1rem 1.2rem;
+  border-left: 4px solid var(--gold);
+  background: rgba(212, 175, 55, 0.08);
+  border-radius: 0 1rem 1rem 0;
+}
+
+.blog-post-content a {
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.blog-post-related-header h2 {
+  margin-top: 0.85rem;
+  color: var(--navy);
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.blog-post-related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.blog-post-related-card,
+.blog-post-empty-card {
+  border-radius: 1.5rem;
+  background: var(--white);
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.blog-post-related-media {
+  min-height: 12rem;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.blog-post-related-content {
+  padding: 1.2rem;
+}
+
+.blog-post-related-content span {
+  color: var(--gold-dark);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.blog-post-related-content h3 {
+  margin-top: 0.7rem;
+  color: var(--navy);
+}
+
+.blog-post-related-content p {
+  margin-top: 0.8rem;
+  color: rgba(26, 26, 46, 0.72);
+}
+
+.blog-post-related-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 1rem;
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.blog-post-empty,
+.blog-post-loading {
+  padding: 5rem 0;
+}
+
+.blog-post-empty-card {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.blog-post-empty-card h1,
+.blog-post-loading h1 {
+  color: var(--navy);
+}
+
+.blog-post-empty-card p {
+  margin-top: 0.85rem;
+  color: rgba(26, 26, 46, 0.72);
+}
+
+.blog-post-empty-card .btn-primary {
+  margin-top: 1.2rem;
+}
+
+@media (max-width: 980px) {
+  .blog-post-related-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .blog-post-hero,
+  .blog-post-section {
+    padding: 4rem 0;
+  }
+
+  .blog-post-content {
+    padding: 1.35rem;
+  }
+}

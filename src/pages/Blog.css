@@ -1,0 +1,248 @@
+.blog-page {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.blog-hero {
+  padding: 4rem 0 4.5rem;
+  background:
+    radial-gradient(circle at top right, rgba(212, 175, 55, 0.18), transparent 22%),
+    linear-gradient(135deg, #351553 0%, #5b2c89 100%);
+  color: var(--white);
+}
+
+.blog-hero-badge {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.blog-hero h1 {
+  margin-top: 1rem;
+  max-width: 50rem;
+  font-size: clamp(2.5rem, 5vw, 4.2rem);
+  line-height: 1.03;
+  letter-spacing: -0.05em;
+}
+
+.blog-hero p {
+  max-width: 38rem;
+  margin-top: 1rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1.05rem;
+}
+
+.blog-filter-bar {
+  position: sticky;
+  top: 88px;
+  z-index: 950;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(10, 31, 68, 0.08);
+}
+
+.blog-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+
+.blog-filter-chip {
+  padding: 0.72rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  background: var(--white);
+  color: rgba(10, 31, 68, 0.78);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.blog-filter-chip.active {
+  background: var(--gold);
+  color: var(--navy);
+  border-color: var(--gold);
+}
+
+.blog-section {
+  padding: 4.5rem 0;
+}
+
+.blog-section.alt {
+  background: linear-gradient(180deg, rgba(245, 245, 245, 0.72) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.featured-post {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr);
+  gap: 1rem;
+  border-radius: 1.8rem;
+  overflow: hidden;
+  background: var(--white);
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.featured-post-media,
+.blog-card-media {
+  background-size: cover;
+  background-position: center;
+}
+
+.featured-post-media {
+  min-height: 22rem;
+}
+
+.featured-post-content {
+  padding: 1.6rem;
+}
+
+.featured-post-category,
+.blog-card-category {
+  color: var(--gold-dark);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.featured-post-content h2 {
+  margin-top: 0.85rem;
+  color: var(--navy);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.08;
+}
+
+.featured-post-content p {
+  margin-top: 1rem;
+  color: rgba(26, 26, 46, 0.74);
+  line-height: 1.75;
+}
+
+.blog-post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  color: rgba(10, 31, 68, 0.66);
+  font-size: 0.92rem;
+}
+
+.blog-post-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.featured-post-link,
+.blog-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 1.2rem;
+  color: var(--navy);
+  font-weight: 800;
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.blog-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 1.45rem;
+  overflow: hidden;
+  background: var(--white);
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.blog-card-media {
+  min-height: 13rem;
+}
+
+.blog-card-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 1.2rem;
+}
+
+.blog-card h3 {
+  margin-top: 0.7rem;
+  color: var(--navy);
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.blog-card p {
+  margin-top: 0.8rem;
+  color: rgba(26, 26, 46, 0.72);
+  line-height: 1.7;
+}
+
+.blog-card-link {
+  margin-top: auto;
+}
+
+.blog-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.blog-page-btn {
+  padding: 0.72rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  background: var(--white);
+  color: var(--navy);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.blog-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.blog-empty-state {
+  padding: 2rem;
+  border-radius: 1.5rem;
+  text-align: center;
+  background: rgba(10, 31, 68, 0.04);
+}
+
+.blog-empty-state h2 {
+  color: var(--navy);
+}
+
+.blog-empty-state p {
+  margin-top: 0.75rem;
+  color: rgba(26, 26, 46, 0.68);
+}
+
+.blog-empty-state.compact {
+  margin-top: 1rem;
+}
+
+@media (max-width: 980px) {
+  .featured-post,
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .blog-hero,
+  .blog-section {
+    padding: 4rem 0;
+  }
+
+  .blog-filter-bar {
+    top: 80px;
+  }
+}
