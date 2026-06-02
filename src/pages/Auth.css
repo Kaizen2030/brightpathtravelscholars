@@ -199,6 +199,10 @@
   .auth-card {
     padding: 2rem;
   }
+
+  .auth-highlights {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
 }
 
 @media (max-width: 480px) {

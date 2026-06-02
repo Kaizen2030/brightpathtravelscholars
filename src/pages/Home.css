@@ -851,6 +851,10 @@
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
 
+  .destinations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .testimonials-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }

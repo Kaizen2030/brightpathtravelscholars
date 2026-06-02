@@ -686,12 +686,12 @@
   }
 
   .admin-nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
   .admin-stat-grid,
   .admin-split-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
 }
 
@@ -710,10 +710,16 @@
     justify-items: start;
   }
 
-  .admin-stat-grid,
-  .admin-split-grid,
+  .admin-stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .admin-split-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
   .admin-nav {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   }
 
   .admin-review-item,
@@ -731,7 +737,7 @@
   }
 
   .admin-content-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 
   .admin-array-header,
@@ -742,6 +748,6 @@
   }
 
   .admin-object-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
