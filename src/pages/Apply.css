@@ -291,6 +291,18 @@
     grid-template-columns: 1fr;
   }
 
+  .apply-step-markers {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .apply-fields-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .apply-review-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
   .apply-progress-header {
     flex-direction: column;
     align-items: start;

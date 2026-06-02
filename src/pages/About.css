@@ -385,7 +385,7 @@
   .about-values-grid,
   .about-team-grid,
   .about-stats-bar {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 
   .about-story-panel {

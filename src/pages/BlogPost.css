@@ -196,7 +196,7 @@
 
 @media (max-width: 980px) {
   .blog-post-related-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 

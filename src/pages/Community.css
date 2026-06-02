@@ -387,7 +387,11 @@
   .community-testimonials-grid,
   .community-gallery-grid,
   .community-meetup-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .community-hero-stats {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 }
 

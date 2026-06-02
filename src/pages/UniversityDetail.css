@@ -193,6 +193,10 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .university-detail-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
