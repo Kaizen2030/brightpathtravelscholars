@@ -1142,3 +1142,155 @@
     padding: 1rem;
   }
 }
+
+@media (max-width: 640px) {
+  .admin-sidebar-shell,
+  .admin-main-shell {
+    padding: 0.85rem;
+  }
+
+  .admin-brand h1 {
+    font-size: 1.35rem;
+  }
+
+  .admin-back-link,
+  .admin-nav-item,
+  .admin-btn {
+    font-size: 0.9rem;
+  }
+
+  .admin-nav {
+    margin-top: 1.2rem;
+  }
+
+  .admin-panel-card,
+  .admin-stat-card {
+    padding: 0.9rem;
+    border-radius: 18px;
+  }
+
+  .admin-panel-card-header h2 {
+    font-size: 1.05rem;
+  }
+
+  .admin-table {
+    min-width: 640px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .analytics-kpi-card {
+    padding: 0.85rem;
+  }
+
+  .analytics-kpi-card strong {
+    font-size: 1.45rem;
+  }
+
+  .analytics-country-select {
+    padding: 0.72rem 0.85rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .admin-dashboard {
+    overflow-x: hidden;
+  }
+
+  .admin-brand h1 {
+    font-size: 1.2rem;
+  }
+
+  .admin-brand p {
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  .admin-topbar h2 {
+    font-size: 1.35rem;
+  }
+
+  .admin-topbar-eyebrow {
+    font-size: 0.72rem;
+  }
+
+  .admin-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav-item {
+    padding: 0.8rem 0.85rem;
+    border-radius: 14px;
+  }
+
+  .admin-stat-grid,
+  .analytics-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-card strong {
+    font-size: 1.4rem;
+  }
+
+  .admin-stat-card span,
+  .admin-panel-card-header p,
+  .admin-empty,
+  .admin-loading,
+  .analytics-updated,
+  .analytics-country-select-wrap span {
+    font-size: 0.78rem;
+  }
+
+  .admin-panel-card,
+  .admin-stat-card {
+    padding: 0.8rem;
+  }
+
+  .admin-table {
+    min-width: 560px;
+  }
+
+  .admin-modal {
+    width: min(100%, 100%);
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .admin-modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .admin-modal-actions {
+    gap: 0.55rem;
+  }
+
+  .analytics-trend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-trend-column:nth-child(n + 3) {
+    display: none;
+  }
+
+  .analytics-range-group {
+    gap: 0.3rem;
+    padding: 0.25rem;
+  }
+
+  .analytics-range-button {
+    padding: 0.42rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .analytics-country-select,
+  .admin-select,
+  .admin-field input,
+  .admin-field textarea,
+  .admin-field select {
+    font-size: 0.92rem;
+  }
+}
