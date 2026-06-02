@@ -960,7 +960,7 @@
 @media (max-width: 768px) {
   .admin-main-shell,
   .admin-sidebar-shell {
-    padding: 1.25rem;
+    padding: 1rem;
   }
 
   .admin-topbar {
@@ -970,32 +970,39 @@
 
   .admin-topbar-meta {
     justify-items: start;
+    gap: 0.2rem;
   }
 
   .admin-stat-grid {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-split-grid {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .admin-nav {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
   }
 
   .admin-review-item,
   .admin-compact-item,
+  .admin-access-card,
   .admin-modal-actions,
   .admin-content-card-header,
   .admin-content-actions,
-  .admin-user-search {
+  .admin-user-search,
+  .analytics-toolbar,
+  .analytics-card-header,
+  .analytics-country-controls {
     flex-direction: column;
     align-items: stretch;
   }
 
   .admin-save-btn,
-  .admin-btn {
+  .admin-btn,
+  .admin-nav-item {
     width: 100%;
   }
 
@@ -1033,6 +1040,10 @@
     flex: 1 1 0;
   }
 
+  .analytics-country-select-wrap {
+    min-width: 100%;
+  }
+
   .admin-content-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
@@ -1046,5 +1057,88 @@
 
   .admin-object-grid {
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .admin-panel-card {
+    padding: 1rem;
+  }
+
+  .admin-panel-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-action-row {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .admin-btn {
+    width: 100%;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.72rem 0.6rem;
+    font-size: 0.84rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-brand h1 {
+    font-size: 1.45rem;
+  }
+
+  .admin-brand p,
+  .admin-topbar-meta,
+  .admin-panel-card-header p,
+  .admin-empty,
+  .admin-loading {
+    font-size: 0.88rem;
+  }
+
+  .admin-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stat-card strong {
+    font-size: 1.55rem;
+  }
+
+  .admin-topbar h2 {
+    font-size: 1.55rem;
+  }
+
+  .analytics-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-trend {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .analytics-trend-column:nth-child(n + 4) {
+    display: none;
+  }
+
+  .analytics-range-group {
+    width: 100%;
+  }
+
+  .analytics-range-button {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  .analytics-card-header h3 {
+    font-size: 1rem;
+  }
+
+  .analytics-card {
+    padding: 1rem;
   }
 }

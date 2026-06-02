@@ -293,7 +293,7 @@ function AnalyticsPanel() {
       countries,
       avgViewsPerVisitor: uniqueVisitors ? (pageViews / uniqueVisitors).toFixed(1) : '0.0',
     }
-  }, [events, range, sessions])
+  }, [events, range, selectedCountry, sessions])
 
   useEffect(() => {
     if (selectedCountry !== 'all' && !analytics.countryRowsDetailed.some((item) => item.key === selectedCountry)) {

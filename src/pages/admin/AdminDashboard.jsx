@@ -186,6 +186,7 @@ function AdminDashboard() {
   const [posts, setPosts] = useState(cachedDashboard?.posts ?? [])
   const [testimonials, setTestimonials] = useState(cachedDashboard?.testimonials ?? [])
   const [teamMembers, setTeamMembers] = useState(cachedDashboard?.teamMembers ?? [])
+  const [adminProfiles, setAdminProfiles] = useState(cachedDashboard?.adminProfiles ?? [])
   const [settingsRows, setSettingsRows] = useState(cachedDashboard?.settingsRows ?? [])
   const [settingsForm, setSettingsForm] = useState(buildSettingsForm(cachedDashboard?.settingsRows ?? []))
   const [eventModalOpen, setEventModalOpen] = useState(false)
@@ -235,13 +236,14 @@ function AdminDashboard() {
           posts,
           testimonials,
           teamMembers,
+          adminProfiles,
           settingsRows,
         }),
       )
     } catch {
       // Ignore storage issues and keep the dashboard usable.
     }
-  }, [applications, events, isAdmin, posts, settingsRows, teamMembers, testimonials, user?.id])
+  }, [adminProfiles, applications, events, isAdmin, posts, settingsRows, teamMembers, testimonials, user?.id])
 
   useEffect(() => {
     if (!user?.id || !isAdmin) return undefined
@@ -262,6 +264,7 @@ function AdminDashboard() {
           postsResult,
           testimonialsResult,
           teamResult,
+          adminProfilesResult,
           settingsResult,
         ] = await Promise.all([
           supabase.from('applications').select('*').order('created_at', { ascending: false }),
@@ -269,6 +272,7 @@ function AdminDashboard() {
           supabase.from('blog_posts').select('*').order('created_at', { ascending: false }),
           supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
           supabase.from('team_members').select('*').order('order_index', { ascending: true }),
+          supabase.from('profiles').select('id, email, full_name, phone, role, created_at').eq('role', 'admin').order('created_at', { ascending: false }),
           supabase.from('site_settings').select('*').order('key', { ascending: true }),
         ])
 
@@ -278,6 +282,7 @@ function AdminDashboard() {
           postsResult.error,
           testimonialsResult.error,
           teamResult.error,
+          adminProfilesResult.error,
           settingsResult.error,
         ].find(Boolean)
 
@@ -291,6 +296,7 @@ function AdminDashboard() {
         setPosts(postsResult.data ?? [])
         setTestimonials(testimonialsResult.data ?? [])
         setTeamMembers(sortByOrderThenName(teamResult.data ?? []))
+        setAdminProfiles(adminProfilesResult.data ?? [])
         setSettingsRows(nextSettings)
         setSettingsForm(buildSettingsForm(nextSettings))
       } catch (error) {
@@ -1173,6 +1179,27 @@ function AdminDashboard() {
               </table>
             </div>
           ) : null}
+        </section>
+
+        <section className="admin-panel-card">
+          <div className="admin-panel-card-header">
+            <div>
+              <h2>Admin Users</h2>
+              <p>{adminProfiles.length} users with admin access</p>
+            </div>
+          </div>
+          <div className="admin-compact-list">
+            {adminProfiles.map((adminUser) => (
+              <div key={adminUser.id} className="admin-compact-item">
+                <div>
+                  <strong>{adminUser.full_name || adminUser.email}</strong>
+                  <span>{adminUser.email}</span>
+                </div>
+                <small>{profile?.id === adminUser.id ? 'You' : 'Admin'}</small>
+              </div>
+            ))}
+            {!adminProfiles.length ? <p className="admin-empty">No admin users found.</p> : null}
+          </div>
         </section>
       </div>
     )
