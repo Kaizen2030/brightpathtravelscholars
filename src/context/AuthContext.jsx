@@ -192,7 +192,7 @@ export function AuthProvider({ children }) {
         return
       }
 
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
         if (!hasResolvedProfile) {
           setLoading(true)
         }

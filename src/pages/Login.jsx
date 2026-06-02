@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import SEO from '../components/SEO'
 import { usePageSections } from '../hooks/usePageSections'
 import { useAuth } from '../context/AuthContext'
@@ -10,14 +10,19 @@ import './Auth.css'
 function Login() {
   const { sections } = usePageSections('login')
   const { user, loading } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [form, setForm] = useState({
+    email: location.state?.email ?? '',
+    password: '',
+  })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const hero = sections.hero
   const formSection = sections.form
+  const resetMessage = location.state?.message
 
   useEffect(() => {
     if (!loading && user) {
@@ -116,6 +121,7 @@ function Login() {
                 </div>
               </label>
 
+              {resetMessage ? <p className="auth-message success">{resetMessage}</p> : null}
               {error ? <p className="auth-message error">{error}</p> : null}
 
               <button type="submit" className="btn-primary auth-submit" disabled={submitting}>

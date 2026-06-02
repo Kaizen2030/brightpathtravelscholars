@@ -13,6 +13,7 @@ import Apply from './pages/Apply'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Dashboard from './pages/Dashboard'
 import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
@@ -88,6 +89,8 @@ function AppLayout() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/update-password" element={<ResetPassword />} />
           <Route
             path="/dashboard"
             element={
