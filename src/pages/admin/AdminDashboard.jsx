@@ -69,6 +69,25 @@ const EMPTY_TEAM_FORM = {
   photo_url: '',
   order_index: 0,
 }
+const EMPTY_BLOG_FORM = {
+  title: '',
+  slug: '',
+  excerpt: '',
+  content: '',
+  cover_image_url: '',
+  author_name: '',
+  category: '',
+  published_at: '',
+  is_published: false,
+}
+const EMPTY_TESTIMONIAL_FORM = {
+  author_name: '',
+  author_title: '',
+  author_photo_url: '',
+  rating: 5,
+  review_text: '',
+  is_published: false,
+}
 const ADMIN_ACTIVE_SECTION_STORAGE_KEY = 'brightpath-admin-active-section'
 const ADMIN_DASHBOARD_CACHE_STORAGE_KEY = 'brightpath-admin-dashboard-cache-v1'
 
@@ -164,6 +183,14 @@ function AdminDashboard() {
   const [teamForm, setTeamForm] = useState(EMPTY_TEAM_FORM)
   const [teamSaving, setTeamSaving] = useState(false)
   const [editingTeamId, setEditingTeamId] = useState(null)
+  const [blogModalOpen, setBlogModalOpen] = useState(false)
+  const [blogForm, setBlogForm] = useState(EMPTY_BLOG_FORM)
+  const [blogSaving, setBlogSaving] = useState(false)
+  const [editingBlogId, setEditingBlogId] = useState(null)
+  const [testimonialModalOpen, setTestimonialModalOpen] = useState(false)
+  const [testimonialForm, setTestimonialForm] = useState(EMPTY_TESTIMONIAL_FORM)
+  const [testimonialSaving, setTestimonialSaving] = useState(false)
+  const [editingTestimonialId, setEditingTestimonialId] = useState(null)
   const [settingsSaving, setSettingsSaving] = useState(false)
   const [userSearchEmail, setUserSearchEmail] = useState('')
   const [userSearchLoading, setUserSearchLoading] = useState(false)
@@ -306,6 +333,61 @@ function AdminDashboard() {
     setTeamModalOpen(false)
   }
 
+  function openBlogEditor(post) {
+    if (!post) {
+      setEditingBlogId(null)
+      setBlogForm(EMPTY_BLOG_FORM)
+      setBlogModalOpen(true)
+      return
+    }
+
+    setEditingBlogId(post.id)
+    setBlogForm({
+      title: post.title || '',
+      slug: post.slug || '',
+      excerpt: post.excerpt || '',
+      content: post.content || '',
+      cover_image_url: post.cover_image_url || '',
+      author_name: post.author_name || '',
+      category: post.category || '',
+      published_at: post.published_at ? new Date(post.published_at).toISOString().slice(0, 16) : '',
+      is_published: Boolean(post.is_published),
+    })
+    setBlogModalOpen(true)
+  }
+
+  function resetBlogModal() {
+    setBlogForm(EMPTY_BLOG_FORM)
+    setEditingBlogId(null)
+    setBlogModalOpen(false)
+  }
+
+  function openTestimonialEditor(testimonial) {
+    if (!testimonial) {
+      setEditingTestimonialId(null)
+      setTestimonialForm(EMPTY_TESTIMONIAL_FORM)
+      setTestimonialModalOpen(true)
+      return
+    }
+
+    setEditingTestimonialId(testimonial.id)
+    setTestimonialForm({
+      author_name: testimonial.author_name || '',
+      author_title: testimonial.author_title || '',
+      author_photo_url: testimonial.author_photo_url || '',
+      rating: testimonial.rating ?? 5,
+      review_text: testimonial.review_text || '',
+      is_published: Boolean(testimonial.is_published),
+    })
+    setTestimonialModalOpen(true)
+  }
+
+  function resetTestimonialModal() {
+    setTestimonialForm(EMPTY_TESTIMONIAL_FORM)
+    setEditingTestimonialId(null)
+    setTestimonialModalOpen(false)
+  }
+
   async function handleApplicationStatusChange(applicationId, nextStatus) {
     const previousApplications = applications
     setApplications((current) =>
@@ -423,6 +505,99 @@ function AdminDashboard() {
     } catch (error) {
       console.error('[AdminDashboard] Failed to update testimonial:', error)
       setNotice({ type: 'error', text: error.message || 'Could not update the testimonial.' })
+    }
+  }
+
+  async function handleBlogSubmit(event) {
+    event.preventDefault()
+    setBlogSaving(true)
+    setNotice(null)
+
+    try {
+      const isPublished = Boolean(blogForm.is_published)
+      const publishedAt = isPublished
+        ? blogForm.published_at
+          ? new Date(blogForm.published_at).toISOString()
+          : editingBlogId
+            ? posts.find((item) => item.id === editingBlogId)?.published_at || new Date().toISOString()
+            : new Date().toISOString()
+        : null
+
+      const payload = {
+        id: editingBlogId || createRowId(),
+        title: blogForm.title.trim(),
+        slug: blogForm.slug.trim(),
+        excerpt: blogForm.excerpt.trim(),
+        content: blogForm.content.trim(),
+        cover_image_url: blogForm.cover_image_url.trim(),
+        author_name: blogForm.author_name.trim(),
+        category: blogForm.category.trim(),
+        published_at: publishedAt,
+        is_published: isPublished,
+      }
+
+      if (editingBlogId) {
+        const { data, error } = await supabase.from('blog_posts').update(payload).eq('id', editingBlogId).select().single()
+        if (error) throw error
+        setPosts((current) => current.map((item) => (item.id === editingBlogId ? data : item)))
+        setNotice({ type: 'success', text: 'Blog post updated.' })
+      } else {
+        const { data, error } = await supabase.from('blog_posts').insert(payload).select().single()
+        if (error) throw error
+        setPosts((current) => [data, ...current].sort((left, right) => new Date(right.published_at || right.created_at) - new Date(left.published_at || left.created_at)))
+        setNotice({ type: 'success', text: 'Blog post created.' })
+      }
+
+      resetBlogModal()
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to save blog post:', error)
+      setNotice({ type: 'error', text: error.message || 'Could not save the blog post.' })
+    } finally {
+      setBlogSaving(false)
+    }
+  }
+
+  async function handleTestimonialSubmit(event) {
+    event.preventDefault()
+    setTestimonialSaving(true)
+    setNotice(null)
+
+    try {
+      const payload = {
+        id: editingTestimonialId || createRowId(),
+        author_name: testimonialForm.author_name.trim(),
+        author_title: testimonialForm.author_title.trim(),
+        author_photo_url: testimonialForm.author_photo_url.trim(),
+        rating: Number(testimonialForm.rating) || 5,
+        review_text: testimonialForm.review_text.trim(),
+        is_published: Boolean(testimonialForm.is_published),
+      }
+
+      if (editingTestimonialId) {
+        const { data, error } = await supabase
+          .from('testimonials')
+          .update(payload)
+          .eq('id', editingTestimonialId)
+          .select()
+          .single()
+
+        if (error) throw error
+        setTestimonials((current) => current.map((item) => (item.id === editingTestimonialId ? data : item)))
+        setNotice({ type: 'success', text: 'Testimonial updated.' })
+      } else {
+        const { data, error } = await supabase.from('testimonials').insert(payload).select().single()
+
+        if (error) throw error
+        setTestimonials((current) => [data, ...current])
+        setNotice({ type: 'success', text: 'Testimonial created.' })
+      }
+
+      resetTestimonialModal()
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to save testimonial:', error)
+      setNotice({ type: 'error', text: error.message || 'Could not save the testimonial.' })
+    } finally {
+      setTestimonialSaving(false)
     }
   }
 
@@ -757,8 +932,13 @@ function AdminDashboard() {
     return (
       <section className="admin-panel-card">
         <div className="admin-panel-card-header">
-          <h2>Blog Posts</h2>
-          <p>{posts.length} post records</p>
+          <div>
+            <h2>Blog Posts</h2>
+            <p>{posts.length} post records</p>
+          </div>
+          <button type="button" className="admin-btn admin-btn-primary" onClick={() => openBlogEditor(null)}>
+            Add Blog Post
+          </button>
         </div>
         <div className="admin-table-wrap">
           <table className="admin-table">
@@ -782,6 +962,13 @@ function AdminDashboard() {
                   <td>{post.view_count || 0}</td>
                   <td>
                     <div className="admin-action-row">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-soft"
+                        onClick={() => openBlogEditor(post)}
+                      >
+                        Edit
+                      </button>
                       <button
                         type="button"
                         className="admin-btn admin-btn-soft"
@@ -812,8 +999,13 @@ function AdminDashboard() {
     return (
       <section className="admin-panel-card">
         <div className="admin-panel-card-header">
-          <h2>Testimonials</h2>
-          <p>{testimonials.length} testimonials</p>
+          <div>
+            <h2>Testimonials</h2>
+            <p>{testimonials.length} testimonials</p>
+          </div>
+          <button type="button" className="admin-btn admin-btn-primary" onClick={() => openTestimonialEditor(null)}>
+            Add Testimonial
+          </button>
         </div>
         <div className="admin-compact-list">
           {testimonials.map((testimonial) => (
@@ -823,13 +1015,22 @@ function AdminDashboard() {
                 <span>{testimonial.author_title || 'Student review'}</span>
                 <p>{testimonial.review_text}</p>
               </div>
-              <button
-                type="button"
-                className={`admin-btn ${testimonial.is_published ? 'admin-btn-soft' : 'admin-btn-primary'}`}
-                onClick={() => handleTestimonialToggle(testimonial)}
-              >
-                {testimonial.is_published ? 'Reject' : 'Approve'}
-              </button>
+              <div className="admin-action-row">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-soft"
+                  onClick={() => openTestimonialEditor(testimonial)}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className={`admin-btn ${testimonial.is_published ? 'admin-btn-soft' : 'admin-btn-primary'}`}
+                  onClick={() => handleTestimonialToggle(testimonial)}
+                >
+                  {testimonial.is_published ? 'Reject' : 'Approve'}
+                </button>
+              </div>
             </div>
           ))}
           {!testimonials.length ? <p className="admin-empty">No testimonials available.</p> : null}
@@ -1269,6 +1470,218 @@ function AdminDashboard() {
                 </button>
                 <button type="submit" className="admin-btn admin-btn-primary" disabled={teamSaving}>
                   {teamSaving ? 'Saving...' : editingTeamId ? 'Save Changes' : 'Add Team Member'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {blogModalOpen ? (
+        <div className="admin-modal-backdrop">
+          <div className="admin-modal">
+            <div className="admin-modal-header">
+              <h3>{editingBlogId ? 'Edit Blog Post' : 'Add Blog Post'}</h3>
+              <button type="button" className="admin-icon-btn" onClick={resetBlogModal}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form className="admin-modal-form" onSubmit={handleBlogSubmit}>
+              <label className="admin-field">
+                <span>Title</span>
+                <input
+                  type="text"
+                  value={blogForm.title}
+                  onChange={(event) => setBlogForm((current) => ({ ...current, title: event.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Slug</span>
+                <input
+                  type="text"
+                  value={blogForm.slug}
+                  onChange={(event) => setBlogForm((current) => ({ ...current, slug: event.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Category</span>
+                <input
+                  type="text"
+                  value={blogForm.category}
+                  onChange={(event) => setBlogForm((current) => ({ ...current, category: event.target.value }))}
+                  placeholder="Study Abroad"
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Author Name</span>
+                <input
+                  type="text"
+                  value={blogForm.author_name}
+                  onChange={(event) => setBlogForm((current) => ({ ...current, author_name: event.target.value }))}
+                  placeholder="Brightpath Team"
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Cover Image URL</span>
+                <input
+                  type="url"
+                  value={blogForm.cover_image_url}
+                  onChange={(event) =>
+                    setBlogForm((current) => ({ ...current, cover_image_url: event.target.value }))
+                  }
+                />
+              </label>
+
+              <label className="admin-field admin-field-full">
+                <span>Excerpt</span>
+                <textarea
+                  rows="3"
+                  value={blogForm.excerpt}
+                  onChange={(event) => setBlogForm((current) => ({ ...current, excerpt: event.target.value }))}
+                />
+              </label>
+
+              <label className="admin-field admin-field-full">
+                <span>Content</span>
+                <textarea
+                  rows="8"
+                  value={blogForm.content}
+                  onChange={(event) => setBlogForm((current) => ({ ...current, content: event.target.value }))}
+                  required
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Published At</span>
+                <input
+                  type="datetime-local"
+                  value={blogForm.published_at}
+                  onChange={(event) =>
+                    setBlogForm((current) => ({ ...current, published_at: event.target.value }))
+                  }
+                />
+              </label>
+
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={blogForm.is_published}
+                  onChange={(event) =>
+                    setBlogForm((current) => ({ ...current, is_published: event.target.checked }))
+                  }
+                />
+                <span>Publish this post</span>
+              </label>
+
+              <div className="admin-modal-actions">
+                <button type="button" className="admin-btn admin-btn-soft" onClick={resetBlogModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={blogSaving}>
+                  {blogSaving ? 'Saving...' : editingBlogId ? 'Save Changes' : 'Create Post'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {testimonialModalOpen ? (
+        <div className="admin-modal-backdrop">
+          <div className="admin-modal">
+            <div className="admin-modal-header">
+              <h3>{editingTestimonialId ? 'Edit Testimonial' : 'Add Testimonial'}</h3>
+              <button type="button" className="admin-icon-btn" onClick={resetTestimonialModal}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <form className="admin-modal-form" onSubmit={handleTestimonialSubmit}>
+              <label className="admin-field">
+                <span>Author Name</span>
+                <input
+                  type="text"
+                  value={testimonialForm.author_name}
+                  onChange={(event) =>
+                    setTestimonialForm((current) => ({ ...current, author_name: event.target.value }))
+                  }
+                  required
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Author Title</span>
+                <input
+                  type="text"
+                  value={testimonialForm.author_title}
+                  onChange={(event) =>
+                    setTestimonialForm((current) => ({ ...current, author_title: event.target.value }))
+                  }
+                  placeholder="Studied in Canada"
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Photo URL</span>
+                <input
+                  type="url"
+                  value={testimonialForm.author_photo_url}
+                  onChange={(event) =>
+                    setTestimonialForm((current) => ({ ...current, author_photo_url: event.target.value }))
+                  }
+                />
+              </label>
+
+              <label className="admin-field">
+                <span>Rating</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={testimonialForm.rating}
+                  onChange={(event) =>
+                    setTestimonialForm((current) => ({ ...current, rating: event.target.value }))
+                  }
+                  required
+                />
+              </label>
+
+              <label className="admin-field admin-field-full">
+                <span>Review Text</span>
+                <textarea
+                  rows="6"
+                  value={testimonialForm.review_text}
+                  onChange={(event) =>
+                    setTestimonialForm((current) => ({ ...current, review_text: event.target.value }))
+                  }
+                  required
+                />
+              </label>
+
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={testimonialForm.is_published}
+                  onChange={(event) =>
+                    setTestimonialForm((current) => ({ ...current, is_published: event.target.checked }))
+                  }
+                />
+                <span>Publish this testimonial</span>
+              </label>
+
+              <div className="admin-modal-actions">
+                <button type="button" className="admin-btn admin-btn-soft" onClick={resetTestimonialModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={testimonialSaving}>
+                  {testimonialSaving ? 'Saving...' : editingTestimonialId ? 'Save Changes' : 'Create Testimonial'}
                 </button>
               </div>
             </form>

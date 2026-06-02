@@ -979,7 +979,10 @@ function normalizeSettings(settings, fallback) {
 }
 
 export function getPageOptions() {
-  return Object.entries(PAGE_LABELS).map(([key, label]) => ({ key, label }))
+  const excludedKeys = new Set(['login', 'register', 'forgot_password'])
+  return Object.entries(PAGE_LABELS)
+    .filter(([key]) => !excludedKeys.has(key))
+    .map(([key, label]) => ({ key, label }))
 }
 
 export function getPageSectionDefaults(pageKey) {
