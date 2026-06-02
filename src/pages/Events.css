@@ -470,11 +470,11 @@
   }
 
   .events-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .events-card-detail-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
   .events-newsletter-form {
@@ -486,6 +486,10 @@
   .events-hero,
   .events-section {
     padding-top: 3.5rem;
+  }
+
+  .events-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .events-newsletter-panel {
