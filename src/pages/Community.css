@@ -947,17 +947,25 @@
     grid-template-columns: 1fr;
   }
 
-  .community-hero-stats,
+  .community-hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .community-board-summary {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 768px) {
   .community-gallery-grid,
+  .community-testimonials-grid,
   .community-meetup-grid,
-  .community-testimonials-grid {
-    grid-template-columns: 1fr;
+  .community-safety-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .community-hero-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .community-thread-head,
@@ -982,5 +990,9 @@
   .community-pagination-controls {
     width: 100%;
     flex-direction: column;
+  }
+
+  .community-board-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
