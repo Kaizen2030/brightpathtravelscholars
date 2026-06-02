@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
@@ -53,12 +54,23 @@ function AdminRoute({ children }) {
   return children
 }
 
+function ScrollToTop() {
+  const location = useLocation()
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+
+  return null
+}
+
 function AppLayout() {
   const location = useLocation()
   const isAdminPage = location.pathname.startsWith('/admin')
 
   return (
     <div className="app-shell">
+      <ScrollToTop />
       {!isAdminPage && <Navbar />}
       <main className={isAdminPage ? 'app-main admin-main' : 'app-main'}>
         <Routes>
