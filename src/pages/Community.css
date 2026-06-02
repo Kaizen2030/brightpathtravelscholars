@@ -393,6 +393,43 @@
   .community-hero-stats {
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
+
+  .community-testimonial-card,
+  .community-info-card,
+  .community-meetup-card {
+    padding: 1.05rem;
+  }
+
+  .community-testimonial-card p,
+  .community-info-card p,
+  .community-meetup-card p,
+  .community-gallery-card p {
+    font-size: 0.86rem;
+    line-height: 1.55;
+  }
+
+  .community-testimonial-card h3,
+  .community-info-card h3,
+  .community-meetup-card h3,
+  .community-gallery-card h3 {
+    font-size: 1rem;
+    line-height: 1.18;
+  }
+
+  .community-testimonial-author span {
+    font-size: 0.8rem;
+  }
+
+  .community-gallery-card-content {
+    padding: 0.95rem 0.95rem 1rem;
+  }
+
+  .community-gallery-count,
+  .community-board-pill,
+  .community-thread-category,
+  .community-thread-badge {
+    font-size: 0.7rem;
+  }
 }
 
 .community-hero-stats {
