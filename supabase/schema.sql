@@ -128,6 +128,33 @@ create table if not exists public.testimonials (
   constraint testimonials_rating_check check (rating between 1 and 5)
 );
 
+create table if not exists public.analytics_sessions (
+  session_id text primary key,
+  user_id uuid references auth.users (id) on delete set null,
+  email text,
+  country_code text,
+  country_name text,
+  device_type text not null default 'desktop',
+  current_path text not null default '/',
+  current_title text,
+  first_seen timestamptz not null default now(),
+  last_seen timestamptz not null default now()
+);
+
+create table if not exists public.analytics_events (
+  id uuid primary key default gen_random_uuid(),
+  session_id text not null references public.analytics_sessions (session_id) on delete cascade,
+  user_id uuid references auth.users (id) on delete set null,
+  path text not null,
+  page_title text,
+  referrer text,
+  country_code text,
+  country_name text,
+  device_type text not null default 'desktop',
+  event_type text not null default 'page_view',
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.team_members (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -205,6 +232,12 @@ create table if not exists public.site_settings (
 );
 
 create index if not exists idx_profiles_role on public.profiles (role);
+create index if not exists idx_analytics_sessions_last_seen on public.analytics_sessions (last_seen desc);
+create index if not exists idx_analytics_sessions_user_id on public.analytics_sessions (user_id);
+create index if not exists idx_analytics_sessions_country on public.analytics_sessions (country_code, country_name);
+create index if not exists idx_analytics_events_created_at on public.analytics_events (created_at desc);
+create index if not exists idx_analytics_events_path on public.analytics_events (path);
+create index if not exists idx_analytics_events_session_id on public.analytics_events (session_id);
 create index if not exists idx_applications_email on public.applications (email);
 create index if not exists idx_applications_status on public.applications (status);
 create index if not exists idx_events_date on public.events (date);
@@ -238,6 +271,8 @@ alter table public.scholarships enable row level security;
 alter table public.homepage_content enable row level security;
 alter table public.page_sections enable row level security;
 alter table public.site_settings enable row level security;
+alter table public.analytics_sessions enable row level security;
+alter table public.analytics_events enable row level security;
 
 drop policy if exists "profiles_select_own_or_admin" on public.profiles;
 create policy "profiles_select_own_or_admin"
@@ -261,6 +296,49 @@ with check (auth.uid() = id or public.is_admin());
 drop policy if exists "profiles_delete_admin_only" on public.profiles;
 create policy "profiles_delete_admin_only"
 on public.profiles
+for delete
+using (public.is_admin());
+
+drop policy if exists "analytics_sessions_admin_select" on public.analytics_sessions;
+create policy "analytics_sessions_admin_select"
+on public.analytics_sessions
+for select
+using (public.is_admin());
+
+drop policy if exists "analytics_sessions_public_insert" on public.analytics_sessions;
+create policy "analytics_sessions_public_insert"
+on public.analytics_sessions
+for insert
+with check (true);
+
+drop policy if exists "analytics_sessions_public_update" on public.analytics_sessions;
+create policy "analytics_sessions_public_update"
+on public.analytics_sessions
+for update
+using (true)
+with check (true);
+
+drop policy if exists "analytics_sessions_admin_delete" on public.analytics_sessions;
+create policy "analytics_sessions_admin_delete"
+on public.analytics_sessions
+for delete
+using (public.is_admin());
+
+drop policy if exists "analytics_events_admin_select" on public.analytics_events;
+create policy "analytics_events_admin_select"
+on public.analytics_events
+for select
+using (public.is_admin());
+
+drop policy if exists "analytics_events_public_insert" on public.analytics_events;
+create policy "analytics_events_public_insert"
+on public.analytics_events
+for insert
+with check (true);
+
+drop policy if exists "analytics_events_admin_delete" on public.analytics_events;
+create policy "analytics_events_admin_delete"
+on public.analytics_events
 for delete
 using (public.is_admin());
 

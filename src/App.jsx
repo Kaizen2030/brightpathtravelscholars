@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { recordPageView, touchAnalyticsSession } from './lib/analytics'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -65,6 +66,69 @@ function ScrollToTop() {
   return null
 }
 
+function AnalyticsTracker() {
+  const location = useLocation()
+  const { user } = useAuth()
+  const lastTrackedRouteRef = useRef('')
+
+  useEffect(() => {
+    const pathname = `${location.pathname}${location.search}`
+
+    if (location.pathname.startsWith('/admin')) {
+      return undefined
+    }
+
+    if (lastTrackedRouteRef.current === pathname) {
+      return undefined
+    }
+
+    lastTrackedRouteRef.current = pathname
+
+    let ignore = false
+
+    void recordPageView({
+      pathname,
+      title: document.title,
+      user,
+    }).catch((error) => {
+      if (!ignore) {
+        console.warn('[Analytics] Page view tracking failed:', error)
+      }
+    })
+
+    return () => {
+      ignore = true
+    }
+  }, [location.pathname, location.search, user?.id])
+
+  useEffect(() => {
+    const pathname = `${location.pathname}${location.search}`
+
+    if (location.pathname.startsWith('/admin')) {
+      return undefined
+    }
+
+    const heartbeat = () => {
+      void touchAnalyticsSession({
+        pathname,
+        title: document.title,
+        user,
+      }).catch((error) => {
+        console.warn('[Analytics] Heartbeat tracking failed:', error)
+      })
+    }
+
+    heartbeat()
+    const timer = window.setInterval(heartbeat, 30000)
+
+    return () => {
+      window.clearInterval(timer)
+    }
+  }, [location.pathname, location.search, user?.id])
+
+  return null
+}
+
 function AppLayout() {
   const location = useLocation()
   const isAdminPage = location.pathname.startsWith('/admin')
@@ -72,6 +136,7 @@ function AppLayout() {
   return (
     <div className="app-shell">
       <ScrollToTop />
+      <AnalyticsTracker />
       {!isAdminPage && <Navbar />}
       <main className={isAdminPage ? 'app-main admin-main' : 'app-main'}>
         <Routes>

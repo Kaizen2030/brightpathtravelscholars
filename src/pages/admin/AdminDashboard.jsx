@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
+  Activity,
   CalendarDays,
   FileText,
   LayoutDashboard,
@@ -17,6 +18,7 @@ import SEO from '../../components/SEO'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import PageContentManager from './PageContentManager'
+import AnalyticsPanel from './AnalyticsPanel'
 import './AdminDashboard.css'
 
 const NAV_ITEMS = [
@@ -26,6 +28,7 @@ const NAV_ITEMS = [
   { key: 'blog', label: 'Blog Posts', icon: Megaphone },
   { key: 'testimonials', label: 'Testimonials', icon: Star },
   { key: 'team', label: 'Team Members', icon: Users },
+  { key: 'analytics', label: 'Analytics', icon: Activity },
   { key: 'content', label: 'Page Content', icon: Megaphone },
   { key: 'settings', label: 'Settings', icon: Settings },
 ]
@@ -102,6 +105,15 @@ function readAdminDashboardCache() {
 
 function createRowId() {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function slugifyText(value) {
+  return `${value ?? ''}`
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 function formatDate(value) {
@@ -1207,6 +1219,8 @@ function AdminDashboard() {
         return renderTestimonials()
       case 'team':
         return renderTeam()
+      case 'analytics':
+        return <AnalyticsPanel />
       case 'settings':
         return renderSettings()
       case 'content':
@@ -1493,7 +1507,19 @@ function AdminDashboard() {
                 <input
                   type="text"
                   value={blogForm.title}
-                  onChange={(event) => setBlogForm((current) => ({ ...current, title: event.target.value }))}
+                  onChange={(event) =>
+                    setBlogForm((current) => {
+                      const nextTitle = event.target.value
+                      const autoSlugSource = current.title || nextTitle
+                      const shouldAutoFill = !editingBlogId || !current.slug || current.slug === slugifyText(autoSlugSource)
+
+                      return {
+                        ...current,
+                        title: nextTitle,
+                        slug: shouldAutoFill ? slugifyText(nextTitle) : current.slug,
+                      }
+                    })
+                  }
                   required
                 />
               </label>
