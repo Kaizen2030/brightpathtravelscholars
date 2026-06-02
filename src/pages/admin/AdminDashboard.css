@@ -586,6 +586,40 @@
   font-size: 0.82rem;
 }
 
+.analytics-country-controls {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.analytics-country-select-wrap {
+  display: grid;
+  gap: 0.45rem;
+  min-width: min(100%, 20rem);
+}
+
+.analytics-country-select-wrap span {
+  color: rgba(26, 26, 46, 0.66);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.analytics-country-select {
+  width: 100%;
+  padding: 0.82rem 0.95rem;
+  border-radius: 16px;
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  background: #fff;
+  color: var(--navy);
+  font: inherit;
+}
+
+.analytics-drill-table-wrap {
+  margin-top: 0.5rem;
+}
+
 .admin-content-tabs {
   display: flex;
   flex-wrap: wrap;

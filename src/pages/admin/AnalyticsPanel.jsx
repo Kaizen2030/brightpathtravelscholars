@@ -74,6 +74,15 @@ function groupSessionsBy(items, keyGetter) {
     .sort((left, right) => right.count - left.count)
 }
 
+function formatCountryKey(rawKey) {
+  const [countryName = 'Unknown', countryCode = ''] = `${rawKey || 'Unknown|'}`.split('|')
+  return countryCode ? `${countryName} (${countryCode})` : countryName
+}
+
+function getCountryKey(item) {
+  return `${item?.country_name || 'Unknown'}|${item?.country_code || ''}`
+}
+
 function buildTrendPoints(events, days) {
   const points = []
   const today = new Date()
@@ -158,6 +167,7 @@ function AnalyticsBarList({ items, valueLabel = 'views', color = 'gold' }) {
 function AnalyticsPanel() {
   const [range, setRange] = useState('7d')
   const [refreshToken, setRefreshToken] = useState(0)
+  const [selectedCountry, setSelectedCountry] = useState('all')
   const [sessions, setSessions] = useState([])
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
@@ -227,11 +237,11 @@ function AnalyticsPanel() {
     })
 
     const pageRows = buildPageRows(events)
-    const countryRows = groupSessionsBy(sessions, (session) => `${session.country_name || 'Unknown'}|${session.country_code || ''}`)
+    const countryRowsDetailed = groupSessionsBy(sessions, getCountryKey)
       .map((item) => {
-        const [countryName, countryCode] = item.label.split('|')
         return {
-          label: countryCode ? `${countryName} (${countryCode})` : countryName,
+          key: item.label,
+          label: formatCountryKey(item.label),
           count: item.count,
         }
       })
@@ -239,6 +249,25 @@ function AnalyticsPanel() {
 
     const deviceRows = groupCount(sessions, (session) => session.device_type || 'desktop').slice(0, 4)
     const trendRows = buildTrendPoints(events, ANALYTICS_RANGES.find((item) => item.key === range)?.days || 7)
+    const selectedCountryKey = selectedCountry === 'all' ? '' : selectedCountry
+    const selectedCountryLabel = selectedCountry === 'all' ? 'All countries' : formatCountryKey(selectedCountry)
+    const filteredEvents = selectedCountryKey
+      ? events.filter((event) => getCountryKey(event) === selectedCountryKey)
+      : events
+    const filteredSessions = selectedCountryKey
+      ? sessions.filter((session) => getCountryKey(session) === selectedCountryKey)
+      : sessions
+    const countryPageRows = buildPageRows(filteredEvents).slice(0, 8)
+    const signedInSessions = filteredSessions.filter((session) => session.user_id).length
+    const guestSessions = filteredSessions.length - signedInSessions
+    const signedInViews = filteredEvents.filter((event) => event.user_id).length
+    const guestViews = filteredEvents.length - signedInViews
+    const trafficSplitRows = [
+      { label: 'Signed-in sessions', count: signedInSessions },
+      { label: 'Guest sessions', count: guestSessions },
+      { label: 'Signed-in page views', count: signedInViews },
+      { label: 'Guest page views', count: guestViews },
+    ].filter((item) => item.count >= 0)
 
     const pageViews = events.length
     const uniqueVisitors = sessions.length
@@ -251,9 +280,12 @@ function AnalyticsPanel() {
     return {
       liveSessions,
       pageRows,
-      countryRows,
+      countryRowsDetailed,
       deviceRows,
       trendRows,
+      countryPageRows,
+      trafficSplitRows,
+      selectedCountryLabel,
       pageViews,
       uniqueVisitors,
       liveUsers,
@@ -262,6 +294,12 @@ function AnalyticsPanel() {
       avgViewsPerVisitor: uniqueVisitors ? (pageViews / uniqueVisitors).toFixed(1) : '0.0',
     }
   }, [events, range, sessions])
+
+  useEffect(() => {
+    if (selectedCountry !== 'all' && !analytics.countryRowsDetailed.some((item) => item.key === selectedCountry)) {
+      setSelectedCountry('all')
+    }
+  }, [analytics.countryRowsDetailed, selectedCountry])
 
   return (
     <section className="admin-panel-card analytics-panel">
@@ -383,7 +421,24 @@ function AnalyticsPanel() {
               <p>Visitors by location</p>
             </div>
           </div>
-          <AnalyticsBarList items={analytics.countryRows} valueLabel="visitors" color="sky" />
+          <div className="analytics-country-controls">
+            <label className="analytics-country-select-wrap">
+              <span>Drill down</span>
+              <select
+                className="analytics-country-select"
+                value={selectedCountry}
+                onChange={(event) => setSelectedCountry(event.target.value)}
+              >
+                <option value="all">All countries</option>
+                {analytics.countryRowsDetailed.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <AnalyticsBarList items={analytics.countryRowsDetailed} valueLabel="visitors" color="sky" />
         </section>
 
         <section className="analytics-card">
@@ -394,6 +449,53 @@ function AnalyticsPanel() {
             </div>
           </div>
           <AnalyticsBarList items={analytics.deviceRows} valueLabel="sessions" color="emerald" />
+        </section>
+      </div>
+
+      <div className="analytics-grid">
+        <section className="analytics-card">
+          <div className="analytics-card-header">
+            <div>
+              <h3>Traffic split</h3>
+              <p>Signed-in versus anonymous traffic</p>
+            </div>
+          </div>
+          <AnalyticsBarList items={analytics.trafficSplitRows} valueLabel="visits" color="gold" />
+        </section>
+
+        <section className="analytics-card">
+          <div className="analytics-card-header">
+            <div>
+              <h3>Country drill-down</h3>
+              <p>{analytics.selectedCountryLabel}</p>
+            </div>
+          </div>
+
+          <div className="admin-table-wrap analytics-drill-table-wrap">
+            <table className="admin-table analytics-table">
+              <thead>
+                <tr>
+                  <th>Page</th>
+                  <th>Views</th>
+                  <th>Visitors</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analytics.countryPageRows.map((row) => (
+                  <tr key={`${row.path}-${row.label}`}>
+                    <td>{row.label}</td>
+                    <td>{row.views}</td>
+                    <td>{row.visitors}</td>
+                    <td>{formatRelativeTime(row.lastSeen)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!analytics.countryPageRows.length ? (
+              <p className="admin-empty">No page views available for this country yet.</p>
+            ) : null}
+          </div>
         </section>
       </div>
 
