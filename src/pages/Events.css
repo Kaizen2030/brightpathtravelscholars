@@ -495,6 +495,20 @@
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
+  .events-card-media-topline {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .events-card-category,
+  .events-status-badge {
+    max-width: 100%;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+  }
+
   .events-card-details summary {
     font-size: 0.82rem;
   }
