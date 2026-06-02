@@ -19,6 +19,7 @@ import { UPCOMING_EVENT_FALLBACKS } from '../lib/eventCatalog'
 import { mergeDestinationCards } from '../lib/destinationGuides'
 import { HERO_FALLBACK_IMAGES, HERO_FALLBACK_IMAGE, getDestinationFallbackImage, getEventFallbackImage } from '../lib/fallbackImages'
 import { usePageSections } from '../hooks/usePageSections'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 import { buildOverlayBackground } from '../lib/mediaStyles'
 import { supabase } from '../lib/supabaseClient'
 import { WHATSAPP_URL } from '../lib/siteConfig'
@@ -83,6 +84,7 @@ function buildHeroStyle(heroSection) {
 
 function Home() {
   const { sections } = usePageSections('home')
+  const { settings: siteSettings } = useSiteSettings()
   const [events, setEvents] = useState([])
   const [eventsLoading, setEventsLoading] = useState(true)
   const [testimonials, setTestimonials] = useState(FALLBACK_TESTIMONIALS)
@@ -214,7 +216,7 @@ function Home() {
   const whyVisualSuffix = whyNexora.settings?.visual_badge_suffix ?? '%'
   const homeDestinations = useMemo(() => mergeDestinationCards(destinationsSection.items ?? []), [destinationsSection.items])
   const homeSteps = howItWorks.items ?? []
-  const ctaSecondaryUrl = ctaSection.secondary_btn_url || WHATSAPP_URL
+  const ctaSecondaryUrl = ctaSection.secondary_btn_url || siteSettings.whatsapp_url || WHATSAPP_URL
   const ctaSecondaryIsExternal = ctaSecondaryUrl.startsWith('http')
 
   useEffect(() => {

@@ -17,6 +17,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import SEO from '../../components/SEO'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
+import { SITE_SETTING_FIELDS } from '../../lib/siteSettings'
 import PageContentManager from './PageContentManager'
 import AnalyticsPanel from './AnalyticsPanel'
 import './AdminDashboard.css'
@@ -40,18 +41,6 @@ const EVENT_CATEGORIES = [
   'pre_departure',
   'webinar',
   'scholarship',
-]
-
-const DEFAULT_SETTINGS = [
-  { key: 'site_name', label: 'Site Name', defaultValue: 'Brightpath Travel Scholars' },
-  {
-    key: 'site_tagline',
-    label: 'Site Tagline',
-    defaultValue: "Your Gateway to the World's Best Universities",
-  },
-  { key: 'site_url', label: 'Site URL', defaultValue: 'https://brightpathtravelscholars.com' },
-  { key: 'contact_email', label: 'Contact Email', defaultValue: 'info@brightpathtravelscholars.com' },
-  { key: 'whatsapp_url', label: 'WhatsApp URL', defaultValue: 'https://wa.me/254734004003' },
 ]
 
 const EMPTY_EVENT_FORM = {
@@ -151,7 +140,7 @@ function extractScholarshipInterest(value) {
 }
 
 function buildSettingsForm(rows) {
-  return DEFAULT_SETTINGS.reduce((accumulator, item) => {
+  return SITE_SETTING_FIELDS.reduce((accumulator, item) => {
     const existing = rows.find((row) => row.key === item.key)
     accumulator[item.key] = existing?.value ?? item.defaultValue
     return accumulator
@@ -702,7 +691,7 @@ function AdminDashboard() {
     setNotice(null)
 
     try {
-      const payload = DEFAULT_SETTINGS.map((item) => {
+      const payload = SITE_SETTING_FIELDS.map((item) => {
         const existing = settingsRows.find((row) => row.key === item.key)
         return {
           id: existing?.id || createRowId(),
@@ -1212,8 +1201,11 @@ function AdminDashboard() {
           <h2>Settings</h2>
           <p>Edit your site configuration values.</p>
         </div>
+        <p className="admin-content-hint">
+          Add the full profile URL for each social network so the footer and contact links point to your live accounts.
+        </p>
         <form className="admin-settings-form" onSubmit={handleSettingsSave}>
-          {DEFAULT_SETTINGS.map((item) => (
+          {SITE_SETTING_FIELDS.map((item) => (
             <label key={item.key} className="admin-field">
               <span>{item.label}</span>
               <input

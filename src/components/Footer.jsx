@@ -1,6 +1,8 @@
-import { Clock3, Facebook, Instagram, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react'
+import { Clock3, Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react'
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { SITE_NAME, SITE_TAGLINE } from '../lib/siteConfig'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 
 const quickLinks = [
   { to: '/', label: 'Home' },
@@ -13,29 +15,50 @@ const quickLinks = [
   { to: '/apply', label: 'Apply Now' },
 ]
 
-const contactItems = [
-  { icon: MapPin, label: 'United States' },
-  { icon: Mail, label: 'info@brightpathtravelscholars.com' },
-  { icon: Phone, label: '+254 734 004 003' },
-  { icon: Clock3, label: 'Mon-Fri 8:30AM-5PM, Sat 8:30AM-3PM' },
-]
-
-const socialLinks = [
-  { href: 'https://facebook.com', label: 'Facebook', icon: Facebook },
-  { href: 'https://instagram.com', label: 'Instagram', icon: Instagram },
-  { href: 'https://youtube.com', label: 'YouTube', icon: Youtube },
-  { href: 'https://twitter.com', label: 'Twitter', icon: Twitter },
-]
-
 function Footer() {
+  const { settings } = useSiteSettings()
+
+  const socialLinks = useMemo(
+    () =>
+      [
+        { href: settings.facebook_url, label: 'Facebook', icon: Facebook },
+        { href: settings.instagram_url, label: 'Instagram', icon: Instagram },
+        { href: settings.x_url, label: 'X', icon: Twitter },
+        { href: settings.youtube_url, label: 'YouTube', icon: Youtube },
+        { href: settings.linkedin_url, label: 'LinkedIn', icon: Linkedin },
+      ].filter((item) => item.href),
+    [settings],
+  )
+
+  const contactItems = useMemo(
+    () => [
+      { icon: MapPin, label: 'United States' },
+      {
+        icon: Mail,
+        label: settings.contact_email || 'info@brightpathtravelscholars.com',
+        href: `mailto:${settings.contact_email || 'info@brightpathtravelscholars.com'}`,
+      },
+      {
+        icon: Phone,
+        label: settings.contact_phone || '+254 734 004 003',
+        href: settings.whatsapp_url || 'https://wa.me/254734004003',
+      },
+      { icon: Clock3, label: 'Mon-Fri 8:30AM-5PM, Sat 8:30AM-3PM' },
+    ],
+    [settings],
+  )
+
+  const siteName = settings.site_name || SITE_NAME
+  const siteTagline = settings.site_tagline || SITE_TAGLINE
+
   return (
     <>
       <footer className="nexora-footer">
         <div className="container nexora-footer-inner">
           <div className="nexora-footer-grid">
             <div className="nexora-footer-brand">
-              <h3>{SITE_NAME}</h3>
-              <p className="nexora-footer-tagline">{SITE_TAGLINE}</p>
+              <h3>{siteName}</h3>
+              <p className="nexora-footer-tagline">{siteTagline}</p>
               <p className="nexora-footer-description">
                 A USA-based study abroad consultancy connecting students to 400+ universities worldwide.
               </p>
@@ -57,7 +80,7 @@ function Footer() {
               <div className="nexora-contact-list">
                 {contactItems.map((item) => {
                   const Icon = item.icon
-                  return (
+                  const content = (
                     <div key={item.label} className="nexora-contact-item">
                       <span className="nexora-contact-icon">
                         <Icon size={18} />
@@ -65,6 +88,19 @@ function Footer() {
                       <span>{item.label}</span>
                     </div>
                   )
+
+                  if (item.href) {
+                    return (
+                      <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="nexora-contact-item">
+                        <span className="nexora-contact-icon">
+                          <Icon size={18} />
+                        </span>
+                        <span>{item.label}</span>
+                      </a>
+                    )
+                  }
+
+                  return content
                 })}
               </div>
             </div>
@@ -87,7 +123,7 @@ function Footer() {
                 )
               })}
             </div>
-            <p>&copy; 2030 {SITE_NAME}. All Rights Reserved.</p>
+            <p>&copy; 2030 {siteName}. All Rights Reserved.</p>
           </div>
         </div>
       </footer>
@@ -140,10 +176,12 @@ function Footer() {
         .nexora-footer-links a,
         .nexora-contact-item {
           color: rgba(255, 255, 255, 0.78);
+          text-decoration: none;
           transition: color 0.18s ease, transform 0.18s ease;
         }
 
-        .nexora-footer-links a:hover {
+        .nexora-footer-links a:hover,
+        .nexora-contact-item:hover {
           color: var(--gold);
           transform: translateX(2px);
         }

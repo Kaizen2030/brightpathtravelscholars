@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import AnimatedSection from '../components/AnimatedSection'
 import SEO from '../components/SEO'
 import { useAuth } from '../context/AuthContext'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 import { supabase } from '../lib/supabaseClient'
 import './Dashboard.css'
 
@@ -26,6 +27,7 @@ function formatDate(value) {
 
 function Dashboard() {
   const { user, profile, loading: authLoading, updateProfile } = useAuth()
+  const { settings: siteSettings } = useSiteSettings()
   const navigate = useNavigate()
   const [application, setApplication] = useState(null)
   const [registeredEvents, setRegisteredEvents] = useState([])
@@ -267,7 +269,12 @@ function Dashboard() {
                     <span>Talk to a Brightpath counsellor.</span>
                   </div>
                 </Link>
-                <a href="https://wa.me/254734004003" target="_blank" rel="noreferrer" className="dashboard-action-tile">
+                <a
+                  href={siteSettings.whatsapp_url || 'https://wa.me/254734004003'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="dashboard-action-tile"
+                >
                   <MessageCircle size={18} />
                   <div>
                     <strong>WhatsApp Support</strong>

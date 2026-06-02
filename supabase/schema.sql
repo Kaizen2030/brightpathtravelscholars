@@ -578,6 +578,12 @@ for all
 using (public.is_admin())
 with check (public.is_admin());
 
+drop policy if exists "site_settings_public_read" on public.site_settings;
+create policy "site_settings_public_read"
+on public.site_settings
+for select
+using (true);
+
 insert into storage.buckets (id, name, public)
 values ('site-assets', 'site-assets', true)
 on conflict (id) do nothing;

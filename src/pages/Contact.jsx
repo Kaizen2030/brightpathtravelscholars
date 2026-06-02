@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Facebook, Instagram, Mail, MapPin, Phone, Send, Twitter } from 'lucide-react'
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Send, Twitter, Youtube } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import AnimatedSection from '../components/AnimatedSection'
 import SEO from '../components/SEO'
 import { usePageSections } from '../hooks/usePageSections'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 import { supabase } from '../lib/supabaseClient'
 import './Contact.css'
 
@@ -11,10 +12,14 @@ const SOCIAL_ICONS = {
   facebook: Facebook,
   instagram: Instagram,
   twitter: Twitter,
+  x: Twitter,
+  youtube: Youtube,
+  linkedin: Linkedin,
 }
 
 function Contact() {
   const { sections } = usePageSections('contact')
+  const { settings: siteSettings } = useSiteSettings()
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -30,6 +35,17 @@ function Contact() {
   const formSection = sections.form
   const sidebar = sections.sidebar
   const cta = sections.cta
+  const fallbackSocials = useMemo(
+    () =>
+      [
+        { label: 'Facebook', url: siteSettings.facebook_url },
+        { label: 'Instagram', url: siteSettings.instagram_url },
+        { label: 'X', url: siteSettings.x_url },
+        { label: 'YouTube', url: siteSettings.youtube_url },
+        { label: 'LinkedIn', url: siteSettings.linkedin_url },
+      ].filter((social) => social.url),
+    [siteSettings],
+  )
   const subjectOptions = useMemo(
     () => formSection.settings?.subject_options ?? ['General Inquiry'],
     [formSection.settings],
@@ -239,7 +255,7 @@ function Contact() {
               <div className="contact-side-card">
                 <h3>{sidebar.settings?.socials_title}</h3>
                 <div className="contact-socials">
-                  {(sidebar.settings?.socials ?? []).map((social) => {
+                  {(sidebar.settings?.socials?.length ? sidebar.settings.socials : fallbackSocials).map((social) => {
                     const Icon = SOCIAL_ICONS[social.label?.toLowerCase()] || Facebook
 
                     return (
