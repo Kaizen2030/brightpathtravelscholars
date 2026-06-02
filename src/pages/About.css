@@ -385,6 +385,10 @@
     padding: 4rem 0;
   }
 
+  .about-story-grid {
+    grid-template-columns: 1fr;
+  }
+
   .about-purpose-grid {
     grid-template-columns: 1fr;
   }
@@ -403,7 +407,7 @@
   }
 
   .about-story-panel {
-    min-height: 22rem;
+    min-height: 20rem;
   }
 }
 
