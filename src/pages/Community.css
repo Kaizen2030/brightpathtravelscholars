@@ -394,6 +394,36 @@
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
+  .community-hero-panel {
+    padding: 1.15rem;
+  }
+
+  .community-hero-panel span {
+    font-size: 0.72rem;
+  }
+
+  .community-hero-panel h2 {
+    font-size: 1.15rem;
+    line-height: 1.12;
+  }
+
+  .community-hero-panel p {
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .community-hero-stat {
+    padding: 0.65rem;
+  }
+
+  .community-hero-stat strong {
+    font-size: 0.95rem;
+  }
+
+  .community-hero-stat span {
+    font-size: 0.72rem;
+  }
+
   .community-testimonial-card,
   .community-info-card,
   .community-meetup-card {
@@ -401,50 +431,120 @@
   }
 
   .community-gallery-card {
-    min-height: 13.5rem;
-    padding: 0.9rem;
+    min-height: 11.5rem;
+    padding: 0.75rem;
   }
 
   .community-gallery-card-media {
-    height: 8.5rem;
-    padding: 0.35rem;
+    height: 7rem;
+    padding: 0.25rem;
   }
 
   .community-gallery-icon,
   .community-info-icon {
-    width: 2rem;
-    height: 2rem;
+    width: 1.8rem;
+    height: 1.8rem;
   }
 
   .community-testimonial-card p,
   .community-info-card p,
   .community-meetup-card p,
   .community-gallery-card p {
-    font-size: 0.78rem;
-    line-height: 1.45;
+    font-size: 0.74rem;
+    line-height: 1.38;
   }
 
   .community-testimonial-card h3,
   .community-info-card h3,
   .community-meetup-card h3,
   .community-gallery-card h3 {
-    font-size: 0.92rem;
-    line-height: 1.14;
+    font-size: 0.85rem;
+    line-height: 1.1;
   }
 
   .community-testimonial-author span {
-    font-size: 0.8rem;
+    font-size: 0.76rem;
   }
 
   .community-gallery-card-content {
-    padding: 0.75rem 0.8rem 0.85rem;
+    padding: 0.65rem 0.7rem 0.75rem;
   }
 
   .community-gallery-count,
   .community-board-pill,
   .community-thread-category,
   .community-thread-badge {
-    font-size: 0.65rem;
+    font-size: 0.62rem;
+  }
+
+  .community-board-kicker,
+  .community-reply-toggle,
+  .community-board-notice,
+  .community-field span,
+  .community-reply-hint,
+  .community-reply-login p,
+  .community-pagination-meta span,
+  .community-thread-author span,
+  .community-thread-date,
+  .community-reply-date {
+    font-size: 0.76rem;
+  }
+
+  .community-composer-card h3,
+  .community-guidelines-card h3,
+  .community-thread-card h3 {
+    font-size: 0.96rem;
+  }
+
+  .community-composer-body,
+  .community-guideline-item p,
+  .community-thread-body,
+  .community-reply-card p {
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .community-board-summary strong {
+    font-size: 1rem;
+  }
+
+  .community-board-summary span {
+    font-size: 0.72rem;
+  }
+
+  .community-thread-card,
+  .community-reply-card {
+    padding: 1rem;
+  }
+
+  .community-pagination-button {
+    min-width: 0;
+    padding: 0.7rem 0.85rem;
+    font-size: 0.82rem;
+  }
+
+  .community-hero-panel {
+    padding: 1rem;
+  }
+
+  .community-hero-panel h2 {
+    font-size: 1.05rem;
+  }
+
+  .community-hero-panel p {
+    font-size: 0.76rem;
+  }
+
+  .community-hero-stat {
+    padding: 0.55rem;
+  }
+
+  .community-hero-stat strong {
+    font-size: 0.88rem;
+  }
+
+  .community-hero-stat span {
+    font-size: 0.68rem;
   }
 }
 
