@@ -230,13 +230,14 @@
 }
 
 @media (max-width: 980px) {
-  .featured-post,
-  .blog-grid {
-    grid-template-columns: 1fr;
-  }
-
   .blog-grid {
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .blog-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

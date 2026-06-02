@@ -1137,13 +1137,16 @@
 @media (max-width: 980px) {
   .study-hero-grid,
   .study-destination-hero-grid,
-  .study-requirements-grid,
   .study-cta-panel,
   .study-guide-hero-card,
   .study-country-cta-panel {
     grid-template-columns: 1fr;
     flex-direction: column;
     align-items: start;
+  }
+
+  .study-requirements-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .study-scholarships-grid,
@@ -1197,7 +1200,7 @@
   .study-destinations-grid,
   .study-steps-grid,
   .study-requirements-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .study-guide-quickfacts {
