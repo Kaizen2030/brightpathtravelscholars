@@ -385,6 +385,10 @@
     padding: 4rem 0;
   }
 
+  .about-purpose-grid {
+    grid-template-columns: 1fr;
+  }
+
   .about-values-grid,
   .about-stats-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
