@@ -370,7 +370,7 @@
 @media (max-width: 900px) {
   .about-story-grid,
   .about-purpose-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     align-items: start;
   }
 
@@ -386,13 +386,16 @@
   }
 
   .about-values-grid,
-  .about-stats-bar,
-  .about-story-points {
+  .about-stats-bar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .about-team-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about-story-points {
+    grid-template-columns: 1fr;
   }
 
   .about-story-panel {
