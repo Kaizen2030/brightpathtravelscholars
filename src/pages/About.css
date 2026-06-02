@@ -369,11 +369,14 @@
 
 @media (max-width: 900px) {
   .about-story-grid,
-  .about-purpose-grid,
-  .about-cta-panel {
-    grid-template-columns: 1fr;
-    flex-direction: column;
+  .about-purpose-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
+  }
+
+  .about-cta-panel {
+    flex-wrap: wrap;
+    align-items: flex-start;
   }
 }
 
@@ -383,8 +386,9 @@
   }
 
   .about-values-grid,
-  .about-stats-bar {
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  .about-stats-bar,
+  .about-story-points {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .about-team-grid {
