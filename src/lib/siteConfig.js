@@ -5,7 +5,7 @@ export const SITE_TAGLINE = 'Your Travel. Our Vision.'
 export const SITE_DESCRIPTION =
   'Brightpath Travel Scholars helps students study abroad through expert counselling, university applications, and visa support.'
 export const SITE_IMAGE = import.meta.env.VITE_SITE_IMAGE || `${SITE_URL}/og-image.jpg`
-export const WHATSAPP_URL = 'https://wa.me/254734004003'
+export const WHATSAPP_URL = 'https://wa.me/15551234567'
 
 export function getCanonicalUrl(path = '/') {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`

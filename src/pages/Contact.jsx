@@ -194,7 +194,7 @@ function Contact() {
                       type="tel"
                       value={form.phone}
                       onChange={(event) => updateField('phone', event.target.value)}
-                      placeholder="+254..."
+                      placeholder="+1..."
                       required
                     />
                   </label>

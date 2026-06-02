@@ -38,11 +38,11 @@ function Footer() {
         label: settings.contact_email || 'info@brightpathtravelscholars.com',
         href: `mailto:${settings.contact_email || 'info@brightpathtravelscholars.com'}`,
       },
-      {
-        icon: Phone,
-        label: settings.contact_phone || '+254 734 004 003',
-        href: settings.whatsapp_url || 'https://wa.me/254734004003',
-      },
+        {
+          icon: Phone,
+          label: settings.contact_phone || '+1 (555) 123-4567',
+          href: settings.whatsapp_url || 'https://wa.me/15551234567',
+        },
       { icon: Clock3, label: 'Mon-Fri 8:30AM-5PM, Sat 8:30AM-3PM' },
     ],
     [settings],

@@ -1213,6 +1213,20 @@ function AdminDashboard() {
   }
 
   function renderSettings() {
+    const previewSiteName = settingsForm.site_name?.trim() || 'Brightpath Travel Scholars'
+    const previewTagline = settingsForm.site_tagline?.trim() || "Your Gateway to the World's Best Universities"
+    const previewSiteUrl = settingsForm.site_url?.trim() || 'https://brightpathtravelscholars.com'
+    const previewContactEmail = settingsForm.contact_email?.trim() || 'info@brightpathtravelscholars.com'
+    const previewContactPhone = settingsForm.contact_phone?.trim() || '+1 (555) 123-4567'
+    const previewWhatsAppUrl = settingsForm.whatsapp_url?.trim() || 'https://wa.me/15551234567'
+    const previewSocialLinks = [
+      { label: 'Facebook', url: settingsForm.facebook_url?.trim() || '' },
+      { label: 'Instagram', url: settingsForm.instagram_url?.trim() || '' },
+      { label: 'X', url: settingsForm.x_url?.trim() || '' },
+      { label: 'YouTube', url: settingsForm.youtube_url?.trim() || '' },
+      { label: 'LinkedIn', url: settingsForm.linkedin_url?.trim() || '' },
+    ].filter((item) => item.url)
+
     return (
       <section className="admin-panel-card">
         <div className="admin-panel-card-header">
@@ -1222,42 +1236,91 @@ function AdminDashboard() {
         <p className="admin-content-hint">
           Add the full profile URL for each social network so the footer and contact links point to your live accounts.
         </p>
-        <form className="admin-settings-form" onSubmit={handleSettingsSave}>
-          <div className="admin-settings-sections">
-            {SETTINGS_SECTIONS.map((section) => {
-              const fields = SITE_SETTING_FIELDS.filter((item) => item.group === section.key)
+        <div className="admin-settings-layout">
+          <form className="admin-settings-form" onSubmit={handleSettingsSave}>
+            <div className="admin-settings-sections">
+              {SETTINGS_SECTIONS.map((section) => {
+                const fields = SITE_SETTING_FIELDS.filter((item) => item.group === section.key)
 
-              return (
-                <section key={section.key} className="admin-settings-section">
-                  <div className="admin-settings-section-header">
-                    <div>
-                      <h3>{section.title}</h3>
-                      <p>{section.description}</p>
+                return (
+                  <section key={section.key} className="admin-settings-section">
+                    <div className="admin-settings-section-header">
+                      <div>
+                        <h3>{section.title}</h3>
+                        <p>{section.description}</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="admin-settings-grid">
-                    {fields.map((item) => (
-                      <label key={item.key} className="admin-field">
-                        <span>{item.label}</span>
-                        <input
-                          type="text"
-                          value={settingsForm[item.key] || ''}
-                          onChange={(event) =>
-                            setSettingsForm((current) => ({ ...current, [item.key]: event.target.value }))
-                          }
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </section>
-              )
-            })}
-          </div>
-          <button type="submit" className="admin-btn admin-btn-primary admin-save-btn" disabled={settingsSaving}>
-            <Save size={16} />
-            {settingsSaving ? 'Saving...' : 'Save Settings'}
-          </button>
-        </form>
+                    <div className="admin-settings-grid">
+                      {fields.map((item) => (
+                        <label key={item.key} className="admin-field">
+                          <span>{item.label}</span>
+                          <input
+                            type="text"
+                            value={settingsForm[item.key] || ''}
+                            onChange={(event) =>
+                              setSettingsForm((current) => ({ ...current, [item.key]: event.target.value }))
+                            }
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
+            <button type="submit" className="admin-btn admin-btn-primary admin-save-btn" disabled={settingsSaving}>
+              <Save size={16} />
+              {settingsSaving ? 'Saving...' : 'Save Settings'}
+            </button>
+          </form>
+
+          <aside className="admin-settings-preview">
+            <div className="admin-settings-preview-header">
+              <div>
+                <h3>Live Preview</h3>
+                <p>See what the footer and support links will look like when saved.</p>
+              </div>
+              <span className="admin-settings-preview-badge">Preview</span>
+            </div>
+
+            <div className="admin-settings-preview-card">
+              <span className="section-badge">Footer</span>
+              <h4>{previewSiteName}</h4>
+              <p className="admin-settings-preview-tagline">{previewTagline}</p>
+              <p className="admin-settings-preview-url">{previewSiteUrl}</p>
+
+              <div className="admin-settings-preview-contact">
+                <div>
+                  <span>Contact Email</span>
+                  <strong>{previewContactEmail}</strong>
+                </div>
+                <div>
+                  <span>Contact Phone</span>
+                  <strong>{previewContactPhone}</strong>
+                </div>
+                <a href={previewWhatsAppUrl} target="_blank" rel="noreferrer" className="admin-settings-preview-link">
+                  WhatsApp link
+                </a>
+              </div>
+            </div>
+
+            <div className="admin-settings-preview-card">
+              <span className="section-badge">Socials</span>
+              <h4>Connected profiles</h4>
+              <div className="admin-settings-preview-socials">
+                {previewSocialLinks.length ? (
+                  previewSocialLinks.map((item) => (
+                    <a key={item.label} href={item.url} target="_blank" rel="noreferrer" className="admin-settings-preview-link">
+                      {item.label}
+                    </a>
+                  ))
+                ) : (
+                  <p className="admin-empty">Add at least one social link to preview it here.</p>
+                )}
+              </div>
+            </div>
+          </aside>
+        </div>
       </section>
     )
   }

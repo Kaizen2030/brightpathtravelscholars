@@ -166,7 +166,7 @@ function Register() {
                   <Phone size={18} />
                   <input
                     type="tel"
-                    placeholder="+254..."
+                    placeholder="+1..."
                     value={form.phone}
                     onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
                     required
