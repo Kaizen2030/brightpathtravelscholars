@@ -848,7 +848,7 @@
 
   .steps-grid,
   .destinations-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .destinations-grid {
@@ -856,7 +856,11 @@
   }
 
   .testimonials-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .testimonial-card {
+    padding: 1.15rem;
   }
 
   .home-hero-copy h1,
@@ -882,6 +886,16 @@
     width: 100%;
     position: static;
     margin-top: 1rem;
+  }
+
+  .step-card {
+    padding: 1.1rem 0.95rem;
+  }
+
+  .step-number,
+  .step-icon {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 
   .steps-grid::before {
