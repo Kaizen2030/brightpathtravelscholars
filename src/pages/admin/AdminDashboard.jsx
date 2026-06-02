@@ -43,6 +43,24 @@ const EVENT_CATEGORIES = [
   'scholarship',
 ]
 
+const SETTINGS_SECTIONS = [
+  {
+    key: 'basic',
+    title: 'Basic Info',
+    description: 'Name the site and set the main public web address.',
+  },
+  {
+    key: 'contact',
+    title: 'Contact & Support',
+    description: 'Control the email, phone, and WhatsApp details people will use to reach you.',
+  },
+  {
+    key: 'social',
+    title: 'Social Links',
+    description: 'Paste your live social profile URLs so the footer and contact page stay up to date.',
+  },
+]
+
 const EMPTY_EVENT_FORM = {
   title: '',
   date: '',
@@ -1205,18 +1223,36 @@ function AdminDashboard() {
           Add the full profile URL for each social network so the footer and contact links point to your live accounts.
         </p>
         <form className="admin-settings-form" onSubmit={handleSettingsSave}>
-          {SITE_SETTING_FIELDS.map((item) => (
-            <label key={item.key} className="admin-field">
-              <span>{item.label}</span>
-              <input
-                type="text"
-                value={settingsForm[item.key] || ''}
-                onChange={(event) =>
-                  setSettingsForm((current) => ({ ...current, [item.key]: event.target.value }))
-                }
-              />
-            </label>
-          ))}
+          <div className="admin-settings-sections">
+            {SETTINGS_SECTIONS.map((section) => {
+              const fields = SITE_SETTING_FIELDS.filter((item) => item.group === section.key)
+
+              return (
+                <section key={section.key} className="admin-settings-section">
+                  <div className="admin-settings-section-header">
+                    <div>
+                      <h3>{section.title}</h3>
+                      <p>{section.description}</p>
+                    </div>
+                  </div>
+                  <div className="admin-settings-grid">
+                    {fields.map((item) => (
+                      <label key={item.key} className="admin-field">
+                        <span>{item.label}</span>
+                        <input
+                          type="text"
+                          value={settingsForm[item.key] || ''}
+                          onChange={(event) =>
+                            setSettingsForm((current) => ({ ...current, [item.key]: event.target.value }))
+                          }
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              )
+            })}
+          </div>
           <button type="submit" className="admin-btn admin-btn-primary admin-save-btn" disabled={settingsSaving}>
             <Save size={16} />
             {settingsSaving ? 'Saving...' : 'Save Settings'}

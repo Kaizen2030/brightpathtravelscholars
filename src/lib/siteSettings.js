@@ -1,19 +1,20 @@
 export const SITE_SETTING_FIELDS = [
-  { key: 'site_name', label: 'Site Name', defaultValue: 'Brightpath Travel Scholars' },
+  { key: 'site_name', label: 'Site Name', group: 'basic', defaultValue: 'Brightpath Travel Scholars' },
   {
     key: 'site_tagline',
     label: 'Site Tagline',
+    group: 'basic',
     defaultValue: "Your Gateway to the World's Best Universities",
   },
-  { key: 'site_url', label: 'Site URL', defaultValue: 'https://brightpathtravelscholars.com' },
-  { key: 'contact_email', label: 'Contact Email', defaultValue: 'info@brightpathtravelscholars.com' },
-  { key: 'contact_phone', label: 'Contact Phone', defaultValue: '+254 734 004 003' },
-  { key: 'whatsapp_url', label: 'WhatsApp URL', defaultValue: 'https://wa.me/254734004003' },
-  { key: 'facebook_url', label: 'Facebook URL', defaultValue: 'https://facebook.com/brightpathtravelscholars' },
-  { key: 'instagram_url', label: 'Instagram URL', defaultValue: 'https://instagram.com/brightpathtravelscholars' },
-  { key: 'x_url', label: 'X URL', defaultValue: 'https://x.com/brightpathtravels' },
-  { key: 'youtube_url', label: 'YouTube URL', defaultValue: 'https://youtube.com/@brightpathtravelscholars' },
-  { key: 'linkedin_url', label: 'LinkedIn URL', defaultValue: 'https://linkedin.com/company/brightpath-travel-scholars' },
+  { key: 'site_url', label: 'Site URL', group: 'basic', defaultValue: 'https://brightpathtravelscholars.com' },
+  { key: 'contact_email', label: 'Contact Email', group: 'contact', defaultValue: 'info@brightpathtravelscholars.com' },
+  { key: 'contact_phone', label: 'Contact Phone', group: 'contact', defaultValue: '+254 734 004 003' },
+  { key: 'whatsapp_url', label: 'WhatsApp URL', group: 'contact', defaultValue: 'https://wa.me/254734004003' },
+  { key: 'facebook_url', label: 'Facebook URL', group: 'social', defaultValue: 'https://facebook.com/brightpathtravelscholars' },
+  { key: 'instagram_url', label: 'Instagram URL', group: 'social', defaultValue: 'https://instagram.com/brightpathtravelscholars' },
+  { key: 'x_url', label: 'X URL', group: 'social', defaultValue: 'https://x.com/brightpathtravels' },
+  { key: 'youtube_url', label: 'YouTube URL', group: 'social', defaultValue: 'https://youtube.com/@brightpathtravelscholars' },
+  { key: 'linkedin_url', label: 'LinkedIn URL', group: 'social', defaultValue: 'https://linkedin.com/company/brightpath-travel-scholars' },
 ]
 
 const SITE_SETTINGS_DEFAULT_MAP = SITE_SETTING_FIELDS.reduce((accumulator, field) => {
