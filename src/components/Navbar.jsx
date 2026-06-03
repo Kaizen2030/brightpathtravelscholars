@@ -65,14 +65,18 @@ function Navbar() {
 
   useEffect(() => {
     function handlePointerDown(event) {
-      if (menuOpen && drawerRef.current && !drawerRef.current.contains(event.target)) {
+      const clickedInsideDrawer = Boolean(drawerRef.current && drawerRef.current.contains(event.target))
+      const clickedInsideDesktopNav = Boolean(navInteractiveRef.current && navInteractiveRef.current.contains(event.target))
+
+      if (menuOpen && drawerRef.current && !clickedInsideDrawer) {
         setMenuOpen(false)
       }
 
       if (
         (studyOpen || userMenuOpen) &&
         navInteractiveRef.current &&
-        !navInteractiveRef.current.contains(event.target)
+        !clickedInsideDesktopNav &&
+        !clickedInsideDrawer
       ) {
         setStudyOpen(false)
         setUserMenuOpen(false)
@@ -106,6 +110,12 @@ function Navbar() {
   async function handleSignOut() {
     await supabase.auth.signOut()
     navigate('/')
+  }
+
+  function closeMobileMenu() {
+    setMenuOpen(false)
+    setStudyOpen(false)
+    setUserMenuOpen(false)
   }
 
   return (
@@ -276,7 +286,7 @@ function Navbar() {
 
         <nav className="nexora-mobile-links" aria-label="Mobile">
           {primaryLinks.map((link) => (
-            <Link key={link.to} to={link.to} className={isActive(link.to) ? 'active' : ''}>
+            <Link key={link.to} to={link.to} className={isActive(link.to) ? 'active' : ''} onClick={closeMobileMenu}>
               {link.label}
             </Link>
           ))}
@@ -295,7 +305,7 @@ function Navbar() {
             {studyOpen ? (
               <div className="nexora-mobile-subgroup">
                 {destinationLinks.map((link) => (
-                  <Link key={link.to} to={link.to}>
+                  <Link key={link.to} to={link.to} onClick={closeMobileMenu}>
                     {link.label}
                   </Link>
                 ))}
@@ -305,7 +315,7 @@ function Navbar() {
         </nav>
 
         <div className="nexora-mobile-auth">
-          <Link to="/contact" className="nexora-consult-btn full">
+          <Link to="/contact" className="nexora-consult-btn full" onClick={closeMobileMenu}>
             Book Free Consultation
           </Link>
 
@@ -318,11 +328,11 @@ function Navbar() {
                   <span>{user.email}</span>
                 </div>
               </div>
-              <Link to="/dashboard" className="btn-secondary">
+              <Link to="/dashboard" className="btn-secondary" onClick={closeMobileMenu}>
                 Dashboard
               </Link>
               {isAdmin ? (
-                <Link to="/admin" className="btn-secondary">
+                <Link to="/admin" className="btn-secondary" onClick={closeMobileMenu}>
                   Admin Dashboard
                 </Link>
               ) : null}
@@ -332,10 +342,10 @@ function Navbar() {
             </>
           ) : (
             <div className="nexora-mobile-auth-links">
-              <Link to="/login" className="btn-secondary">
+              <Link to="/login" className="btn-secondary" onClick={closeMobileMenu}>
                 Sign In
               </Link>
-              <Link to="/register" className="btn-primary">
+              <Link to="/register" className="btn-primary" onClick={closeMobileMenu}>
                 Register
               </Link>
             </div>
