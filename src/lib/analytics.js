@@ -1,4 +1,13 @@
-import { supabase } from './supabaseClient'
+import { createClient } from '@supabase/supabase-js'
+import { supabaseAnonKey, supabaseUrl } from './supabaseClient'
+
+const analyticsSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+    persistSession: false,
+  },
+})
 
 const ANALYTICS_SESSION_KEY = 'brightpath-analytics-session-v1'
 const ANALYTICS_COUNTRY_KEY = 'brightpath-analytics-country-v1'
@@ -116,7 +125,7 @@ async function upsertAnalyticsSession({ pathname, title, user }) {
   const country = await resolveCountry()
   const deviceType = getDeviceType()
 
-  const { error } = await supabase.from('analytics_sessions').upsert(
+  const { error } = await analyticsSupabase.from('analytics_sessions').upsert(
     {
       session_id: sessionId,
       user_id: user?.id ?? null,
@@ -151,7 +160,7 @@ export async function recordPageView({ pathname, title, user }) {
 
   const { sessionId, country, deviceType } = result
 
-  const { error } = await supabase.from('analytics_events').insert({
+  const { error } = await analyticsSupabase.from('analytics_events').insert({
     session_id: sessionId,
     user_id: user?.id ?? null,
     path: pathname,
