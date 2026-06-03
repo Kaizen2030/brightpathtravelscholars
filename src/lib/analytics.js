@@ -2,6 +2,7 @@ import { supabase } from './supabaseClient'
 
 const ANALYTICS_SESSION_KEY = 'brightpath-analytics-session-v1'
 const ANALYTICS_COUNTRY_KEY = 'brightpath-analytics-country-v1'
+const ANALYTICS_DISABLED_KEY = 'brightpath-analytics-disabled-v1'
 
 function safeRead(key) {
   try {
@@ -19,8 +20,37 @@ function safeWrite(key, value) {
   }
 }
 
+function safeRemove(key) {
+  try {
+    window.localStorage.removeItem(key)
+  } catch {
+    // Ignore storage issues and keep analytics best-effort.
+  }
+}
+
 function createFallbackId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
+function isAnalyticsDisabled() {
+  if (typeof window === 'undefined') return false
+  return safeRead(ANALYTICS_DISABLED_KEY) === 'true'
+}
+
+function disableAnalytics() {
+  if (typeof window === 'undefined') return
+  safeWrite(ANALYTICS_DISABLED_KEY, 'true')
+}
+
+function enableAnalytics() {
+  if (typeof window === 'undefined') return
+  safeRemove(ANALYTICS_DISABLED_KEY)
+}
+
+function isUnauthorizedError(error) {
+  const status = Number(error?.status || error?.statusCode || error?.code || 0)
+  const message = String(error?.message || '').toLowerCase()
+  return status === 401 || status === 403 || message.includes('unauthorized') || message.includes('forbidden')
 }
 
 export function getAnalyticsSessionId() {
@@ -80,6 +110,8 @@ async function resolveCountry() {
 }
 
 async function upsertAnalyticsSession({ pathname, title, user }) {
+  if (isAnalyticsDisabled()) return null
+
   const sessionId = getAnalyticsSessionId()
   const country = await resolveCountry()
   const deviceType = getDeviceType()
@@ -99,7 +131,14 @@ async function upsertAnalyticsSession({ pathname, title, user }) {
     { onConflict: 'session_id' },
   )
 
-  if (error) throw error
+  if (error) {
+    if (isUnauthorizedError(error)) {
+      disableAnalytics()
+      return null
+    }
+
+    throw error
+  }
 
   return { sessionId, country, deviceType }
 }
@@ -107,7 +146,10 @@ async function upsertAnalyticsSession({ pathname, title, user }) {
 export async function recordPageView({ pathname, title, user }) {
   if (typeof window === 'undefined' || pathname.startsWith('/admin')) return
 
-  const { sessionId, country, deviceType } = await upsertAnalyticsSession({ pathname, title, user })
+  const result = await upsertAnalyticsSession({ pathname, title, user })
+  if (!result) return
+
+  const { sessionId, country, deviceType } = result
 
   const { error } = await supabase.from('analytics_events').insert({
     session_id: sessionId,
@@ -121,11 +163,23 @@ export async function recordPageView({ pathname, title, user }) {
     event_type: 'page_view',
   })
 
-  if (error) throw error
+  if (error) {
+    if (isUnauthorizedError(error)) {
+      disableAnalytics()
+      return
+    }
+
+    throw error
+  }
 }
 
 export async function touchAnalyticsSession({ pathname, title, user }) {
   if (typeof window === 'undefined' || pathname.startsWith('/admin')) return
 
-  await upsertAnalyticsSession({ pathname, title, user })
+  const result = await upsertAnalyticsSession({ pathname, title, user })
+  if (!result) return
+}
+
+export function resetAnalyticsDisabledFlag() {
+  enableAnalytics()
 }
