@@ -754,6 +754,416 @@
   border-top: 1px solid #ccc;
 }
 
+.certificate-builder-template-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.template-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid rgba(10, 31, 68, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1a1a1a;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.template-tab.active {
+  background: #0f4f8a;
+  border-color: #0f4f8a;
+  color: #fff;
+}
+
+.work-permit-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.work-permit-preview {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 24px;
+  background: #e7e6e4;
+}
+
+.work-permit-preview-image {
+  display: block;
+  width: min(780px, 100%);
+  height: auto;
+  border: 1px solid #b7b0aa;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.18);
+}
+
+.work-permit-page {
+  width: 780px;
+  background:
+    linear-gradient(90deg, rgba(241, 238, 226, 0.36), rgba(255, 255, 255, 0) 18%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(194, 204, 180, 0.14) 0 64px,
+      rgba(238, 241, 229, 0.16) 64px 128px,
+      rgba(207, 216, 192, 0.12) 128px 192px,
+      rgba(245, 243, 233, 0.18) 192px 256px
+    ),
+    linear-gradient(180deg, #d6dcc9 0%, #d1d8c5 100%);
+  position: relative;
+  border: 1px solid #b7b0aa;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.top-header {
+  display: grid;
+  grid-template-columns: 250px 1fr 250px;
+  gap: 12px;
+  align-items: start;
+  padding: 18px 18px 8px;
+}
+
+.header-left,
+.header-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.header-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.canada-banner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 14px;
+  color: #fff;
+  background: #cc0000;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.canada-crest {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #d3c9c2;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crest-symbol {
+  font-size: 34px;
+}
+
+.permit-number-box {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #333;
+  border-radius: 2px;
+  background: #f8f6f3;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: right;
+}
+
+.header-subtext {
+  padding: 0 18px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  font-size: 10px;
+  color: #222;
+  border-bottom: 1px solid #d7d0c9;
+}
+
+.header-subtext span {
+  display: block;
+}
+
+.canada-bg {
+  position: relative;
+  padding: 20px 22px 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0) 16%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(214, 221, 201, 0.16) 0 58px,
+      rgba(239, 242, 231, 0.12) 58px 116px,
+      rgba(204, 214, 188, 0.14) 116px 174px,
+      rgba(244, 244, 236, 0.14) 174px 232px
+    ),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.bg-top-row {
+  position: relative;
+  z-index: 1;
+}
+
+.ea-number {
+  color: #cc0000;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.client-number {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: right;
+}
+
+.barcode-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  min-height: 42px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #ccc;
+}
+
+.barcode-wrap span {
+  display: inline-block;
+}
+
+.app-uc-row {
+  display: flex;
+  gap: 40px;
+  font-size: 10px;
+  color: #222;
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  padding: 8px 12px;
+  border: 1px solid rgba(204, 204, 204, 0.7);
+  width: fit-content;
+}
+
+.permit-title {
+  text-align: center;
+  background: #fff;
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: #111;
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+}
+
+.section-label {
+  margin: 0;
+  padding: 14px 16px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: #f6f2f0;
+  color: #111;
+  border-bottom: 1px solid #dad2cc;
+}
+
+.work-permit-page table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.work-permit-page table td {
+  padding: 10px 15px;
+  vertical-align: top;
+  border-bottom: 1px solid #e4ddd7;
+}
+
+.work-permit-page table tr:last-child td {
+  border-bottom: none;
+}
+
+.lbl {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.val {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.4;
+}
+
+.val-small {
+  display: block;
+  font-size: 9px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.conditions-box,
+.remarks-box {
+  border: 1px solid #d8cfca;
+  padding: 14px 16px;
+  background: #fff;
+}
+
+.conditions-title,
+.remarks-title {
+  font-weight: 800;
+  font-size: 11px;
+  margin-bottom: 8px;
+  color: #111;
+  text-decoration: underline;
+}
+
+.cond-item,
+.remarks-text {
+  font-size: 10.5px;
+  line-height: 1.6;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.reentry {
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111;
+  border-top: 1px solid #d8d0cb;
+  background: #f7f2ef;
+}
+
+.footer-legal {
+  font-size: 8.5px;
+  color: #222;
+  text-align: center;
+  padding: 10px 16px;
+  border-top: 1px solid #ccc;
+  background: #fbf7f5;
+  line-height: 1.4;
+}
+
+.canada-logo-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 16px;
+  background: #fff;
+}
+
+.canada-logo {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+}
+
+.canada-logo span {
+  color: #cc0000;
+  font-style: italic;
+}
+
+.work-permit-page table td .val {
+  white-space: pre-wrap;
+}
+
+.conditions-box,
+.remarks-box {
+  border: 1px solid #aaa;
+  border-top: none;
+  padding: 8px 12px;
+  background: #fff;
+}
+
+.conditions-title,
+.remarks-title {
+  font-weight: bold;
+  font-size: 11px;
+  margin-bottom: 6px;
+  color: #000;
+  text-decoration: underline;
+}
+
+.cond-item,
+.remarks-text {
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: #111;
+  margin-bottom: 3px;
+}
+
+.reentry {
+  text-align: center;
+  padding: 10px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #000;
+  border-top: 1px solid #aaa;
+  background: #fff;
+}
+
+.footer-legal {
+  font-size: 8.5px;
+  color: #222;
+  text-align: center;
+  padding: 6px 10px;
+  border-top: 1px solid #ccc;
+  background: #f5f5f5;
+  line-height: 1.5;
+}
+
+.canada-logo-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 16px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+
+.canada-logo {
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  color: #000;
+  letter-spacing: 1px;
+}
+
+.work-permit-page table td .val {
+  white-space: pre-wrap;
+}
+
 @media (max-width: 860px) {
   .ielts-trf-preview {
     padding: 0.75rem;

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Copy, Download, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
+import workPermitPreviewImage from '../../assets/work-permit-preview.png'
 import './CertificateBuilder.css'
 
 const STORAGE_KEY = 'brightpath-ielts-builder-cache-v2'
@@ -95,6 +96,83 @@ function createBlankRecord() {
     updated_by: '',
     created_at: '',
     updated_at: '',
+  }
+}
+
+function createBlankPermitRecord() {
+  return {
+    id: createId(),
+    ea_number: 'DD 719 253',
+    client_number: '721 332',
+    application_number: 'A123456789',
+    ucu_number: 'UC0123456789',
+    family_name: 'SMITH',
+    given_names: 'JOHN',
+    date_of_birth: '',
+    sex: 'M',
+    country_of_birth: 'INDIA',
+    nationality: 'INDIAN',
+    travel_doc: 'A123456789',
+    travel_doc_type: 'PASSPORT',
+    date_issued: getTodayInputValue(),
+    expiry_date: '',
+    case_type: 'Employer-specific',
+    lmia_number: 'LMIA 1234567',
+    employer: 'ACME Industries',
+    employment_location: 'Toronto, ON',
+    occupation: 'Software Engineer',
+    in_force_from: getTodayInputValue(),
+    remarks: 'This work permit is issued for internal use only. It does not confer any immigration status.',
+    conditions: [
+      'Work must be performed for the employer named on this permit.',
+      'The foreign national must comply with all permit conditions.',
+    ],
+    reentry_text: 'This does not authorize re-entry to Canada.',
+  }
+}
+
+function formatPermitDate(value) {
+  if (!value) return ''
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+
+  return date.toISOString().slice(0, 10).replace(/-/g, '/')
+}
+
+function buildWorkPermitPreview(record) {
+  return {
+    ea_number: record.ea_number || 'DD 719 253',
+    client_number: record.client_number || '721 332',
+    application_text: record.application_number || 'A123456789',
+    ucu_text: record.ucu_number || 'UC0123456789',
+    family_name: record.family_name || 'SMITH',
+    given_names: record.given_names || 'JOHN',
+    date_of_birth: formatPermitDate(record.date_of_birth) || '1980/01/01',
+    sex: record.sex || 'M',
+    country_of_birth: record.country_of_birth || 'INDIA',
+    nationality: record.nationality || 'INDIAN',
+    travel_doc_display: record.travel_doc
+      ? `${record.travel_doc_type ? `${record.travel_doc_type} ` : ''}${record.travel_doc}`
+      : 'PASSPORT A123456789',
+    date_issued: formatPermitDate(record.date_issued) || '2025/08/01',
+    expiry_date: formatPermitDate(record.expiry_date) || '2026/08/01',
+    case_type: record.case_type || 'Employer-specific',
+    lmia_number: record.lmia_number || 'LMIA 1234567',
+    employer: record.employer || 'ACME Industries',
+    employment_location: record.employment_location || 'Toronto, ON',
+    occupation: record.occupation || 'Software Engineer',
+    in_force_from: formatPermitDate(record.in_force_from) || '2025/08/01',
+    dotted_number: record.ea_number || 'DD 719 253',
+    conditions:
+      Array.isArray(record.conditions) && record.conditions.length
+        ? record.conditions
+        : [
+            'Work must be performed for the employer named on this permit.',
+            'The foreign national must comply with all permit conditions.',
+          ],
+    remarks_display: record.remarks || 'No additional remarks.',
+    reentry_text: record.reentry_text || 'This does not authorize re-entry to Canada.',
   }
 }
 
@@ -372,6 +450,8 @@ function CertificateBuilder() {
   const initialCachedRecords = readCachedRecords().map(normalizeRecord)
   const [records, setRecords] = useState(initialCachedRecords)
   const [draft, setDraft] = useState(() => initialCachedRecords[0] ?? createBlankRecord())
+  const [permitDraft, setPermitDraft] = useState(createBlankPermitRecord())
+  const [templateMode, setTemplateMode] = useState('ielts')
   const [storageMode, setStorageMode] = useState(initialCachedRecords.length ? 'local-cache' : 'loading')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -441,6 +521,16 @@ function CertificateBuilder() {
 
   const overallBand = getOverallBand(draft)
   const preview = useMemo(() => buildPreviewSnapshot(draft, overallBand), [draft, overallBand])
+  const permitPreview = useMemo(() => buildWorkPermitPreview(permitDraft), [permitDraft])
+  const workPermitBarcode = useMemo(() => {
+    const widths = [3,1,2,1,3,2,1,1,2,3,1,2,1,1,3,1,2,1,2,3,1,1,2,1,3,2,1,3,1,2,1,1,2,3,1,2,1,2,1,3,1,1,2,3,1]
+    return widths.map((w, index) => ({
+      key: `${index}-${w}`,
+      width: w * 1.5,
+      height: 20 + (index % 3) * 8,
+      filled: index % 2 === 0,
+    }))
+  }, [])
   const storageBadge =
     loading
       ? 'Syncing shared storage'
@@ -452,6 +542,10 @@ function CertificateBuilder() {
 
   function updateField(key, value) {
     setDraft((current) => ({ ...current, [key]: value }))
+  }
+
+  function updatePermitField(key, value) {
+    setPermitDraft((current) => ({ ...current, [key]: value }))
   }
 
   async function handleImageUpload(fieldKey, file) {
@@ -534,8 +628,13 @@ function CertificateBuilder() {
   }
 
   function handleReset() {
-    setDraft(createBlankRecord())
-    setNotice('New internal record started.')
+    if (templateMode === 'ielts') {
+      setDraft(createBlankRecord())
+      setNotice('New IELTS applicant started.')
+    } else {
+      setPermitDraft(createBlankPermitRecord())
+      setNotice('New work permit preview started.')
+    }
   }
 
   function handleLoad(record) {
@@ -652,6 +751,30 @@ function CertificateBuilder() {
   }
 
   function handleCopySummary() {
+    if (templateMode === 'workpermit') {
+      const lines = [
+        `Family name: ${permitDraft.family_name}`,
+        `Given names: ${permitDraft.given_names}`,
+        `DOB: ${permitDraft.date_of_birth}`,
+        `Nationality: ${permitDraft.nationality}`,
+        `Travel Doc: ${permitDraft.travel_doc}`,
+        `Employer: ${permitDraft.employer}`,
+        `Occupation: ${permitDraft.occupation}`,
+        `Issue Date: ${permitDraft.date_issued}`,
+        `Expiry Date: ${permitDraft.expiry_date}`,
+      ]
+      const copyOperation = navigator.clipboard?.writeText(lines.join('\n'))
+      if (copyOperation?.then) {
+        copyOperation.then(
+          () => setNotice('Work permit summary copied to clipboard.'),
+          () => setNotice('Copy failed. You can still print to PDF.'),
+        )
+      } else {
+        setNotice('Copy failed. You can still print to PDF.')
+      }
+      return
+    }
+
     const lines = [
       `Applicant: ${draft.full_name || 'Not set'}`,
       `Candidate ID: ${draft.candidate_id || 'Not set'}`,
@@ -676,12 +799,216 @@ function CertificateBuilder() {
     }
   }
 
+  function renderWorkPermitPreview() {
+    return (
+      <div className="work-permit-preview">
+        <img className="work-permit-preview-image" src={workPermitPreviewImage} alt="Canada work permit preview" />
+      </div>
+    )
+
+    return (
+      <div className="work-permit-preview">
+        <div className="work-permit-page">
+          <div className="top-header">
+            <div className="header-left">
+              <div className="canada-banner">CANADA</div>
+            </div>
+
+            <div className="header-center">
+              <div className="canada-crest">
+                <div className="crest-symbol" aria-hidden="true">🇨🇦</div>
+              </div>
+            </div>
+
+            <div className="header-right">
+              <div className="permit-number-box">{permitPreview.ea_number}</div>
+              <div className="client-number">{permitPreview.client_number}</div>
+              <div className="barcode-wrap">
+                {workPermitBarcode.map((bar) => (
+                  <span
+                    key={bar.key}
+                    style={{
+                      width: `${bar.width}px`,
+                      height: `${bar.height}px`,
+                      background: bar.filled ? '#111' : 'transparent',
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="header-subtext">
+            <span>Immigration, Refugees and Citizenship Canada</span>
+            <span>Immigration, Réfugiés et citoyenneté Canada</span>
+          </div>
+
+          <div className="canada-bg">
+            <div className="app-uc-row">
+              <div>
+                APPLICATION/DEMANDE <span>{permitPreview.application_text}</span>
+              </div>
+              <div>
+                UCU/UC: <span>{permitPreview.ucu_text}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="permit-title">WORK PERMIT/PERMIS DE TRAVAIL</div>
+
+          <div className="section-label">CLIENT INFORMATION/INFORMATION DU CLIENT</div>
+          <table>
+            <tbody>
+              <tr>
+                <td style={{ width: '38%' }}>
+                  <span className="lbl">Family name / Nom de famille</span>
+                  <span className="val">{permitPreview.family_name}</span>
+                </td>
+                <td>
+                  <span className="lbl">Given names / Prénom(s)</span>
+                  <span className="val">{permitPreview.given_names}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="lbl">Date of birth / Date de naissance</span>
+                  <span className="val">{permitPreview.date_of_birth}</span>
+                  <span className="val-small">(yyyy/mm/dd - aaaa/mm/jj)</span>
+                </td>
+                <td>
+                  <span className="lbl">Sex / Sexe</span>
+                  <span className="val">{permitPreview.sex}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="lbl">Country of birth / Pays de naissance</span>
+                  <span className="val">{permitPreview.country_of_birth}</span>
+                </td>
+                <td>
+                  <span className="lbl">Country of citizenship / Citoyenneté</span>
+                  <span className="val">{permitPreview.nationality}</span>
+                </td>
+              </tr>
+              <tr>
+                <td colSpan="2">
+                  <span className="lbl">Travel document number / Numéro du document de voyage</span>
+                  <span className="val" style={{ whiteSpace: 'pre-wrap' }}>
+                    {permitPreview.travel_doc_display}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div className="section-label">ADDITIONAL INFORMATION / INFORMATION SUPPLÉMENTAIRE</div>
+          <table>
+            <tbody>
+              <tr>
+                <td style={{ width: '38%' }}>
+                  <span className="lbl">Date issued / Délivré le</span>
+                  <span className="val">{permitPreview.date_issued}</span>
+                  <span className="val-small">(yyyy/mm/dd - aaaa/mm/jj)</span>
+                </td>
+                <td>
+                  <span className="lbl">Expiry date / Date d'expiration</span>
+                  <span className="val">{permitPreview.expiry_date}</span>
+                  <span className="val-small">(yyyy/mm/dd - aaaa/mm/jj)</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="lbl">Case type / Type de dossier</span>
+                  <span className="val">{permitPreview.case_type}</span>
+                </td>
+                <td>
+                  <span className="lbl">LMIA or exempt no. / N° d'EIMT ou de dispense</span>
+                  <span className="val">{permitPreview.lmia_number}</span>
+                </td>
+              </tr>
+              <tr>
+                <td colSpan="2">
+                  <span className="lbl">Employer / Employeur</span>
+                  <span className="val">{permitPreview.employer}</span>
+                </td>
+              </tr>
+              <tr>
+                <td colSpan="2">
+                  <span className="lbl">Employment location / Emplacement de l'emploi</span>
+                  <span className="val">{permitPreview.employment_location}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span className="lbl">Occupation / Profession</span>
+                  <span className="val">{permitPreview.occupation}</span>
+                </td>
+                <td>
+                  <span className="lbl">In force from / En vigueur le</span>
+                  <span className="val">{permitPreview.in_force_from}</span>
+                  <span className="val-small">(yyyy/mm/dd - aaaa/mm/jj)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div className="conditions-box">
+            <div className="conditions-title">Conditions / Conditions</div>
+            {permitPreview.conditions.map((condition, index) => (
+              <div key={index} className="cond-item">
+                {condition}
+              </div>
+            ))}
+          </div>
+
+          <div className="remarks-box">
+            <div className="remarks-title">Remarks / Observations</div>
+            <div className="remarks-text">{permitPreview.remarks_display}</div>
+          </div>
+
+          <div className="reentry">{permitPreview.reentry_text}</div>
+
+          <div className="footer-legal">
+            THIS FORM HAS BEEN ESTABLISHED BY THE MINISTER OF IMMIGRATION, REFUGEES AND CITIZENSHIP CANADA. THIS DOCUMENT IS THE PROPERTY OF THE GOVERNMENT OF CANADA.
+            <br />FORMULAIRE ÉTABLI PAR LE MINISTRE DE L'IMMIGRATION, RÉFUGIÉS ET CITOYENNETÉ CANADA. LE PRÉSENT DOCUMENT EST LA PROPRIÉTÉ DU GOUVERNEMENT DU CANADA.
+          </div>
+
+          <div className="canada-logo-row">
+            <div className="canada-logo">
+              Canad<span>ä</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <section className="admin-panel-card certificate-builder-shell">
       <div className="admin-panel-card-header certificate-builder-header">
         <div>
-          <h2>IELTS Builder</h2>
-          <p>Shared applicant report generator with live preview and print-to-PDF export.</p>
+          <h2>{templateMode === 'ielts' ? 'IELTS Builder' : 'Work Permit Preview'}</h2>
+          <p>
+            {templateMode === 'ielts'
+              ? 'Shared applicant report generator with live preview and print-to-PDF export.'
+              : 'Canada work permit layout wired into the admin page with the same visual background as the PDF sample.'}
+          </p>
+          <div className="certificate-builder-template-tabs">
+            <button
+              type="button"
+              className={`template-tab${templateMode === 'ielts' ? ' active' : ''}`}
+              onClick={() => setTemplateMode('ielts')}
+            >
+              IELTS
+            </button>
+            <button
+              type="button"
+              className={`template-tab${templateMode === 'workpermit' ? ' active' : ''}`}
+              onClick={() => setTemplateMode('workpermit')}
+            >
+              Work Permit
+            </button>
+          </div>
         </div>
         <div className="certificate-builder-actions">
           <span className="certificate-builder-storage">{storageBadge}</span>
@@ -704,182 +1031,278 @@ function CertificateBuilder() {
       {notice ? <p className="certificate-builder-status">{notice}</p> : null}
 
       <div className="certificate-builder-layout">
-        <form className="certificate-builder-form" onSubmit={handleSave}>
+        <form className="certificate-builder-form" onSubmit={templateMode === 'ielts' ? handleSave : (event) => event.preventDefault()}>
           <div className="certificate-form-actions">
             <button type="button" className="admin-btn admin-btn-soft" onClick={handleReset}>
               <Plus size={16} />
-              New Applicant
+              {templateMode === 'ielts' ? 'New Applicant' : 'New Work Permit'}
             </button>
-            <button type="button" className="admin-btn admin-btn-soft" onClick={handleDuplicate}>
-              <RotateCcw size={16} />
-              Duplicate
-            </button>
-            <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
-              <Save size={16} />
-              {saving ? 'Saving...' : 'Save Record'}
-            </button>
+            {templateMode === 'ielts' ? (
+              <>
+                <button type="button" className="admin-btn admin-btn-soft" onClick={handleDuplicate}>
+                  <RotateCcw size={16} />
+                  Duplicate
+                </button>
+                <button type="submit" className="admin-btn admin-btn-primary" disabled={saving}>
+                  <Save size={16} />
+                  {saving ? 'Saving...' : 'Save Record'}
+                </button>
+              </>
+            ) : null}
           </div>
 
-          <div className="certificate-image-grid">{IMAGE_FIELDS.map((field) => renderUploadCard(field))}</div>
+          {templateMode === 'ielts' ? (
+            <>
+              <div className="certificate-image-grid">{IMAGE_FIELDS.map((field) => renderUploadCard(field))}</div>
 
-          <div className="certificate-form-grid">
-            <label className="admin-field">
-              <span>Applicant Full Name</span>
-              <input
-                type="text"
-                required
-                value={draft.full_name}
-                onChange={(event) => updateField('full_name', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Candidate ID</span>
-              <input type="text" value={draft.candidate_id} onChange={(event) => updateField('candidate_id', event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>Report Number</span>
-              <input type="text" value={draft.report_number} onChange={(event) => updateField('report_number', event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>Passport Number</span>
-              <input
-                type="text"
-                value={draft.passport_number}
-                onChange={(event) => updateField('passport_number', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Nationality</span>
-              <input type="text" value={draft.nationality} onChange={(event) => updateField('nationality', event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>Date of Birth</span>
-              <input
-                type="date"
-                value={draft.date_of_birth}
-                onChange={(event) => updateField('date_of_birth', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Test Type</span>
-              <select value={draft.test_type} onChange={(event) => updateField('test_type', event.target.value)}>
-                <option value="Academic">Academic</option>
-                <option value="General Training">General Training</option>
-              </select>
-            </label>
-            <label className="admin-field">
-              <span>Test Date</span>
-              <input type="date" value={draft.test_date} onChange={(event) => updateField('test_date', event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>Issue Date</span>
-              <input
-                type="date"
-                value={draft.issue_date}
-                onChange={(event) => updateField('issue_date', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Centre Name</span>
-              <input
-                type="text"
-                value={draft.centre_name}
-                onChange={(event) => updateField('centre_name', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Centre Code</span>
-              <input
-                type="text"
-                value={draft.centre_code}
-                onChange={(event) => updateField('centre_code', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Location</span>
-              <input type="text" value={draft.location} onChange={(event) => updateField('location', event.target.value)} />
-            </label>
-            <label className="admin-field">
-              <span>Listening Band</span>
-              <input
-                type="number"
-                min="0"
-                max="9"
-                step="0.5"
-                value={draft.listening}
-                onChange={(event) => updateField('listening', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Reading Band</span>
-              <input
-                type="number"
-                min="0"
-                max="9"
-                step="0.5"
-                value={draft.reading}
-                onChange={(event) => updateField('reading', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Writing Band</span>
-              <input
-                type="number"
-                min="0"
-                max="9"
-                step="0.5"
-                value={draft.writing}
-                onChange={(event) => updateField('writing', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Speaking Band</span>
-              <input
-                type="number"
-                min="0"
-                max="9"
-                step="0.5"
-                value={draft.speaking}
-                onChange={(event) => updateField('speaking', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Overall Band</span>
-              <input
-                type="number"
-                min="0"
-                max="9"
-                step="0.5"
-                value={draft.overall}
-                onChange={(event) => updateField('overall', event.target.value)}
-                placeholder={formatBand(overallBand)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Verifier Name</span>
-              <input
-                type="text"
-                value={draft.verifier_name}
-                onChange={(event) => updateField('verifier_name', event.target.value)}
-              />
-            </label>
-            <label className="admin-field">
-              <span>Verifier Title</span>
-              <input
-                type="text"
-                value={draft.verifier_title}
-                onChange={(event) => updateField('verifier_title', event.target.value)}
-              />
-            </label>
-            <label className="admin-field admin-field-full">
-              <span>Notes</span>
-              <textarea rows="3" value={draft.notes} onChange={(event) => updateField('notes', event.target.value)} />
-            </label>
-          </div>
+              <div className="certificate-form-grid">
+                <label className="admin-field">
+                  <span>Applicant Full Name</span>
+                  <input
+                    type="text"
+                    required
+                    value={draft.full_name}
+                    onChange={(event) => updateField('full_name', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Candidate ID</span>
+                  <input type="text" value={draft.candidate_id} onChange={(event) => updateField('candidate_id', event.target.value)} />
+                </label>
+                <label className="admin-field">
+                  <span>Report Number</span>
+                  <input type="text" value={draft.report_number} onChange={(event) => updateField('report_number', event.target.value)} />
+                </label>
+                <label className="admin-field">
+                  <span>Passport Number</span>
+                  <input
+                    type="text"
+                    value={draft.passport_number}
+                    onChange={(event) => updateField('passport_number', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Nationality</span>
+                  <input type="text" value={draft.nationality} onChange={(event) => updateField('nationality', event.target.value)} />
+                </label>
+                <label className="admin-field">
+                  <span>Date of Birth</span>
+                  <input
+                    type="date"
+                    value={draft.date_of_birth}
+                    onChange={(event) => updateField('date_of_birth', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Test Type</span>
+                  <select value={draft.test_type} onChange={(event) => updateField('test_type', event.target.value)}>
+                    <option value="Academic">Academic</option>
+                    <option value="General Training">General Training</option>
+                  </select>
+                </label>
+                <label className="admin-field">
+                  <span>Test Date</span>
+                  <input type="date" value={draft.test_date} onChange={(event) => updateField('test_date', event.target.value)} />
+                </label>
+                <label className="admin-field">
+                  <span>Issue Date</span>
+                  <input
+                    type="date"
+                    value={draft.issue_date}
+                    onChange={(event) => updateField('issue_date', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Centre Name</span>
+                  <input
+                    type="text"
+                    value={draft.centre_name}
+                    onChange={(event) => updateField('centre_name', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Centre Code</span>
+                  <input
+                    type="text"
+                    value={draft.centre_code}
+                    onChange={(event) => updateField('centre_code', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Location</span>
+                  <input type="text" value={draft.location} onChange={(event) => updateField('location', event.target.value)} />
+                </label>
+                <label className="admin-field">
+                  <span>Listening Band</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="9"
+                    step="0.5"
+                    value={draft.listening}
+                    onChange={(event) => updateField('listening', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Reading Band</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="9"
+                    step="0.5"
+                    value={draft.reading}
+                    onChange={(event) => updateField('reading', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Writing Band</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="9"
+                    step="0.5"
+                    value={draft.writing}
+                    onChange={(event) => updateField('writing', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Speaking Band</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="9"
+                    step="0.5"
+                    value={draft.speaking}
+                    onChange={(event) => updateField('speaking', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Overall Band</span>
+                  <input
+                    type="number"
+                    min="0"
+                    max="9"
+                    step="0.5"
+                    value={draft.overall}
+                    onChange={(event) => updateField('overall', event.target.value)}
+                    placeholder={formatBand(overallBand)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Verifier Name</span>
+                  <input
+                    type="text"
+                    value={draft.verifier_name}
+                    onChange={(event) => updateField('verifier_name', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field">
+                  <span>Verifier Title</span>
+                  <input
+                    type="text"
+                    value={draft.verifier_title}
+                    onChange={(event) => updateField('verifier_title', event.target.value)}
+                  />
+                </label>
+                <label className="admin-field admin-field-full">
+                  <span>Notes</span>
+                  <textarea rows="3" value={draft.notes} onChange={(event) => updateField('notes', event.target.value)} />
+                </label>
+              </div>
+            </>
+          ) : (
+            <div className="certificate-form-grid work-permit-form-grid">
+              <label className="admin-field">
+                <span>EA Number</span>
+                <input type="text" value={permitDraft.ea_number} onChange={(event) => updatePermitField('ea_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Client Number</span>
+                <input type="text" value={permitDraft.client_number} onChange={(event) => updatePermitField('client_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Application / Demande</span>
+                <input type="text" value={permitDraft.application_number} onChange={(event) => updatePermitField('application_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>UCU / UC</span>
+                <input type="text" value={permitDraft.ucu_number} onChange={(event) => updatePermitField('ucu_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Family name / Nom</span>
+                <input type="text" value={permitDraft.family_name} onChange={(event) => updatePermitField('family_name', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Given names / Prénom(s)</span>
+                <input type="text" value={permitDraft.given_names} onChange={(event) => updatePermitField('given_names', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Date of Birth</span>
+                <input type="date" value={permitDraft.date_of_birth} onChange={(event) => updatePermitField('date_of_birth', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Sex</span>
+                <input type="text" value={permitDraft.sex} onChange={(event) => updatePermitField('sex', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Country of Birth</span>
+                <input type="text" value={permitDraft.country_of_birth} onChange={(event) => updatePermitField('country_of_birth', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Nationality</span>
+                <input type="text" value={permitDraft.nationality} onChange={(event) => updatePermitField('nationality', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Travel Doc No</span>
+                <input type="text" value={permitDraft.travel_doc} onChange={(event) => updatePermitField('travel_doc', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Document Type</span>
+                <input type="text" value={permitDraft.travel_doc_type} onChange={(event) => updatePermitField('travel_doc_type', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Date Issued</span>
+                <input type="date" value={permitDraft.date_issued} onChange={(event) => updatePermitField('date_issued', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Expiry Date</span>
+                <input type="date" value={permitDraft.expiry_date} onChange={(event) => updatePermitField('expiry_date', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Case Type</span>
+                <input type="text" value={permitDraft.case_type} onChange={(event) => updatePermitField('case_type', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>LMIA / Exempt No.</span>
+                <input type="text" value={permitDraft.lmia_number} onChange={(event) => updatePermitField('lmia_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Employer</span>
+                <input type="text" value={permitDraft.employer} onChange={(event) => updatePermitField('employer', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Employment Location</span>
+                <input type="text" value={permitDraft.employment_location} onChange={(event) => updatePermitField('employment_location', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Occupation</span>
+                <input type="text" value={permitDraft.occupation} onChange={(event) => updatePermitField('occupation', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>In Force From</span>
+                <input type="date" value={permitDraft.in_force_from} onChange={(event) => updatePermitField('in_force_from', event.target.value)} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Remarks</span>
+                <textarea rows="3" value={permitDraft.remarks} onChange={(event) => updatePermitField('remarks', event.target.value)} />
+              </label>
+            </div>
+          )}
         </form>
 
         <aside className="certificate-preview-column">
-          <div className="ielts-trf-preview">
+          {templateMode === 'ielts' ? (
+            <div className="ielts-trf-preview">
             <div className="ielts-paper-page">
               <div className="ielts-paper-content">
                 <div className="ielts-paper-top-header">
@@ -1152,56 +1575,71 @@ function CertificateBuilder() {
               </div>
             </div>
           </div>
+          ) : renderWorkPermitPreview()}
 
-          <div className="certificate-records-panel">
-            <div className="admin-panel-card-header compact">
-              <div>
-                <h3>Shared Applicants</h3>
-                <p>Records are synced to Supabase and cached locally as a fallback.</p>
+          {templateMode === 'ielts' ? (
+            <div className="certificate-records-panel">
+              <div className="admin-panel-card-header compact">
+                <div>
+                  <h3>Shared Applicants</h3>
+                  <p>Records are synced to Supabase and cached locally as a fallback.</p>
+                </div>
+                <span className="certificate-record-count">{records.length}</span>
               </div>
-              <span className="certificate-record-count">{records.length}</span>
-            </div>
 
-            <div className="certificate-record-list">
-              {records.length ? (
-                records.map((record) => {
-                  const isActive = record.id === draft.id
+              <div className="certificate-record-list">
+                {records.length ? (
+                  records.map((record) => {
+                    const isActive = record.id === draft.id
 
-                  return (
-                    <article key={record.id} className={`certificate-record-item${isActive ? ' active' : ''}`}>
-                      <div>
-                        <strong>{record.full_name || 'Unnamed applicant'}</strong>
-                        <span>
-                          {record.candidate_id || 'No candidate ID'}
-                          {record.report_number ? ` | ${record.report_number}` : ''}
-                        </span>
-                        <small>
-                          {record.test_type || 'Academic'} | {record.nationality || 'Nationality pending'}
-                        </small>
-                      </div>
-                      <div className="certificate-record-actions">
-                        <button type="button" className="admin-btn admin-btn-soft" onClick={() => handleLoad(record)}>
-                          Load
-                        </button>
-                        <button
-                          type="button"
-                          className="admin-btn admin-btn-danger"
-                          onClick={() => handleDelete(record.id)}
-                        >
-                          <Trash2 size={16} />
-                          Delete
-                        </button>
-                      </div>
-                    </article>
-                  )
-                })
-              ) : (
-                <p className="admin-empty">
-                  No shared applicants yet. Save this record to push it to Supabase and make it reusable for the team.
-                </p>
-              )}
+                    return (
+                      <article key={record.id} className={`certificate-record-item${isActive ? ' active' : ''}`}>
+                        <div>
+                          <strong>{record.full_name || 'Unnamed applicant'}</strong>
+                          <span>
+                            {record.candidate_id || 'No candidate ID'}
+                            {record.report_number ? ` | ${record.report_number}` : ''}
+                          </span>
+                          <small>
+                            {record.test_type || 'Academic'} | {record.nationality || 'Nationality pending'}
+                          </small>
+                        </div>
+                        <div className="certificate-record-actions">
+                          <button type="button" className="admin-btn admin-btn-soft" onClick={() => handleLoad(record)}>
+                            Load
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-danger"
+                            onClick={() => handleDelete(record.id)}
+                          >
+                            <Trash2 size={16} />
+                            Delete
+                          </button>
+                        </div>
+                      </article>
+                    )
+                  })
+                ) : (
+                  <p className="admin-empty">
+                    No shared applicants yet. Save this record to push it to Supabase and make it reusable for the team.
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="certificate-records-panel">
+              <div className="admin-panel-card-header compact">
+                <div>
+                  <h3>Work Permit Preview</h3>
+                  <p>This mode shows the work permit layout and does not store records in Supabase.</p>
+                </div>
+              </div>
+              <p className="admin-empty">
+                Use the form above to update the work permit preview data.
+              </p>
+            </div>
+          )}
         </aside>
       </div>
     </section>
