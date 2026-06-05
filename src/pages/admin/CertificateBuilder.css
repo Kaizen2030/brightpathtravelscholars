@@ -1,0 +1,652 @@
+.ielts-trf-preview {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 1rem;
+  background: #d0d0d0;
+  border-radius: 24px;
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.ielts-trf-preview * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.ielts-paper-page {
+  width: 794px;
+  background: #fff;
+  position: relative;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ielts-paper-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(100, 160, 80, 0.07) 0px,
+      rgba(100, 160, 80, 0.07) 1px,
+      transparent 1px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(100, 160, 80, 0.07) 0px,
+      rgba(100, 160, 80, 0.07) 1px,
+      transparent 1px,
+      transparent 8px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ielts-paper-content {
+  position: relative;
+  z-index: 1;
+}
+
+.ielts-paper-top-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid #333;
+}
+
+.ielts-logo {
+  display: flex;
+  flex-direction: column;
+}
+
+.ielts-logo-text {
+  font-size: 52px;
+  font-weight: 900;
+  color: #1a1a1a;
+  line-height: 1;
+  letter-spacing: -2px;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.ielts-logo-sub {
+  font-size: 11px;
+  color: #333;
+  margin-top: 2px;
+  font-weight: normal;
+}
+
+.ielts-general-box {
+  border: 1.5px solid #333;
+  padding: 6px 24px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #111;
+  align-self: center;
+  margin-top: 8px;
+}
+
+.ielts-notice {
+  padding: 6px 20px;
+  font-size: 8.5px;
+  color: #333;
+  line-height: 1.5;
+  border-bottom: 1px solid #555;
+  text-align: center;
+}
+
+.ielts-meta-row {
+  display: flex;
+  border-bottom: 1px solid #555;
+}
+
+.ielts-meta-item {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  gap: 8px;
+  border-right: 1px solid #555;
+}
+
+.ielts-meta-item:last-child {
+  border-right: none;
+}
+
+.ielts-meta-label {
+  font-size: 10px;
+  color: #333;
+}
+
+.ielts-meta-box {
+  border: 1px solid #555;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  background: #f8f8f8;
+  min-width: 80px;
+  text-align: center;
+}
+
+.ielts-meta-spacer {
+  flex: 1;
+}
+
+.ielts-section-title {
+  font-size: 13px;
+  font-weight: bold;
+  padding: 6px 20px;
+  border-bottom: 1px solid #555;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.ielts-candidate-section {
+  display: flex;
+  border-bottom: 1px solid #555;
+}
+
+.ielts-fields-col {
+  flex: 1;
+  border-right: 1px solid #555;
+}
+
+.ielts-field-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #ccc;
+  min-height: 32px;
+}
+
+.ielts-field-row:last-child {
+  border-bottom: none;
+}
+
+.ielts-field-label {
+  font-size: 10px;
+  color: #333;
+  padding: 5px 8px;
+  width: 145px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.ielts-field-box {
+  flex: 1;
+  border: 1.5px solid #555;
+  margin: 4px 8px 4px 0;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+}
+
+.ielts-field-row-inline {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #ccc;
+  min-height: 32px;
+}
+
+.ielts-inline-group {
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #ccc;
+  padding: 0;
+}
+
+.ielts-inline-group:last-child {
+  border-right: none;
+}
+
+.ielts-field-label-sm {
+  font-size: 10px;
+  color: #333;
+  padding: 5px 6px;
+  white-space: nowrap;
+}
+
+.ielts-field-box-sm {
+  border: 1.5px solid #555;
+  margin: 4px 6px 4px 0;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  min-width: 60px;
+}
+
+.ielts-photo-col {
+  width: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 12px;
+  gap: 10px;
+}
+
+.ielts-photo-placeholder {
+  width: 120px;
+  height: 150px;
+  border: 1.5px solid #555;
+  background: #c8c4bc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.ielts-photo-placeholder::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 70px;
+  background: #8a8078;
+  border-radius: 50% 50% 0 0;
+}
+
+.ielts-photo-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 50px;
+  background: #8a8078;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.ielts-results-section {
+  border-bottom: 1px solid #555;
+}
+
+.ielts-scores-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  gap: 0;
+  flex-wrap: wrap;
+}
+
+.ielts-score-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 16px;
+}
+
+.ielts-score-skill-label {
+  font-size: 10px;
+  color: #333;
+}
+
+.ielts-score-box {
+  border: 1.5px solid #555;
+  padding: 4px 10px;
+  font-size: 16px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.8);
+  min-width: 46px;
+  text-align: center;
+}
+
+.ielts-overall-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.ielts-overall-label-stack {
+  font-size: 9px;
+  color: #333;
+  line-height: 1.3;
+  text-align: right;
+}
+
+.ielts-overall-box {
+  border: 1.5px solid #555;
+  padding: 4px 12px;
+  font-size: 20px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.ielts-cefr-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+}
+
+.ielts-cefr-label-stack {
+  font-size: 9px;
+  color: #333;
+  line-height: 1.3;
+}
+
+.ielts-cefr-box {
+  border: 1.5px solid #555;
+  padding: 4px 12px;
+  font-size: 18px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.8);
+  text-align: center;
+}
+
+.ielts-bottom-section {
+  display: flex;
+  border-bottom: 1px solid #555;
+  min-height: 140px;
+}
+
+.ielts-good-box-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #aaa;
+  padding: 20px;
+}
+
+.ielts-good-box {
+  border: 1.5px solid #555;
+  width: 100%;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.ielts-good-text {
+  font-size: 36px;
+  font-weight: bold;
+  color: #222;
+  letter-spacing: 6px;
+}
+
+.ielts-stamps-col {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  gap: 8px;
+}
+
+.ielts-stamps-label {
+  font-size: 9px;
+  color: #555;
+  text-align: center;
+}
+
+.ielts-stamps-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+}
+
+.ielts-stamp-group {
+  text-align: center;
+}
+
+.ielts-stamp-caption {
+  font-size: 8px;
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.ielts-stamp-bc {
+  width: 90px;
+  height: 90px;
+  border: 3px double #1a3a8a;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px;
+}
+
+.ielts-stamp-bc-dots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.ielts-stamp-bc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1a3a8a;
+}
+
+.ielts-stamp-bc-text {
+  font-size: 7px;
+  font-weight: bold;
+  color: #1a3a8a;
+  text-align: center;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
+}
+
+.ielts-stamp-ielts {
+  width: 80px;
+  height: 80px;
+  border: 3px solid #c00;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.ielts-stamp-ielts-inner {
+  border: 1.5px solid #c00;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ielts-stamp-ielts-text {
+  font-size: 14px;
+  font-weight: 900;
+  color: #c00;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.ielts-sig-row {
+  display: flex;
+  align-items: flex-end;
+  border-bottom: 1px solid #555;
+  padding: 10px 20px;
+  gap: 30px;
+}
+
+.ielts-sig-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ielts-sig-label {
+  font-size: 9px;
+  color: #555;
+}
+
+.ielts-sig-line {
+  border-bottom: 1px solid #333;
+  width: 140px;
+  height: 24px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 2px;
+}
+
+.ielts-sig-cursive {
+  font-size: 16px;
+  color: #222;
+  font-style: italic;
+  opacity: 0.5;
+  font-family: Georgia, serif;
+}
+
+.ielts-date-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ielts-date-label {
+  font-size: 10px;
+  color: #333;
+}
+
+.ielts-date-box {
+  border: 1.5px solid #555;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.ielts-trf-block {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.ielts-trf-label {
+  font-size: 9px;
+  color: #333;
+  line-height: 1.4;
+}
+
+.ielts-trf-box {
+  border: 1.5px solid #555;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: bold;
+  background: rgba(255, 255, 255, 0.8);
+  white-space: nowrap;
+}
+
+.ielts-bottom-logos {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 14px 30px;
+  border-bottom: 1px solid #ccc;
+}
+
+.ielts-logo-bc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ielts-bc-dots-logo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+
+.ielts-bc-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.ielts-bc-name {
+  font-size: 13px;
+  font-weight: bold;
+  color: #1a3a8a;
+  line-height: 1.2;
+}
+
+.ielts-logo-idp {
+  font-size: 22px;
+  font-weight: 900;
+  color: #006633;
+  font-style: italic;
+  letter-spacing: -1px;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.ielts-logo-cambridge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ielts-cambridge-shield {
+  width: 32px;
+  height: 38px;
+  background: #c00;
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ielts-cambridge-text {
+  font-size: 10px;
+  font-weight: bold;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.ielts-verify-footer {
+  text-align: center;
+  padding: 8px;
+  font-size: 9px;
+  color: #444;
+  border-top: 1px solid #ccc;
+}
+
+@media (max-width: 860px) {
+  .ielts-trf-preview {
+    padding: 0.75rem;
+  }
+}
+
+@media print {
+  .ielts-trf-preview {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .ielts-paper-page {
+    box-shadow: none !important;
+    border: 1px solid #cfd7e3;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
