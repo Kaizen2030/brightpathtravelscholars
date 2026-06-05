@@ -29,21 +29,30 @@
   content: '';
   position: absolute;
   inset: 0;
-  background-image:
-    repeating-linear-gradient(
-      45deg,
-      rgba(100, 160, 80, 0.07) 0px,
-      rgba(100, 160, 80, 0.07) 1px,
-      transparent 1px,
-      transparent 8px
+  background:
+    linear-gradient(90deg,
+      #dce5d6 0%,
+      #dce5d6 18%,
+      #e6eee0 18%,
+      #e6eee0 39%,
+      #eaf2e3 39%,
+      #eaf2e3 66%,
+      #edf5e6 66%,
+      #edf5e6 100%
     ),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(100, 160, 80, 0.07) 0px,
-      rgba(100, 160, 80, 0.07) 1px,
-      transparent 1px,
-      transparent 8px
-    );
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ielts-paper-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='210' height='210' viewBox='0 0 210 210'%3E%3Cg fill='none'%3E%3Ctext x='-12' y='32' transform='rotate(-45 -12 32)' fill='%23cbd9b9' fill-opacity='0.34' font-family='Arial, Helvetica, sans-serif' font-size='21' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='34' y='78' transform='rotate(-45 34 78)' fill='%23cbd9b9' fill-opacity='0.34' font-family='Arial, Helvetica, sans-serif' font-size='21' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='80' y='124' transform='rotate(-45 80 124)' fill='%23cbd9b9' fill-opacity='0.34' font-family='Arial, Helvetica, sans-serif' font-size='21' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='126' y='170' transform='rotate(-45 126 170)' fill='%23cbd9b9' fill-opacity='0.34' font-family='Arial, Helvetica, sans-serif' font-size='21' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='172' y='216' transform='rotate(-45 172 216)' fill='%23cbd9b9' fill-opacity='0.34' font-family='Arial, Helvetica, sans-serif' font-size='21' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='10' y='124' transform='rotate(-45 10 124)' fill='%23d7e4c8' fill-opacity='0.18' font-family='Arial, Helvetica, sans-serif' font-size='18' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='56' y='170' transform='rotate(-45 56 170)' fill='%23d7e4c8' fill-opacity='0.18' font-family='Arial, Helvetica, sans-serif' font-size='18' font-weight='700'%3EIELTS%3C/text%3E%3Ctext x='102' y='216' transform='rotate(-45 102 216)' fill='%23d7e4c8' fill-opacity='0.18' font-family='Arial, Helvetica, sans-serif' font-size='18' font-weight='700'%3EIELTS%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-size: 210px 210px;
+  background-repeat: repeat;
+  opacity: 0.72;
   pointer-events: none;
   z-index: 0;
 }
