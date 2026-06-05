@@ -986,8 +986,11 @@ function CertificateBuilder() {
                   </div>
 
                   <div className="ielts-photo-col">
-                    <div className="ielts-photo-placeholder" aria-hidden="true">
-                      {preview.profilePhotoUrl ? (
+                    <div
+                      className={`ielts-photo-placeholder${preview.profilePhotoUrl ? ' has-photo' : ''}`}
+                      aria-hidden="true"
+                    >
+                        {preview.profilePhotoUrl ? (
                         <img className="ielts-photo-image" src={preview.profilePhotoUrl} alt="Candidate" />
                       ) : null}
                     </div>
