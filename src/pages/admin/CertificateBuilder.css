@@ -299,18 +299,18 @@
 }
 
 .ielts-photo-col {
-  width: 160px;
+  width: 145px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 12px;
-  gap: 10px;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 12px 10px 10px 8px;
+  gap: 0;
 }
 
 .ielts-photo-placeholder {
-  width: 120px;
-  height: 150px;
+  width: 104px;
+  height: 128px;
   border: 1.5px solid #555;
   background: #c8c4bc;
   display: flex;
@@ -322,11 +322,11 @@
 
 .ielts-photo-image {
   position: absolute;
-  inset: 4px;
-  width: calc(100% - 8px);
-  height: calc(100% - 8px);
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
   object-fit: cover;
-  object-position: center 16%;
+  object-position: center 18%;
   filter: grayscale(1) contrast(0.92) brightness(1.06);
   display: block;
 }
@@ -337,7 +337,7 @@
 }
 
 .ielts-photo-placeholder.has-photo {
-  background: #d6d1c8;
+  background: #d4cfc6;
 }
 
 .ielts-photo-placeholder::after {
