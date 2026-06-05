@@ -1124,19 +1124,7 @@ function CertificateBuilder() {
                     {preview.britishCouncilLogoUrl ? (
                       <img className="ielts-footer-image is-british-council" src={preview.britishCouncilLogoUrl} alt="British Council logo" />
                     ) : (
-                      <>
-                        <div className="ielts-bc-dots-logo">
-                          <div className="ielts-bc-dot" style={{ background: '#1a3a8a' }} />
-                          <div className="ielts-bc-dot" style={{ background: '#1a3a8a' }} />
-                          <div className="ielts-bc-dot" style={{ background: '#c00' }} />
-                          <div className="ielts-bc-dot" style={{ background: '#c00' }} />
-                        </div>
-                        <div className="ielts-bc-name">
-                          BRITISH
-                          <br />
-                          COUNCIL
-                        </div>
-                      </>
+                      <div className="ielts-footer-placeholder is-british-council" aria-hidden="true" />
                     )}
                   </div>
 
@@ -1144,20 +1132,7 @@ function CertificateBuilder() {
                     {preview.idpLogoUrl ? (
                       <img className="ielts-footer-image is-idp" src={preview.idpLogoUrl} alt="IDP logo" />
                     ) : (
-                      <>
-                        <div
-                          style={{
-                            fontSize: '26px',
-                            fontWeight: 900,
-                            fontStyle: 'italic',
-                            color: '#2a7a3a',
-                            fontFamily: '"Arial Black",Arial,sans-serif',
-                          }}
-                        >
-                          idp
-                        </div>
-                        <div style={{ fontSize: '7px', color: '#555', letterSpacing: '1px' }}>open your world</div>
-                      </>
+                      <div className="ielts-footer-placeholder is-idp" aria-hidden="true" />
                     )}
                   </div>
 
@@ -1165,21 +1140,7 @@ function CertificateBuilder() {
                     {preview.cambridgeLogoUrl ? (
                       <img className="ielts-footer-image is-cambridge" src={preview.cambridgeLogoUrl} alt="Cambridge logo" />
                     ) : (
-                      <>
-                        <svg width="36" height="42" viewBox="0 0 36 42" aria-hidden="true">
-                          <polygon points="18,40 0,28 0,0 36,0 36,28" fill="#c00" />
-                          <polygon points="18,36 3,25.5 3,3 33,3 33,25.5" fill="#fff" />
-                          <polygon points="18,32 6,23 6,6 30,6 30,23" fill="#c00" />
-                          <text x="18" y="20" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">
-                            CAMB
-                          </text>
-                        </svg>
-                        <div className="ielts-cambridge-text">
-                          Cambridge Assessment
-                          <br />
-                          International Education
-                        </div>
-                      </>
+                      <div className="ielts-footer-placeholder is-cambridge" aria-hidden="true" />
                     )}
                   </div>
                 </div>

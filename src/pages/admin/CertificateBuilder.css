@@ -669,7 +669,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 120px;
+  width: 112px;
+  min-height: 52px;
+  justify-content: center;
 }
 
 .ielts-bc-dots-logo {
@@ -684,62 +686,64 @@
   border-radius: 50%;
 }
 
-.ielts-bc-name {
-  font-size: 13px;
-  font-weight: bold;
-  color: #1a3a8a;
-  line-height: 1.2;
-}
-
 .ielts-logo-idp {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-width: 100px;
+  width: 88px;
+  min-height: 52px;
 }
 
 .ielts-logo-cambridge {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-width: 180px;
-}
-
-.ielts-cambridge-shield {
-  width: 32px;
-  height: 38px;
-  background: #c00;
-  clip-path: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
-  display: flex;
-  align-items: center;
+  width: 220px;
+  min-height: 52px;
   justify-content: center;
-}
-
-.ielts-cambridge-text {
-  font-size: 10px;
-  font-weight: bold;
-  color: #1a1a1a;
-  line-height: 1.3;
 }
 
 .ielts-footer-image {
   display: block;
   max-width: 100%;
-  max-height: 48px;
+  max-height: 52px;
   object-fit: contain;
 }
 
 .ielts-footer-image.is-british-council {
-  max-height: 52px;
+  max-height: 46px;
+  max-width: 100%;
 }
 
 .ielts-footer-image.is-idp {
-  max-height: 42px;
+  max-height: 48px;
 }
 
 .ielts-footer-image.is-cambridge {
-  max-height: 54px;
+  max-height: 44px;
+  max-width: 100%;
+}
+
+.ielts-footer-placeholder {
+  width: 100%;
+  height: 100%;
+  min-height: 52px;
+  border: 1px dashed rgba(26, 26, 46, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.ielts-footer-placeholder.is-british-council {
+  max-width: 112px;
+}
+
+.ielts-footer-placeholder.is-idp {
+  max-width: 88px;
+}
+
+.ielts-footer-placeholder.is-cambridge {
+  max-width: 220px;
 }
 
 .ielts-verify-footer {
