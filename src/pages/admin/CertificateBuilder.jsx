@@ -1,12 +1,56 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Copy, Download, Plus, RotateCcw, Save, Trash2 } from 'lucide-react'
+import { Copy, Download, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import './CertificateBuilder.css'
 
 const STORAGE_KEY = 'brightpath-ielts-builder-cache-v2'
 const TABLE_NAME = 'ielts_reports'
+const IMAGE_BUCKET = 'site-assets'
 const TEMPLATE_VERSION = '2026'
+
+const IMAGE_FIELDS = [
+  {
+    key: 'profile_photo_url',
+    label: 'Profile photo',
+    helper: 'Shown in the candidate photo box.',
+    fit: 'cover',
+  },
+  {
+    key: 'centre_stamp_url',
+    label: 'Centre stamp',
+    helper: 'Shown in the centre stamp circle.',
+    fit: 'contain',
+  },
+  {
+    key: 'validation_stamp_url',
+    label: 'Validation stamp',
+    helper: 'Shown in the validation stamp circle.',
+    fit: 'contain',
+  },
+  {
+    key: 'british_council_logo_url',
+    label: 'British Council logo',
+    helper: 'Shown in the footer logo strip.',
+    fit: 'contain',
+  },
+  {
+    key: 'idp_logo_url',
+    label: 'IDP logo',
+    helper: 'Shown in the footer logo strip.',
+    fit: 'contain',
+  },
+  {
+    key: 'cambridge_logo_url',
+    label: 'Cambridge logo',
+    helper: 'Shown in the footer logo strip.',
+    fit: 'contain',
+  },
+]
+
+function getImageFieldLabel(fieldKey) {
+  return IMAGE_FIELDS.find((field) => field.key === fieldKey)?.label || fieldKey.replace(/_/g, ' ')
+}
 
 function createId() {
   return globalThis.crypto?.randomUUID?.() ?? `cert-${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -38,6 +82,12 @@ function createBlankRecord() {
     overall: '',
     verifier_name: 'Brightpath Academic Officer',
     verifier_title: 'Assessment Coordinator',
+    profile_photo_url: '',
+    centre_stamp_url: '',
+    validation_stamp_url: '',
+    british_council_logo_url: '',
+    idp_logo_url: '',
+    cambridge_logo_url: '',
     notes:
       'Internal use only. Prepared for counselling and application support. Not an official IELTS certificate.',
     template_version: TEMPLATE_VERSION,
@@ -176,6 +226,12 @@ function normalizeRecord(record = {}) {
     overall: formatInputBand(record.overall ?? base.overall),
     verifier_name: toTextValue(record.verifier_name) || base.verifier_name,
     verifier_title: toTextValue(record.verifier_title) || base.verifier_title,
+    profile_photo_url: toTextValue(record.profile_photo_url),
+    centre_stamp_url: toTextValue(record.centre_stamp_url),
+    validation_stamp_url: toTextValue(record.validation_stamp_url),
+    british_council_logo_url: toTextValue(record.british_council_logo_url),
+    idp_logo_url: toTextValue(record.idp_logo_url),
+    cambridge_logo_url: toTextValue(record.cambridge_logo_url),
     notes: toTextValue(record.notes) || base.notes,
     template_version: toTextValue(record.template_version) || TEMPLATE_VERSION,
     created_by: record.created_by ?? '',
@@ -234,6 +290,12 @@ function buildPayload(record, existingRecord, userId) {
     overall: overallBand,
     verifier_name: toTextValue(record.verifier_name) || null,
     verifier_title: toTextValue(record.verifier_title) || null,
+    profile_photo_url: toTextValue(record.profile_photo_url) || null,
+    centre_stamp_url: toTextValue(record.centre_stamp_url) || null,
+    validation_stamp_url: toTextValue(record.validation_stamp_url) || null,
+    british_council_logo_url: toTextValue(record.british_council_logo_url) || null,
+    idp_logo_url: toTextValue(record.idp_logo_url) || null,
+    cambridge_logo_url: toTextValue(record.cambridge_logo_url) || null,
     notes: toTextValue(record.notes) || null,
     template_version: TEMPLATE_VERSION,
     created_by: existingRecord?.created_by || userId || null,
@@ -286,7 +348,23 @@ function buildPreviewSnapshot(record, overallBand) {
     verifierName,
     verifierTitle,
     location: toTextValue(record.location) || 'Zimbabwe',
+    profilePhotoUrl: toTextValue(record.profile_photo_url),
+    centreStampUrl: toTextValue(record.centre_stamp_url),
+    validationStampUrl: toTextValue(record.validation_stamp_url),
+    britishCouncilLogoUrl: toTextValue(record.british_council_logo_url),
+    idpLogoUrl: toTextValue(record.idp_logo_url),
+    cambridgeLogoUrl: toTextValue(record.cambridge_logo_url),
   }
+}
+
+function buildImageUploadPath(recordId, fieldKey, file) {
+  const safeName = toTextValue(file?.name)
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+
+  return `ielts-builder/${recordId}/${fieldKey}/${Date.now()}-${safeName || 'upload'}`
 }
 
 function CertificateBuilder() {
@@ -297,6 +375,7 @@ function CertificateBuilder() {
   const [storageMode, setStorageMode] = useState(initialCachedRecords.length ? 'local-cache' : 'loading')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [uploadingField, setUploadingField] = useState('')
   const [notice, setNotice] = useState('Loading shared applicant records...')
 
   useEffect(() => {
@@ -373,6 +452,85 @@ function CertificateBuilder() {
 
   function updateField(key, value) {
     setDraft((current) => ({ ...current, [key]: value }))
+  }
+
+  async function handleImageUpload(fieldKey, file) {
+    if (!file) return
+
+    const recordId = draft.id
+    setUploadingField(fieldKey)
+    setNotice(null)
+
+    try {
+      const filePath = buildImageUploadPath(draft.id, fieldKey, file)
+      const { error: uploadError } = await supabase.storage.from(IMAGE_BUCKET).upload(filePath, file, {
+        upsert: true,
+      })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(filePath)
+      const publicUrl = data.publicUrl
+
+      setDraft((current) => ({ ...current, [fieldKey]: publicUrl }))
+      setRecords((current) => current.map((item) => (item.id === recordId ? { ...item, [fieldKey]: publicUrl } : item)))
+      setNotice(`${getImageFieldLabel(fieldKey)} uploaded.`)
+    } catch (error) {
+      console.error('[CertificateBuilder] Image upload failed:', error)
+      setNotice(error.message || 'Could not upload the image.')
+    } finally {
+      setUploadingField('')
+    }
+  }
+
+  function clearImageField(fieldKey) {
+    const recordId = draft.id
+    setDraft((current) => ({ ...current, [fieldKey]: '' }))
+    setRecords((current) => current.map((item) => (item.id === recordId ? { ...item, [fieldKey]: '' } : item)))
+    setNotice(`${getImageFieldLabel(fieldKey)} removed.`)
+  }
+
+  function renderUploadCard(field) {
+    const value = draft[field.key]
+    const isUploading = uploadingField === field.key
+
+    return (
+      <div key={field.key} className="certificate-image-card">
+        <div className="certificate-image-card-head">
+          <div>
+            <strong>{field.label}</strong>
+            <span>{field.helper}</span>
+          </div>
+          {value ? (
+            <button type="button" className="certificate-image-clear" onClick={() => clearImageField(field.key)}>
+              <X size={14} />
+              Remove
+            </button>
+          ) : null}
+        </div>
+
+        <div className={`certificate-image-preview${field.fit === 'cover' ? ' is-cover' : ''}`}>
+          {value ? (
+            <img src={value} alt={field.label} />
+          ) : (
+            <div className="certificate-image-placeholder">
+              <span>{field.label}</span>
+            </div>
+          )}
+        </div>
+
+        <label className={`admin-btn admin-btn-soft admin-upload-btn${isUploading ? ' is-uploading' : ''}`}>
+          <Upload size={16} />
+          {isUploading ? 'Uploading...' : `Upload ${field.label}`}
+          <input
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(event) => handleImageUpload(field.key, event.target.files?.[0])}
+          />
+        </label>
+      </div>
+    )
   }
 
   function handleReset() {
@@ -561,6 +719,8 @@ function CertificateBuilder() {
               {saving ? 'Saving...' : 'Save Record'}
             </button>
           </div>
+
+          <div className="certificate-image-grid">{IMAGE_FIELDS.map((field) => renderUploadCard(field))}</div>
 
           <div className="certificate-form-grid">
             <label className="admin-field">
@@ -826,7 +986,11 @@ function CertificateBuilder() {
                   </div>
 
                   <div className="ielts-photo-col">
-                    <div className="ielts-photo-placeholder" aria-hidden="true" />
+                    <div className="ielts-photo-placeholder" aria-hidden="true">
+                      {preview.profilePhotoUrl ? (
+                        <img className="ielts-photo-image" src={preview.profilePhotoUrl} alt="Candidate" />
+                      ) : null}
+                    </div>
                   </div>
                 </div>
 
@@ -885,30 +1049,40 @@ function CertificateBuilder() {
                       <div className="ielts-stamp-group">
                         <div className="ielts-stamp-caption">Centre stamp</div>
                         <div className="ielts-stamp-bc">
-                          <div className="ielts-stamp-bc-dots">
-                            <div className="ielts-stamp-bc-dot" />
-                            <div className="ielts-stamp-bc-dot" />
-                            <div className="ielts-stamp-bc-dot" />
-                            <div className="ielts-stamp-bc-dot" />
-                          </div>
-                          <div className="ielts-stamp-bc-text">
-                            BRITISH
-                            <br />
-                            COUNCIL
-                            <br />
-                            EXAMINATIONS
-                            <br />
-                            SERVICES
-                          </div>
+                          {preview.centreStampUrl ? (
+                            <img className="ielts-stamp-image" src={preview.centreStampUrl} alt="Centre stamp" />
+                          ) : (
+                            <>
+                              <div className="ielts-stamp-bc-dots">
+                                <div className="ielts-stamp-bc-dot" />
+                                <div className="ielts-stamp-bc-dot" />
+                                <div className="ielts-stamp-bc-dot" />
+                                <div className="ielts-stamp-bc-dot" />
+                              </div>
+                              <div className="ielts-stamp-bc-text">
+                                BRITISH
+                                <br />
+                                COUNCIL
+                                <br />
+                                EXAMINATIONS
+                                <br />
+                                SERVICES
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
 
                       <div className="ielts-stamp-group">
                         <div className="ielts-stamp-caption">Validation stamp</div>
                         <div className="ielts-stamp-ielts">
-                          <div className="ielts-stamp-ielts-inner">
-                            <span className="ielts-stamp-ielts-text">IELTS</span>
-                          </div>
+                          {preview.validationStampUrl ? (
+                            <img className="ielts-stamp-image" src={preview.validationStampUrl} alt="Validation stamp" />
+                          ) : (
+                            <div className="ielts-stamp-ielts-inner">
+                              <span className="ielts-stamp-ielts-text">IELTS</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -944,40 +1118,66 @@ function CertificateBuilder() {
 
                 <div className="ielts-bottom-logos">
                   <div className="ielts-logo-bc">
-                    <div className="ielts-bc-dots-logo">
-                      <div className="ielts-bc-dot" style={{ background: '#1a3a8a' }} />
-                      <div className="ielts-bc-dot" style={{ background: '#1a3a8a' }} />
-                      <div className="ielts-bc-dot" style={{ background: '#c00' }} />
-                      <div className="ielts-bc-dot" style={{ background: '#c00' }} />
-                    </div>
-                    <div className="ielts-bc-name">
-                      BRITISH
-                      <br />
-                      COUNCIL
-                    </div>
+                    {preview.britishCouncilLogoUrl ? (
+                      <img className="ielts-footer-image is-british-council" src={preview.britishCouncilLogoUrl} alt="British Council logo" />
+                    ) : (
+                      <>
+                        <div className="ielts-bc-dots-logo">
+                          <div className="ielts-bc-dot" style={{ background: '#1a3a8a' }} />
+                          <div className="ielts-bc-dot" style={{ background: '#1a3a8a' }} />
+                          <div className="ielts-bc-dot" style={{ background: '#c00' }} />
+                          <div className="ielts-bc-dot" style={{ background: '#c00' }} />
+                        </div>
+                        <div className="ielts-bc-name">
+                          BRITISH
+                          <br />
+                          COUNCIL
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <div className="ielts-logo-idp">
-                    <div style={{ fontSize: '26px', fontWeight: 900, fontStyle: 'italic', color: '#2a7a3a', fontFamily: '"Arial Black",Arial,sans-serif' }}>
-                      idp
-                    </div>
-                    <div style={{ fontSize: '7px', color: '#555', letterSpacing: '1px' }}>open your world</div>
+                    {preview.idpLogoUrl ? (
+                      <img className="ielts-footer-image is-idp" src={preview.idpLogoUrl} alt="IDP logo" />
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            fontSize: '26px',
+                            fontWeight: 900,
+                            fontStyle: 'italic',
+                            color: '#2a7a3a',
+                            fontFamily: '"Arial Black",Arial,sans-serif',
+                          }}
+                        >
+                          idp
+                        </div>
+                        <div style={{ fontSize: '7px', color: '#555', letterSpacing: '1px' }}>open your world</div>
+                      </>
+                    )}
                   </div>
 
                   <div className="ielts-logo-cambridge">
-                    <svg width="36" height="42" viewBox="0 0 36 42" aria-hidden="true">
-                      <polygon points="18,40 0,28 0,0 36,0 36,28" fill="#c00" />
-                      <polygon points="18,36 3,25.5 3,3 33,3 33,25.5" fill="#fff" />
-                      <polygon points="18,32 6,23 6,6 30,6 30,23" fill="#c00" />
-                      <text x="18" y="20" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">
-                        CAMB
-                      </text>
-                    </svg>
-                    <div className="ielts-cambridge-text">
-                      Cambridge Assessment
-                      <br />
-                      International Education
-                    </div>
+                    {preview.cambridgeLogoUrl ? (
+                      <img className="ielts-footer-image is-cambridge" src={preview.cambridgeLogoUrl} alt="Cambridge logo" />
+                    ) : (
+                      <>
+                        <svg width="36" height="42" viewBox="0 0 36 42" aria-hidden="true">
+                          <polygon points="18,40 0,28 0,0 36,0 36,28" fill="#c00" />
+                          <polygon points="18,36 3,25.5 3,3 33,3 33,25.5" fill="#fff" />
+                          <polygon points="18,32 6,23 6,6 30,6 30,23" fill="#c00" />
+                          <text x="18" y="20" textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">
+                            CAMB
+                          </text>
+                        </svg>
+                        <div className="ielts-cambridge-text">
+                          Cambridge Assessment
+                          <br />
+                          International Education
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 

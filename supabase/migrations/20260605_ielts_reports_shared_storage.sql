@@ -21,6 +21,12 @@ create table if not exists public.ielts_reports (
   overall numeric(2,1) not null default 0,
   verifier_name text,
   verifier_title text,
+  profile_photo_url text,
+  centre_stamp_url text,
+  validation_stamp_url text,
+  british_council_logo_url text,
+  idp_logo_url text,
+  cambridge_logo_url text,
   notes text,
   template_version text not null default '2026',
   created_by uuid references auth.users (id) on delete set null,
@@ -52,3 +58,11 @@ on public.ielts_reports
 for all
 using (public.is_admin())
 with check (public.is_admin());
+
+alter table public.ielts_reports
+  add column if not exists profile_photo_url text,
+  add column if not exists centre_stamp_url text,
+  add column if not exists validation_stamp_url text,
+  add column if not exists british_council_logo_url text,
+  add column if not exists idp_logo_url text,
+  add column if not exists cambridge_logo_url text;
