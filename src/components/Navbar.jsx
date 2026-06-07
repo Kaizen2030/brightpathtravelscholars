@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDown, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -37,15 +38,22 @@ function Navbar() {
   const drawerRef = useRef(null)
   const navInteractiveRef = useRef(null)
 
-  const displayName = useMemo(() => {
-    if (profile?.full_name?.trim()) return profile.full_name.trim()
-    if (user?.user_metadata?.full_name?.trim()) return user.user_metadata.full_name.trim()
-    return user?.email?.split('@')[0] || 'Student'
-  }, [profile?.full_name, user?.email, user?.user_metadata?.full_name])
+  const displayName =
+    profile?.full_name?.trim() ||
+    user?.user_metadata?.full_name?.trim() ||
+    user?.email?.split('@')[0] ||
+    'Student'
 
   const avatarInitial = displayName.charAt(0).toUpperCase()
   const isStudyActive = location.pathname.startsWith('/study-abroad')
-  const isActive = (path) => location.pathname === path
+  const isWorkActive = location.pathname.startsWith('/work-abroad') || location.pathname.startsWith('/jobs')
+  const isActive = (path) => {
+    if (path === '/work-abroad') {
+      return isWorkActive
+    }
+
+    return location.pathname === path
+  }
 
   useEffect(() => {
     function handleScroll() {
@@ -138,6 +146,10 @@ function Navbar() {
                   {link.label}
                 </Link>
               ))}
+
+              <Link to="/work-abroad" className={`nexora-nav-link${isWorkActive ? ' active' : ''}`}>
+                Work Abroad
+              </Link>
 
               <div
                 className="nexora-nav-dropdown-wrap"
@@ -290,6 +302,10 @@ function Navbar() {
               {link.label}
             </Link>
           ))}
+
+          <Link to="/work-abroad" className={isWorkActive ? 'active' : ''} onClick={closeMobileMenu}>
+            Work Abroad
+          </Link>
 
           <div className="nexora-mobile-group">
             <button

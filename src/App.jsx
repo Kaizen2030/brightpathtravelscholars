@@ -8,6 +8,7 @@ import Home from './pages/Home'
 import About from './pages/About'
 import Events from './pages/Events'
 import StudyAbroad from './pages/StudyAbroad'
+import WorkAbroad from './pages/WorkAbroad'
 import Community from './pages/Community'
 import Contact from './pages/Contact'
 import Apply from './pages/Apply'
@@ -20,6 +21,7 @@ import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
 import ScholarshipDetail from './pages/ScholarshipDetail'
 import UniversityDetail from './pages/UniversityDetail'
+import JobDetail from './pages/JobDetail'
 import AdminDashboard from './pages/admin/AdminDashboard'
 
 function ProtectedRoute({ children }) {
@@ -99,7 +101,7 @@ function AnalyticsTracker() {
     return () => {
       ignore = true
     }
-  }, [location.pathname, location.search, user?.id])
+  }, [location.pathname, location.search, user])
 
   useEffect(() => {
     const pathname = `${location.pathname}${location.search}`
@@ -124,7 +126,7 @@ function AnalyticsTracker() {
     return () => {
       window.clearInterval(timer)
     }
-  }, [location.pathname, location.search, user?.id])
+  }, [location.pathname, location.search, user])
 
   return null
 }
@@ -146,6 +148,9 @@ function AppLayout() {
           <Route path="/community" element={<Community />} />
           <Route path="/study-abroad" element={<StudyAbroad />} />
           <Route path="/study-abroad/:countrySlug" element={<StudyAbroad />} />
+          <Route path="/work-abroad" element={<WorkAbroad />} />
+          <Route path="/work-abroad/:countrySlug" element={<WorkAbroad />} />
+          <Route path="/jobs/:jobId" element={<JobDetail />} />
           <Route path="/scholarships/:scholarshipSlug" element={<ScholarshipDetail />} />
           <Route path="/scholarships/:scholarshipSlug/apply" element={<Apply />} />
           <Route path="/universities/:universitySlug" element={<UniversityDetail />} />

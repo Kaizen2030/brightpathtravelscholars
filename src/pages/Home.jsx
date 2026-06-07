@@ -1,16 +1,20 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  Briefcase,
   Award,
-  BookOpen,
-  Calendar,
+  CalendarDays,
   CheckCircle2,
+  BookOpen,
   ChevronRight,
   Globe,
   MapPin,
   Phone,
+  ShieldCheck,
   Star,
   Users,
+  Warehouse,
 } from 'lucide-react'
 import AnimatedCount from '../components/AnimatedCount'
 import AnimatedSection from '../components/AnimatedSection'
@@ -18,9 +22,11 @@ import SEO from '../components/SEO'
 import { UPCOMING_EVENT_FALLBACKS } from '../lib/eventCatalog'
 import { mergeDestinationCards } from '../lib/destinationGuides'
 import { HERO_FALLBACK_IMAGES, HERO_FALLBACK_IMAGE, getDestinationFallbackImage, getEventFallbackImage } from '../lib/fallbackImages'
+import { buildJobApplyPath, buildJobDetailPath, JOB_CATALOG } from '../lib/jobCatalog'
 import { usePageSections } from '../hooks/usePageSections'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { buildOverlayBackground } from '../lib/mediaStyles'
+import { getPageSectionDefaults } from '../lib/pageSections'
 import { supabase } from '../lib/supabaseClient'
 import { WHATSAPP_URL } from '../lib/siteConfig'
 import './Home.css'
@@ -192,6 +198,7 @@ function Home() {
   const destinationsSection = sections.destinations
   const testimonialsSection = sections.testimonials
   const ctaSection = sections.cta
+  const workAbroadSection = getPageSectionDefaults('work_abroad')
 
   const heroStats = hero.settings?.stats ?? []
   const featureCard = hero.settings?.feature_card ?? {}
@@ -215,6 +222,7 @@ function Home() {
   const whyVisualValue = Number(whyNexora.settings?.visual_badge_value ?? 98)
   const whyVisualSuffix = whyNexora.settings?.visual_badge_suffix ?? '%'
   const homeDestinations = useMemo(() => mergeDestinationCards(destinationsSection.items ?? []), [destinationsSection.items])
+  const featuredWorkJobs = useMemo(() => JOB_CATALOG.filter((job) => job.featured).slice(0, 3), [])
   const homeSteps = howItWorks.items ?? []
   const ctaSecondaryUrl = ctaSection.secondary_btn_url || siteSettings.whatsapp_url || WHATSAPP_URL
   const ctaSecondaryIsExternal = ctaSecondaryUrl.startsWith('http')
@@ -370,7 +378,7 @@ function Home() {
                       </div>
                     </article>
                   ))
-                : events.map((event, index) => (
+                : events.map((event) => (
                     <article key={event.id} className="event-card">
                       <div
                         className="event-card-image"
@@ -382,7 +390,7 @@ function Home() {
                       />
                       <div className="event-card-body">
                         <span className="event-card-date">
-                          <Calendar size={15} />
+                          <CalendarDays size={15} />
                           {formatEventDate(event.date)}
                         </span>
                         <h3>{event.title}</h3>
@@ -515,7 +523,7 @@ function Home() {
             </div>
 
             <div className="destinations-grid">
-              {homeDestinations.map((destination, index) => (
+              {homeDestinations.map((destination) => (
                 <article
                   key={destination.slug}
                   className={`destination-card${(destination.image_url || getDestinationFallbackImage(destination.slug)) ? ' has-image' : ''}`}
@@ -534,6 +542,95 @@ function Home() {
                   </Link>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.22}>
+        <section id="work_abroad" className="home-section home-work">
+          <div className="container">
+            <div className="home-section-header">
+              <div>
+                <span className="section-badge">{workAbroadSection.hero.badge_text}</span>
+                <h2>{workAbroadSection.hero.heading}</h2>
+              </div>
+              <Link to={workAbroadSection.hero.primary_btn_url || '/work-abroad'} className="btn-secondary home-work-link">
+                {workAbroadSection.hero.primary_btn_text || 'View All Jobs'}
+              </Link>
+            </div>
+
+            <div className="home-work-grid">
+              {featuredWorkJobs.map((job) => {
+                const imageUrl = `https://source.unsplash.com/featured/800x500/?${encodeURIComponent(job.imageKeyword)}`
+
+                return (
+                  <article key={job.id} className="home-work-card">
+                    <div
+                      className="home-work-image"
+                      style={{
+                        backgroundImage: `linear-gradient(180deg, rgba(53, 21, 83, 0.08) 0%, rgba(53, 21, 83, 0.58) 100%), url(${imageUrl})`,
+                      }}
+                    >
+                      <span className="home-work-country-pill">
+                        {job.flag} {job.country}
+                      </span>
+                      <span className={`home-work-type-pill ${job.type}`}>
+                        {job.type === 'skilled' ? 'Skilled' : 'Unskilled'}
+                      </span>
+                    </div>
+
+                    <div className="home-work-body">
+                      <div className="home-work-head">
+                        <div>
+                          <p className="home-work-region">
+                            <MapPin size={14} />
+                            {job.region}
+                          </p>
+                          <h3>{job.title}</h3>
+                          <p className="home-work-employer">
+                            <Briefcase size={14} />
+                            {job.employer}
+                          </p>
+                        </div>
+                        <span className="home-work-salary">{job.salary}</span>
+                      </div>
+
+                      <div className="home-work-highlights">
+                        <span>
+                          <ShieldCheck size={14} />
+                          {job.visaSponsorship ? 'Visa sponsorship' : 'No sponsorship'}
+                        </span>
+                        <span>
+                          <Warehouse size={14} />
+                          {job.accommodationProvided ? 'Accommodation' : 'Self-arranged stay'}
+                        </span>
+                        <span>
+                          <Users size={14} />
+                          {job.positions} openings
+                        </span>
+                      </div>
+
+                      <div className="home-work-meta">
+                        <span>
+                          <CalendarDays size={14} />
+                          Deadline {formatEventDate(job.deadline)}
+                        </span>
+                        <span className={`home-work-status ${job.status}`}>{job.status.replace(/_/g, ' ')}</span>
+                      </div>
+
+                      <div className="home-work-actions">
+                        <Link to={buildJobDetailPath(job.id)} className="btn-secondary home-work-secondary">
+                          View Job
+                        </Link>
+                        <Link to={buildJobApplyPath(job.id)} className="btn-primary home-work-primary">
+                          Apply Now
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </div>
         </section>

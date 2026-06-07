@@ -1,16 +1,558 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Navigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  Briefcase,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Globe2,
+  MapPin,
+  ShieldCheck,
+  Upload,
+} from 'lucide-react'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import AnimatedSection from '../components/AnimatedSection'
 import SEO from '../components/SEO'
+import { useAuth } from '../context/AuthContext'
 import { usePageSections } from '../hooks/usePageSections'
 import { getScholarshipBySlug } from '../lib/scholarshipCatalog'
+import { buildJobApplyPath, buildJobDetailPath, getJobById, JOB_COUNTRY_OPTIONS } from '../lib/jobCatalog'
 import { supabase } from '../lib/supabaseClient'
 import './Apply.css'
 
-function buildReference(id) {
-  if (!id) return `NEX-${Date.now()}`
-  return `NEX-${id.slice(0, 8).toUpperCase()}`
+function buildReference(id, prefix = 'NEX') {
+  if (!id) return `${prefix}-${Date.now()}`
+  return `${prefix}-${id.slice(0, 8).toUpperCase()}`
+}
+
+function formatShortDate(value) {
+  if (!value) return 'Date to be confirmed'
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value))
+}
+
+const JOB_EDUCATION_OPTIONS = [
+  'Primary',
+  'Secondary / High School',
+  'Diploma / Certificate',
+  "Bachelor's Degree",
+  "Master's Degree",
+  'PhD',
+]
+
+const JOB_EXPERIENCE_OPTIONS = [
+  'No experience',
+  'Less than 1 year',
+  '1-2 years',
+  '3-5 years',
+  '5-10 years',
+  '10+ years',
+]
+
+const JOB_ENG_PROFICIENCY = ['Basic', 'Intermediate', 'Fluent']
+const JOB_FRENCH_PROFICIENCY = ['N/A', 'Basic', 'Intermediate', 'Fluent']
+const JOB_HEARD_FROM_OPTIONS = ['Google Search', 'Social Media', 'Friend or Family', 'WhatsApp', 'Referral', 'Other']
+
+function buildJobInitialForm() {
+  return {
+    full_name: '',
+    email: '',
+    phone: '',
+    country_of_residence: '',
+    passport_number: '',
+    date_of_birth: '',
+    education_level: JOB_EDUCATION_OPTIONS[1],
+    years_experience: JOB_EXPERIENCE_OPTIONS[0],
+    current_occupation: '',
+    english_proficiency: JOB_ENG_PROFICIENCY[2],
+    french_proficiency: JOB_FRENCH_PROFICIENCY[0],
+    has_valid_passport: 'yes',
+    available_to_relocate: 'yes',
+    cv_file: null,
+    cover_letter: '',
+    heard_from: '',
+    consent: false,
+  }
+}
+
+function ToggleChoice({ label, value, selected, onChange }) {
+  return (
+    <button
+      type="button"
+      className={`apply-toggle-choice${selected === value ? ' active' : ''}`}
+      onClick={() => onChange(value)}
+    >
+      {label}
+    </button>
+  )
+}
+
+function JobApplicationFlow({ job, user }) {
+  const hero = {
+    badge_text: 'Work Abroad Application',
+    heading: `Apply for ${job.title}`,
+    subheading: `Send your work-abroad profile for ${job.employer} in ${job.region}, ${job.country}.`,
+  }
+  const [form, setForm] = useState(buildJobInitialForm())
+  const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const [submittedReference, setSubmittedReference] = useState('')
+  const [uploadedCvName, setUploadedCvName] = useState('')
+
+  useEffect(() => {
+    setForm(buildJobInitialForm())
+    setErrors({})
+    setSubmitting(false)
+    setSubmittedReference('')
+    setUploadedCvName('')
+  }, [job.id])
+
+  function updateField(field, value) {
+    setForm((current) => ({ ...current, [field]: value }))
+    setErrors((current) => ({ ...current, [field]: '' }))
+  }
+
+  function validateForm() {
+    const nextErrors = {}
+
+    if (!form.full_name.trim()) nextErrors.full_name = 'Full name is required.'
+    if (!form.email.trim()) nextErrors.email = 'Email is required.'
+    if (!form.phone.trim()) nextErrors.phone = 'Phone number is required.'
+    if (!form.country_of_residence.trim()) nextErrors.country_of_residence = 'Country of residence is required.'
+    if (!form.passport_number.trim()) nextErrors.passport_number = 'Passport number is required.'
+    if (!form.date_of_birth) nextErrors.date_of_birth = 'Date of birth is required.'
+    if (!form.education_level.trim()) nextErrors.education_level = 'Education level is required.'
+    if (!form.years_experience.trim()) nextErrors.years_experience = 'Years of experience is required.'
+    if (!form.current_occupation.trim()) nextErrors.current_occupation = 'Current occupation is required.'
+    if (!form.english_proficiency.trim()) nextErrors.english_proficiency = 'English proficiency is required.'
+    if (!form.cv_file) nextErrors.cv_file = 'Please upload your CV or resume.'
+    if (!form.consent) nextErrors.consent = 'You must confirm the information is accurate.'
+
+    setErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    if (!validateForm()) return
+
+    setSubmitting(true)
+
+    try {
+      let cvUrl = ''
+
+      if (form.cv_file) {
+        const safeName = form.cv_file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
+        const filePath = `job-applications/${Date.now()}-${user?.id || 'guest'}-${safeName}`
+
+        try {
+          const { error: uploadError } = await supabase.storage.from('job-applications').upload(filePath, form.cv_file, {
+            upsert: false,
+            cacheControl: '3600',
+          })
+
+          if (!uploadError) {
+            const { data } = supabase.storage.from('job-applications').getPublicUrl(filePath)
+            cvUrl = data?.publicUrl || ''
+            setUploadedCvName(form.cv_file.name)
+          } else {
+            cvUrl = form.cv_file.name
+            setUploadedCvName(form.cv_file.name)
+          }
+        } catch (uploadException) {
+          console.warn('[Apply] CV upload failed, storing file name instead:', uploadException)
+          cvUrl = form.cv_file.name
+          setUploadedCvName(form.cv_file.name)
+        }
+      }
+
+      const payload = {
+        job_id: job.id,
+        user_id: user?.id ?? null,
+        full_name: form.full_name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        country_of_residence: form.country_of_residence.trim(),
+        passport_number: form.passport_number.trim(),
+        date_of_birth: form.date_of_birth,
+        education_level: form.education_level,
+        years_experience: form.years_experience,
+        current_occupation: form.current_occupation.trim(),
+        english_proficiency: form.english_proficiency,
+        french_proficiency: form.french_proficiency,
+        has_valid_passport: form.has_valid_passport === 'yes',
+        available_to_relocate: form.available_to_relocate === 'yes',
+        cv_url: cvUrl || null,
+        cover_letter: form.cover_letter.trim(),
+        heard_from: form.heard_from,
+        status: 'pending',
+      }
+
+      const { data, error } = await supabase.from('job_applications').insert(payload).select('id').single()
+
+      if (error) throw error
+
+      setSubmittedReference(buildReference(data?.id, 'JOB'))
+      setErrors({})
+      setForm(buildJobInitialForm())
+    } catch (error) {
+      console.error('[Apply] Failed to submit job application:', error)
+      setErrors({ submit: 'We could not submit your job application right now. Please try again.' })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (submittedReference) {
+    return (
+      <div className="apply-page">
+        <SEO
+          title={`${job.title} Application`}
+          description={`Submit your application for ${job.title} in ${job.country} and receive a reference number for follow-up.`}
+          path={buildJobApplyPath(job.id)}
+        />
+
+        <section className="apply-success">
+          <div className="container">
+            <div className="apply-success-card apply-job-success-card">
+              <span className="apply-success-icon">
+                <CheckCircle2 size={28} />
+              </span>
+              <h1>Job application submitted.</h1>
+              <p>
+                Your reference number is <strong>{submittedReference}</strong>. We will review your work abroad
+                profile and contact you with the next steps.
+              </p>
+              <div className="apply-job-success-grid">
+                <div>
+                  <span>Job</span>
+                  <strong>{job.title}</strong>
+                </div>
+                <div>
+                  <span>Employer</span>
+                  <strong>{job.employer}</strong>
+                </div>
+                <div>
+                  <span>CV Uploaded</span>
+                  <strong>{uploadedCvName || 'Attached'}</strong>
+                </div>
+              </div>
+              <div className="apply-job-success-actions">
+                <Link to={buildJobDetailPath(job.id)} className="btn-secondary">
+                  View Job Details
+                </Link>
+                <Link to="/work-abroad" className="btn-primary">
+                  Browse More Jobs
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  return (
+    <div className="apply-page">
+      <SEO
+        title={`${job.title} Application`}
+        description={`Apply for ${job.title} in ${job.country} with Brightpath Travel Scholars.`}
+        path={buildJobApplyPath(job.id)}
+      />
+
+      <section className="apply-hero apply-job-hero">
+        <div className="container">
+          <span className="section-badge apply-hero-badge">{hero.badge_text}</span>
+          <h1>{hero.heading}</h1>
+          <p>{hero.subheading}</p>
+
+          <div className="apply-job-context">
+            <div>
+              <MapPin size={16} />
+              <span>
+                {job.region}, {job.country}
+              </span>
+            </div>
+            <div>
+              <Briefcase size={16} />
+              <span>{job.employer}</span>
+            </div>
+            <div>
+              <CalendarDays size={16} />
+              <span>Deadline {formatShortDate(job.deadline)}</span>
+            </div>
+            <div>
+              <ShieldCheck size={16} />
+              <span>{job.visaSponsorship ? 'Visa sponsorship available' : 'No sponsorship guarantee'}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <AnimatedSection>
+        <section className="apply-section">
+          <div className="container">
+            <div className="apply-form-shell apply-job-shell">
+              <div className="apply-progress-header">
+                <div>
+                  <span className="section-badge">Work Abroad Profile</span>
+                  <h2>Complete your job application</h2>
+                </div>
+                <span className="apply-progress-text">Single step submission</span>
+              </div>
+
+              <div className="apply-job-overview">
+                <div className="apply-job-overview-card">
+                  <span className="apply-job-overview-kicker">
+                    <FileText size={14} />
+                    Role overview
+                  </span>
+                  <h3>{job.title}</h3>
+                  <p>
+                    {job.category} role in {job.region}. {job.type === 'skilled' ? 'Skilled route' : 'Unskilled route'} with
+                    direct application support.
+                  </p>
+                </div>
+
+                <div className="apply-job-overview-card">
+                  <span className="apply-job-overview-kicker">
+                    <Globe2 size={14} />
+                    Key details
+                  </span>
+                  <div className="apply-job-overview-list">
+                    <span>{job.salary}</span>
+                    <span>{job.contractDuration}</span>
+                    <span>{job.positions} positions</span>
+                  </div>
+                </div>
+              </div>
+
+              <form className="apply-form apply-job-form" onSubmit={handleSubmit}>
+                <div className="apply-job-section-title">
+                  <span className="section-badge">Personal Information</span>
+                  <p>Share the details we need to review your application and contact you.</p>
+                </div>
+
+                <div className="apply-fields-grid apply-job-grid">
+                  <label>
+                    <span>Full Name</span>
+                    <input type="text" value={form.full_name} onChange={(event) => updateField('full_name', event.target.value)} required />
+                    {errors.full_name ? <small>{errors.full_name}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Email</span>
+                    <input type="email" value={form.email} onChange={(event) => updateField('email', event.target.value)} required />
+                    {errors.email ? <small>{errors.email}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Phone Number</span>
+                    <input type="tel" value={form.phone} onChange={(event) => updateField('phone', event.target.value)} required />
+                    {errors.phone ? <small>{errors.phone}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Country of Residence</span>
+                    <select value={form.country_of_residence} onChange={(event) => updateField('country_of_residence', event.target.value)} required>
+                      <option value="">Select a country</option>
+                      {JOB_COUNTRY_OPTIONS.map((country) => (
+                        <option key={country.slug} value={country.country}>
+                          {country.country}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.country_of_residence ? <small>{errors.country_of_residence}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Passport Number</span>
+                    <input type="text" value={form.passport_number} onChange={(event) => updateField('passport_number', event.target.value)} required />
+                    {errors.passport_number ? <small>{errors.passport_number}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Date of Birth</span>
+                    <input type="date" value={form.date_of_birth} onChange={(event) => updateField('date_of_birth', event.target.value)} required />
+                    {errors.date_of_birth ? <small>{errors.date_of_birth}</small> : null}
+                  </label>
+                </div>
+
+                <div className="apply-job-section-title">
+                  <span className="section-badge">Background</span>
+                  <p>Tell us about your education, experience, and language level.</p>
+                </div>
+
+                <div className="apply-fields-grid apply-job-grid">
+                  <label>
+                    <span>Highest Education Level</span>
+                    <select value={form.education_level} onChange={(event) => updateField('education_level', event.target.value)} required>
+                      {JOB_EDUCATION_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.education_level ? <small>{errors.education_level}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Years of Experience</span>
+                    <select value={form.years_experience} onChange={(event) => updateField('years_experience', event.target.value)} required>
+                      {JOB_EXPERIENCE_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.years_experience ? <small>{errors.years_experience}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>Current Occupation</span>
+                    <input type="text" value={form.current_occupation} onChange={(event) => updateField('current_occupation', event.target.value)} required />
+                    {errors.current_occupation ? <small>{errors.current_occupation}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>English Proficiency</span>
+                    <select value={form.english_proficiency} onChange={(event) => updateField('english_proficiency', event.target.value)} required>
+                      {JOB_ENG_PROFICIENCY.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.english_proficiency ? <small>{errors.english_proficiency}</small> : null}
+                  </label>
+
+                  <label>
+                    <span>French Proficiency</span>
+                    <select value={form.french_proficiency} onChange={(event) => updateField('french_proficiency', event.target.value)}>
+                      {JOB_FRENCH_PROFICIENCY.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    <span>How did you hear about us?</span>
+                    <select value={form.heard_from} onChange={(event) => updateField('heard_from', event.target.value)}>
+                      <option value="">Select an option</option>
+                      {JOB_HEARD_FROM_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="apply-job-toggle-grid">
+                  <label className="apply-job-toggle-card">
+                    <span>Do you have a valid passport?</span>
+                    <div className="apply-toggle-group">
+                      <ToggleChoice
+                        label="Yes"
+                        value="yes"
+                        selected={form.has_valid_passport}
+                        onChange={(value) => updateField('has_valid_passport', value)}
+                      />
+                      <ToggleChoice
+                        label="No"
+                        value="no"
+                        selected={form.has_valid_passport}
+                        onChange={(value) => updateField('has_valid_passport', value)}
+                      />
+                    </div>
+                  </label>
+
+                  <label className="apply-job-toggle-card">
+                    <span>Can you relocate within 3 months?</span>
+                    <div className="apply-toggle-group">
+                      <ToggleChoice
+                        label="Yes"
+                        value="yes"
+                        selected={form.available_to_relocate}
+                        onChange={(value) => updateField('available_to_relocate', value)}
+                      />
+                      <ToggleChoice
+                        label="No"
+                        value="no"
+                        selected={form.available_to_relocate}
+                        onChange={(value) => updateField('available_to_relocate', value)}
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div className="apply-job-section-title">
+                  <span className="section-badge">Documents</span>
+                  <p>Upload your CV and add a short note if you want to share more context.</p>
+                </div>
+
+                <div className="apply-fields-grid apply-job-grid">
+                  <label className="apply-file-field">
+                    <span>Upload CV / Resume</span>
+                    <div className="apply-file-input">
+                      <Upload size={16} />
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(event) => updateField('cv_file', event.target.files?.[0] || null)}
+                        required
+                      />
+                    </div>
+                    <small>{form.cv_file?.name || 'Accepted formats: PDF, DOC, DOCX'}</small>
+                    {errors.cv_file ? <small>{errors.cv_file}</small> : null}
+                  </label>
+
+                  <label className="apply-cover-field">
+                    <span>Cover Letter</span>
+                    <textarea
+                      rows="7"
+                      value={form.cover_letter}
+                      onChange={(event) => updateField('cover_letter', event.target.value)}
+                      placeholder="Optional note about your experience, availability, or interest in the role"
+                    />
+                  </label>
+                </div>
+
+                <label className="apply-checkbox apply-job-consent">
+                  <input
+                    type="checkbox"
+                    checked={form.consent}
+                    onChange={(event) => updateField('consent', event.target.checked)}
+                  />
+                  <span>I confirm that the information provided is accurate and I am ready to be contacted about this application.</span>
+                </label>
+                {errors.consent ? <small>{errors.consent}</small> : null}
+
+                {errors.submit ? <div className="apply-submit-error">{errors.submit}</div> : null}
+
+                <div className="apply-actions">
+                  <Link to={buildJobDetailPath(job.id)} className="btn-secondary apply-nav-btn">
+                    View Job Details
+                  </Link>
+                  <button type="submit" className="btn-primary apply-nav-btn" disabled={submitting}>
+                    {submitting ? 'Submitting...' : 'Submit Job Application'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+    </div>
+  )
 }
 
 function buildInitialForm(settings, scholarship) {
@@ -52,15 +594,22 @@ function buildInitialForm(settings, scholarship) {
 }
 
 function Apply() {
+  const { user } = useAuth()
   const { sections } = usePageSections('apply')
   const { scholarshipSlug } = useParams()
   const [searchParams] = useSearchParams()
+  const applicationType = searchParams.get('type') || ''
+  const jobId = searchParams.get('jobId') || ''
   const hero = sections.hero
   const wizard = sections.wizard
   const successSection = sections.success
-  const wizardSettings = wizard.settings ?? {}
+  const wizardSettings = useMemo(() => wizard.settings ?? {}, [wizard.settings])
   const requestedDestination = searchParams.get('destination') || ''
   const requestedUniversity = searchParams.get('university') || ''
+  const selectedJob = useMemo(() => {
+    if (applicationType !== 'job') return null
+    return getJobById(jobId)
+  }, [applicationType, jobId])
   const selectedScholarship = useMemo(() => {
     const querySlug = searchParams.get('scholarship')
     return getScholarshipBySlug(scholarshipSlug || querySlug || '')
@@ -75,6 +624,7 @@ function Apply() {
 
     return [preferredDestination, ...baseOptions]
   }, [requestedDestination, selectedScholarship?.destination, wizardSettings.destination_options])
+
   const initialForm = useMemo(
     () =>
       buildInitialForm(
@@ -94,10 +644,6 @@ function Apply() {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submittedReference, setSubmittedReference] = useState('')
-
-  if (scholarshipSlug && !selectedScholarship) {
-    return <Navigate to="/study-abroad" replace />
-  }
 
   useEffect(() => {
     setForm((current) => ({
@@ -232,6 +778,18 @@ function Apply() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (scholarshipSlug && !selectedScholarship) {
+    return <Navigate to="/study-abroad" replace />
+  }
+
+  if (applicationType === 'job') {
+    if (!selectedJob) {
+      return <Navigate to="/work-abroad" replace />
+    }
+
+    return <JobApplicationFlow job={selectedJob} user={user} />
   }
 
   if (submittedReference) {

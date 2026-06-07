@@ -679,6 +679,171 @@
   font-weight: 800;
 }
 
+.home-work {
+  background:
+    radial-gradient(circle at top right, rgba(212, 175, 55, 0.08), transparent 20%),
+    linear-gradient(180deg, rgba(245, 245, 245, 0.68) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.home-work-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.home-work-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: var(--white);
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.home-work-image {
+  position: relative;
+  min-height: 13rem;
+  background-size: cover;
+  background-position: center;
+}
+
+.home-work-country-pill,
+.home-work-type-pill {
+  position: absolute;
+  top: 1rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  backdrop-filter: blur(14px);
+}
+
+.home-work-country-pill {
+  left: 1rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--navy);
+}
+
+.home-work-type-pill {
+  right: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.home-work-type-pill.skilled {
+  background: rgba(91, 44, 137, 0.9);
+  color: var(--white);
+}
+
+.home-work-type-pill.unskilled {
+  background: rgba(212, 122, 55, 0.92);
+  color: var(--white);
+}
+
+.home-work-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.2rem;
+}
+
+.home-work-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.home-work-region,
+.home-work-employer,
+.home-work-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(10, 31, 68, 0.66);
+  font-size: 0.9rem;
+}
+
+.home-work-head h3 {
+  margin-top: 0.45rem;
+  color: var(--navy);
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.home-work-employer {
+  margin-top: 0.45rem;
+}
+
+.home-work-salary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--navy);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.home-work-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.home-work-highlights span,
+.home-work-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  color: rgba(10, 31, 68, 0.74);
+  font-size: 0.84rem;
+}
+
+.home-work-meta {
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.home-work-status {
+  text-transform: capitalize;
+}
+
+.home-work-status.open {
+  background: rgba(20, 128, 72, 0.12);
+  color: #0f6a3c;
+}
+
+.home-work-status.closing_soon {
+  background: rgba(217, 119, 6, 0.12);
+  color: #92400e;
+}
+
+.home-work-status.closed {
+  background: rgba(185, 28, 28, 0.12);
+  color: #991b1b;
+}
+
+.home-work-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.home-work-secondary,
+.home-work-primary {
+  flex: 1;
+}
+
 .home-testimonials {
   background:
     radial-gradient(circle at 100% 0%, rgba(212, 175, 55, 0.08), transparent 20%),
@@ -799,6 +964,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .home-work-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .testimonials-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -838,6 +1007,7 @@
   .home-hero-stats,
   .steps-grid,
   .destinations-grid,
+  .home-work-grid,
   .testimonials-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
@@ -848,6 +1018,10 @@
 
   .steps-grid,
   .destinations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-work-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -939,6 +1113,14 @@
   .home-outline-btn,
   .home-whatsapp-btn {
     width: 100%;
+  }
+
+  .home-work-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-work-actions {
+    flex-direction: column;
   }
 
   .events-strip {

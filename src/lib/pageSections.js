@@ -512,6 +512,47 @@ const PAGE_SECTION_DEFAULTS = {
       settings: {},
     },
   },
+  work_abroad: {
+    hero: {
+      label: 'Hero',
+      enabled: true,
+      order: 1,
+      badge_text: 'Work Abroad',
+      heading: 'Find skilled and unskilled jobs abroad with clear application support.',
+      subheading:
+        'Browse openings across Canada, the USA, the UK, Germany, Australia, the UAE, France, and the Netherlands, then apply with confidence.',
+      primary_btn_text: 'Browse Jobs',
+      primary_btn_url: '/work-abroad',
+      secondary_btn_text: 'Book Consultation',
+      secondary_btn_url: '/contact',
+      items: [],
+      settings: {
+        stats: [
+          { value: 54, suffix: '+', label: 'Live job openings' },
+          { value: 8, suffix: '', label: 'Countries covered' },
+          { value: 27, suffix: '+', label: 'Skilled roles' },
+          { value: 27, suffix: '+', label: 'Unskilled roles' },
+        ],
+        search_hint: 'Search by job title or employer',
+        filter_hint: 'Use the filters below to narrow by country, category, or job type.',
+      },
+    },
+    cta: {
+      label: 'CTA',
+      enabled: true,
+      order: 2,
+      badge_text: 'Next Step',
+      heading: 'Need help choosing the right job abroad?',
+      subheading:
+        'We can help you compare countries, check visa routes, and apply for the role that best fits your experience.',
+      primary_btn_text: 'View Jobs',
+      primary_btn_url: '/work-abroad',
+      secondary_btn_text: 'Contact Us',
+      secondary_btn_url: '/contact',
+      items: [],
+      settings: {},
+    },
+  },
   events_page: {
     hero: {
       label: 'Hero',
