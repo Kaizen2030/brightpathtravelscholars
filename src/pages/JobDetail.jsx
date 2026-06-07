@@ -19,6 +19,7 @@ import {
   getJobById,
   JOB_CATALOG,
 } from '../lib/jobCatalog'
+import { getJobImageUrl } from '../lib/jobMedia'
 import './JobDetail.css'
 
 function formatDate(value) {
@@ -31,7 +32,7 @@ function formatDate(value) {
 }
 
 function SimilarJobCard({ job }) {
-  const imageUrl = `https://source.unsplash.com/featured/700x450/?${encodeURIComponent(job.imageKeyword)}`
+  const imageUrl = getJobImageUrl(job)
 
   return (
     <article className="job-detail-similar-card">
@@ -67,7 +68,7 @@ function JobDetail() {
 
   const isClosed = job.status === 'closed'
   const similarJobs = JOB_CATALOG.filter((item) => item.country === job.country && item.id !== job.id).slice(0, 3)
-  const heroImage = `https://source.unsplash.com/featured/1200x800/?${encodeURIComponent(job.imageKeyword)}`
+  const heroImage = getJobImageUrl(job)
 
   return (
     <div className="job-detail-page">

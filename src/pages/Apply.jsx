@@ -10,7 +10,6 @@ import {
   Globe2,
   MapPin,
   ShieldCheck,
-  Upload,
 } from 'lucide-react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import AnimatedSection from '../components/AnimatedSection'
@@ -74,7 +73,6 @@ function buildJobInitialForm() {
     french_proficiency: JOB_FRENCH_PROFICIENCY[0],
     has_valid_passport: 'yes',
     available_to_relocate: 'yes',
-    cv_file: null,
     cover_letter: '',
     heard_from: '',
     consent: false,
@@ -103,14 +101,14 @@ function JobApplicationFlow({ job, user }) {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submittedReference, setSubmittedReference] = useState('')
-  const [uploadedCvName, setUploadedCvName] = useState('')
+  const [submittedNoteSummary, setSubmittedNoteSummary] = useState('')
 
   useEffect(() => {
     setForm(buildJobInitialForm())
     setErrors({})
     setSubmitting(false)
     setSubmittedReference('')
-    setUploadedCvName('')
+    setSubmittedNoteSummary('')
   }, [job.id])
 
   function updateField(field, value) {
@@ -131,7 +129,6 @@ function JobApplicationFlow({ job, user }) {
     if (!form.years_experience.trim()) nextErrors.years_experience = 'Years of experience is required.'
     if (!form.current_occupation.trim()) nextErrors.current_occupation = 'Current occupation is required.'
     if (!form.english_proficiency.trim()) nextErrors.english_proficiency = 'English proficiency is required.'
-    if (!form.cv_file) nextErrors.cv_file = 'Please upload your CV or resume.'
     if (!form.consent) nextErrors.consent = 'You must confirm the information is accurate.'
 
     setErrors(nextErrors)
@@ -142,36 +139,9 @@ function JobApplicationFlow({ job, user }) {
     event.preventDefault()
     if (!validateForm()) return
 
-    setSubmitting(true)
+  setSubmitting(true)
 
-    try {
-      let cvUrl = ''
-
-      if (form.cv_file) {
-        const safeName = form.cv_file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
-        const filePath = `job-applications/${Date.now()}-${user?.id || 'guest'}-${safeName}`
-
-        try {
-          const { error: uploadError } = await supabase.storage.from('job-applications').upload(filePath, form.cv_file, {
-            upsert: false,
-            cacheControl: '3600',
-          })
-
-          if (!uploadError) {
-            const { data } = supabase.storage.from('job-applications').getPublicUrl(filePath)
-            cvUrl = data?.publicUrl || ''
-            setUploadedCvName(form.cv_file.name)
-          } else {
-            cvUrl = form.cv_file.name
-            setUploadedCvName(form.cv_file.name)
-          }
-        } catch (uploadException) {
-          console.warn('[Apply] CV upload failed, storing file name instead:', uploadException)
-          cvUrl = form.cv_file.name
-          setUploadedCvName(form.cv_file.name)
-        }
-      }
-
+  try {
       const payload = {
         job_id: job.id,
         user_id: user?.id ?? null,
@@ -188,8 +158,7 @@ function JobApplicationFlow({ job, user }) {
         french_proficiency: form.french_proficiency,
         has_valid_passport: form.has_valid_passport === 'yes',
         available_to_relocate: form.available_to_relocate === 'yes',
-        cv_url: cvUrl || null,
-        cover_letter: form.cover_letter.trim(),
+        notes: form.cover_letter.trim() || null,
         heard_from: form.heard_from,
         status: 'pending',
       }
@@ -199,6 +168,7 @@ function JobApplicationFlow({ job, user }) {
       if (error) throw error
 
       setSubmittedReference(buildReference(data?.id, 'JOB'))
+      setSubmittedNoteSummary(form.cover_letter.trim())
       setErrors({})
       setForm(buildJobInitialForm())
     } catch (error) {
@@ -239,8 +209,8 @@ function JobApplicationFlow({ job, user }) {
                   <strong>{job.employer}</strong>
                 </div>
                 <div>
-                  <span>CV Uploaded</span>
-                  <strong>{uploadedCvName || 'Attached'}</strong>
+                  <span>Notes Shared</span>
+                  <strong>{submittedNoteSummary ? 'Yes' : 'No'}</strong>
                 </div>
               </div>
               <div className="apply-job-success-actions">
@@ -495,33 +465,18 @@ function JobApplicationFlow({ job, user }) {
                 </div>
 
                 <div className="apply-job-section-title">
-                  <span className="section-badge">Documents</span>
-                  <p>Upload your CV and add a short note if you want to share more context.</p>
+                  <span className="section-badge">Additional Notes</span>
+                  <p>Share a few extra details about your availability, experience, or anything you want us to know.</p>
                 </div>
 
                 <div className="apply-fields-grid apply-job-grid">
-                  <label className="apply-file-field">
-                    <span>Upload CV / Resume</span>
-                    <div className="apply-file-input">
-                      <Upload size={16} />
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={(event) => updateField('cv_file', event.target.files?.[0] || null)}
-                        required
-                      />
-                    </div>
-                    <small>{form.cv_file?.name || 'Accepted formats: PDF, DOC, DOCX'}</small>
-                    {errors.cv_file ? <small>{errors.cv_file}</small> : null}
-                  </label>
-
-                  <label className="apply-cover-field">
-                    <span>Cover Letter</span>
+                  <label className="apply-cover-field" style={{ gridColumn: '1 / -1' }}>
+                    <span>Notes / Extra Details</span>
                     <textarea
                       rows="7"
                       value={form.cover_letter}
                       onChange={(event) => updateField('cover_letter', event.target.value)}
-                      placeholder="Optional note about your experience, availability, or interest in the role"
+                      placeholder="Optional note about your experience, availability, timeline, or why this role fits you"
                     />
                   </label>
                 </div>

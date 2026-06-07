@@ -1,14 +1,18 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useMemo, useState } from 'react'
 import {
+  ArrowRight,
+  BadgeCheck,
   Briefcase,
   CalendarDays,
+  CheckCircle2,
+  ChevronRight,
   Globe2,
+  Home,
   MapPin,
   Search,
   ShieldCheck,
-  Sparkles,
-  Warehouse,
+  Users,
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import AnimatedSection from '../components/AnimatedSection'
@@ -23,6 +27,7 @@ import {
   JOB_CATALOG,
   JOB_COUNTRY_OPTIONS,
 } from '../lib/jobCatalog'
+import { getJobImageUrl } from '../lib/jobMedia'
 import './WorkAbroad.css'
 
 const TYPE_OPTIONS = [
@@ -31,8 +36,68 @@ const TYPE_OPTIONS = [
   { key: 'unskilled', label: 'Unskilled' },
 ]
 
+const SALARY_OPTIONS = [
+  { key: 'all', label: 'Any salary' },
+  { key: 'year', label: 'Annual' },
+  { key: 'month', label: 'Monthly' },
+  { key: 'hour', label: 'Hourly' },
+]
+
+const TRUST_PILL_ICONS = {
+  shield: ShieldCheck,
+  home: Home,
+  users: Users,
+}
+
+const TRUST_ITEMS = [
+  {
+    icon: BadgeCheck,
+    title: 'Licensed agency',
+    body: 'Guided by an experienced team with clear support and transparent processes.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Zero fake listings',
+    body: 'Every role is curated for credibility, structure, and safe recruitment standards.',
+  },
+  {
+    icon: Users,
+    title: '4,200+ placed abroad',
+    body: 'Thousands of applicants have already started working through our support network.',
+  },
+  {
+    icon: Globe2,
+    title: 'Visa guidance',
+    body: 'We help you prepare documents and move through visa steps without confusion.',
+  },
+]
+
+const HOW_IT_WORKS = [
+  {
+    title: 'Choose a role',
+    description: 'Browse the listings and open a job that matches your background and destination goals.',
+  },
+  {
+    title: 'Submit your CV',
+    description: 'Complete the application form and upload a clear resume or work history file.',
+  },
+  {
+    title: 'Review and call',
+    description: 'Our team reviews your profile, then follows up for interviews or missing details.',
+  },
+  {
+    title: 'Visa processing',
+    description: 'We guide you through the documents and sponsorship steps required for relocation.',
+  },
+  {
+    title: 'Travel abroad',
+    description: 'Once everything is ready, you receive the final guidance needed before departure.',
+  },
+]
+
 function formatDate(value) {
   if (!value) return 'Date to be confirmed'
+
   return new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
     month: 'short',
@@ -40,24 +105,32 @@ function formatDate(value) {
   }).format(new Date(value))
 }
 
-function JobCard({ job, featured = false }) {
-  const imageUrl = `https://source.unsplash.com/featured/800x500/?${encodeURIComponent(job.imageKeyword)}`
-  const isSkilled = job.type === 'skilled'
+function daysUntil(value) {
+  if (!value) return Number.POSITIVE_INFINITY
+  const now = new Date()
+  const deadline = new Date(value)
+  return Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+function JobCard({ job }) {
+  const visualStyle = useMemo(
+    () => ({
+      backgroundImage: `url("${getJobImageUrl(job)}")`,
+    }),
+    [job],
+  )
+
+  const deadlineDays = daysUntil(job.deadline)
+  const isUrgent = deadlineDays >= 0 && deadlineDays <= 7
+  const isClosed = job.status === 'closed'
 
   return (
-    <article className={`work-job-card${featured ? ' featured' : ''}`}>
-      <div
-        className="work-job-image"
-        style={{
-          backgroundImage: `linear-gradient(180deg, rgba(53, 21, 83, 0.08) 0%, rgba(53, 21, 83, 0.62) 100%), url(${imageUrl})`,
-        }}
-      >
-        <span className="work-country-pill">
+    <article className="work-job-card">
+      <div className="work-job-strip" style={visualStyle}>
+        <span className="work-job-country">
           {job.flag} {job.country}
         </span>
-        <span className={`work-type-pill ${job.type}`}>
-          {isSkilled ? 'Skilled' : 'Unskilled'}
-        </span>
+        <span className={`work-job-type ${job.type}`}>{job.type === 'skilled' ? 'Skilled' : 'Unskilled'}</span>
       </div>
 
       <div className="work-job-body">
@@ -74,22 +147,14 @@ function JobCard({ job, featured = false }) {
             </p>
           </div>
 
-          <span className="work-salary-pill">{job.salary}</span>
+          <span className="work-job-salary">{job.salary}</span>
         </div>
 
-        <div className="work-job-highlights">
-          <span>
-            <ShieldCheck size={14} />
-            {job.visaSponsorship ? 'Visa sponsorship' : 'No sponsorship'}
-          </span>
-          <span>
-            <Warehouse size={14} />
-            {job.accommodationProvided ? 'Accommodation' : 'Self-arranged stay'}
-          </span>
-          <span>
-            <Sparkles size={14} />
-            {job.positions} openings
-          </span>
+        <div className="work-job-badges">
+          <span className={`work-job-badge type ${job.type}`}>{job.type === 'skilled' ? 'Skilled' : 'Unskilled'}</span>
+          {job.visaSponsorship ? <span className="work-job-badge visa">Visa Ready</span> : null}
+          {job.accommodationProvided ? <span className="work-job-badge stay">Stay Help</span> : null}
+          {isUrgent ? <span className="work-job-badge urgent">Urgent</span> : null}
         </div>
 
         <div className="work-job-meta">
@@ -97,15 +162,17 @@ function JobCard({ job, featured = false }) {
             <CalendarDays size={14} />
             Deadline {formatDate(job.deadline)}
           </span>
-          <span className={`work-status-pill ${job.status}`}>{job.status.replace(/_/g, ' ')}</span>
+          <span className={`work-job-status ${job.status}`}>{isClosed ? 'Closed' : job.status.replace(/_/g, ' ')}</span>
         </div>
 
         <div className="work-job-actions">
-          <Link to={buildJobDetailPath(job.id)} className="btn-secondary work-job-secondary">
+          <Link to={buildJobDetailPath(job.id)} className="work-job-link secondary">
             View Job
+            <ChevronRight size={16} />
           </Link>
-          <Link to={buildJobApplyPath(job.id)} className="btn-primary work-job-primary">
+          <Link to={buildJobApplyPath(job.id)} className={`work-job-link primary${isClosed ? ' disabled' : ''}`}>
             Apply Now
+            <ArrowRight size={16} />
           </Link>
         </div>
       </div>
@@ -117,54 +184,82 @@ function WorkAbroad() {
   const { sections } = usePageSections('work_abroad')
   const navigate = useNavigate()
   const { countrySlug } = useParams()
-  const categories = useMemo(() => ['All Categories', ...getJobCategories()], [])
-  const routeCountry = useMemo(() => getCountryMetaBySlug(countrySlug), [countrySlug])
-  const [countryFilter, setCountryFilter] = useState(routeCountry?.country || 'All Countries')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [categoryFilter, setCategoryFilter] = useState('All Categories')
-  const [searchTerm, setSearchTerm] = useState('')
+  const routeCountryMeta = useMemo(() => getCountryMetaBySlug(countrySlug), [countrySlug])
 
   const hero = sections.hero
   const cta = sections.cta
 
+  const [countryFilter, setCountryFilter] = useState(routeCountryMeta?.country || 'All Countries')
+  const [categoryFilter, setCategoryFilter] = useState('All Categories')
+  const [salaryFilter, setSalaryFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+
   useEffect(() => {
-    setCountryFilter(routeCountry?.country || 'All Countries')
-  }, [routeCountry?.country])
+    setCountryFilter(routeCountryMeta?.country || 'All Countries')
+  }, [routeCountryMeta?.country])
 
-  const featuredJobs = useMemo(() => JOB_CATALOG.filter((job) => job.featured).slice(0, 8), [])
+  const categories = useMemo(() => ['All Categories', ...getJobCategories()], [])
+  const countryCards = useMemo(
+    () =>
+      JOB_COUNTRY_OPTIONS.map((item) => ({
+        ...item,
+        count: JOB_CATALOG.filter((job) => job.country === item.country).length,
+      })),
+    [],
+  )
 
-  const filteredJobs = useMemo(() => {
-    const lowerSearch = searchTerm.trim().toLowerCase()
+  const jobs = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase()
+    const now = new Date()
 
-    return JOB_CATALOG.filter((job) => {
-      const matchesCountry = countryFilter === 'All Countries' || job.country === countryFilter
-      const matchesType = typeFilter === 'all' || job.type === typeFilter
-      const matchesCategory = categoryFilter === 'All Categories' || job.category === categoryFilter
-      const matchesSearch =
-        !lowerSearch ||
-        job.title.toLowerCase().includes(lowerSearch) ||
-        job.employer.toLowerCase().includes(lowerSearch) ||
-        job.region.toLowerCase().includes(lowerSearch) ||
-        job.country.toLowerCase().includes(lowerSearch)
+    return [...JOB_CATALOG]
+      .filter((job) => {
+        const matchesCountry = countryFilter === 'All Countries' || job.country === countryFilter
+        const matchesCategory = categoryFilter === 'All Categories' || job.category === categoryFilter
+        const matchesSalary = salaryFilter === 'all' || job.salaryPeriod === salaryFilter
+        const matchesType = typeFilter === 'all' || job.type === typeFilter
+        const matchesQuery =
+          !query ||
+          job.title.toLowerCase().includes(query) ||
+          job.employer.toLowerCase().includes(query) ||
+          job.region.toLowerCase().includes(query) ||
+          job.country.toLowerCase().includes(query)
 
-      return matchesCountry && matchesType && matchesCategory && matchesSearch
-    })
-  }, [categoryFilter, countryFilter, searchTerm, typeFilter])
+        return matchesCountry && matchesCategory && matchesSalary && matchesType && matchesQuery
+      })
+      .sort((left, right) => {
+        const statusRank = { open: 0, closing_soon: 1, closed: 2 }
+        const leftRank = statusRank[left.status] ?? 3
+        const rightRank = statusRank[right.status] ?? 3
+        if (leftRank !== rightRank) return leftRank - rightRank
 
-  const resultsLabel = `Showing ${filteredJobs.length} of ${JOB_CATALOG.length} jobs`
-  const activeCountryMeta = countryFilter === 'All Countries'
-    ? null
-    : JOB_COUNTRY_OPTIONS.find((item) => item.country === countryFilter) || null
+        const leftDeadline = left.deadline ? new Date(left.deadline).getTime() : now.getTime()
+        const rightDeadline = right.deadline ? new Date(right.deadline).getTime() : now.getTime()
+        return leftDeadline - rightDeadline
+      })
+  }, [categoryFilter, countryFilter, searchTerm, salaryFilter, typeFilter])
 
-  function handleCountryChange(nextCountry) {
+  const resultsLabel = `Showing ${jobs.length} of ${JOB_CATALOG.length} jobs`
+  const activeCountryMeta = countryFilter === 'All Countries' ? null : routeCountryMeta || JOB_COUNTRY_OPTIONS.find((item) => item.country === countryFilter) || null
+  const trustPills = hero.settings?.trust_pills?.length
+    ? hero.settings.trust_pills
+    : [
+        { icon: 'shield', label: 'Visa sponsorship' },
+        { icon: 'home', label: 'Accommodation available' },
+        { icon: 'users', label: '4,200+ placed abroad' },
+      ]
+
+  function handleCountrySelect(nextCountry) {
     setCountryFilter(nextCountry)
     navigate(nextCountry === 'All Countries' ? '/work-abroad' : buildWorkAbroadPath(nextCountry))
   }
 
   function resetFilters() {
     setCountryFilter('All Countries')
-    setTypeFilter('all')
     setCategoryFilter('All Categories')
+    setSalaryFilter('all')
+    setTypeFilter('all')
     setSearchTerm('')
     navigate('/work-abroad')
   }
@@ -173,64 +268,90 @@ function WorkAbroad() {
     <div className="work-page">
       <SEO
         title="Work Abroad"
-        description="Browse skilled and unskilled jobs abroad with country filters, featured roles, and direct application links."
+        description="Browse skilled and unskilled jobs abroad with destination chips, quick filters, and direct application links."
         path={countrySlug ? `/work-abroad/${countrySlug}` : '/work-abroad'}
       />
 
       <section className="work-hero">
-        <div className="container work-hero-grid">
-          <div className="work-hero-copy">
-            <span className="section-badge work-hero-badge">{hero.badge_text}</span>
-            <h1>{hero.heading}</h1>
-            <p>{hero.subheading}</p>
+        <div className="container work-hero-inner">
+          <span className="section-badge work-hero-badge">{hero.badge_text}</span>
+          <h1>{hero.heading}</h1>
+          <p>{hero.subheading}</p>
 
-            <div className="work-hero-actions">
-              <Link to={hero.primary_btn_url} className="btn-primary">
-                {hero.primary_btn_text}
-              </Link>
-              <Link to={hero.secondary_btn_url} className="btn-secondary work-hero-secondary">
-                {hero.secondary_btn_text}
-              </Link>
-            </div>
+          <form
+            className="work-hero-search"
+            onSubmit={(event) => {
+              event.preventDefault()
+              document.getElementById('work-jobs')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
+          >
+            <Search size={18} />
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder={hero.settings?.search_hint || 'Job title, skill, or company...'}
+              aria-label="Search jobs"
+            />
+            <button type="submit" className="work-hero-search-btn">
+              Search Jobs
+            </button>
+          </form>
 
-            <div className="work-hero-stats">
-              {(hero.settings?.stats ?? []).map((stat) => (
-                <div key={stat.label} className="work-hero-stat">
-                  <strong>
-                    {stat.value}
-                    {stat.suffix || ''}
-                  </strong>
-                  <span>{stat.label}</span>
-                </div>
-              ))}
-            </div>
+          <div className="work-hero-pills">
+            {trustPills.map((pill) => {
+              const PillIcon = TRUST_PILL_ICONS[pill.icon] || CheckCircle2
+
+              return (
+                <span key={pill.label} className="work-hero-pill">
+                  <PillIcon size={14} />
+                  {pill.label}
+                </span>
+              )
+            })}
           </div>
+        </div>
+      </section>
 
-          <article className="work-hero-panel">
-            <div className="work-hero-panel-head">
-              <span className="work-hero-panel-kicker">
-                <Sparkles size={16} />
-                Hiring snapshot
-              </span>
-              <h2>Skilled and unskilled routes in one place</h2>
-              <p>
-                Use the filters to narrow roles by destination, category, and job type before you open a full listing.
-              </p>
+      <AnimatedSection>
+        <section className="work-countries-section">
+          <div className="container">
+            <div className="work-section-header compact">
+              <div>
+                <span className="section-badge">Top destinations</span>
+                <h2>Choose a country and jump straight into live openings</h2>
+              </div>
+              <Link to="/work-abroad" className="work-section-link">
+                View all
+                <ChevronRight size={16} />
+              </Link>
             </div>
 
-            <div className="work-hero-panel-points">
-              <div>
-                <Globe2 size={18} />
-                <span>8 countries covered</span>
-              </div>
-              <div>
-                <ShieldCheck size={18} />
-                <span>Visa support available on many roles</span>
-              </div>
-              <div>
-                <Warehouse size={18} />
-                <span>Accommodation assistance on selected jobs</span>
-              </div>
+            <div className="work-country-row">
+              <button
+                type="button"
+                className={`work-country-chip${countryFilter === 'All Countries' ? ' active' : ''}`}
+                onClick={() => handleCountrySelect('All Countries')}
+              >
+                <span className="work-country-chip-flag">
+                  <Globe2 size={18} />
+                </span>
+                <span className="work-country-chip-name">All Countries</span>
+                <span className="work-country-chip-count">{JOB_CATALOG.length} jobs</span>
+              </button>
+
+              {countryCards.map((country) => (
+                <button
+                  key={country.slug}
+                  type="button"
+                  className={`work-country-chip${country.country === countryFilter ? ' active' : ''}`}
+                  onClick={() => handleCountrySelect(country.country)}
+                >
+                  <span className="work-country-chip-flag">{country.flag}</span>
+                  <span className="work-country-chip-name">{country.country}</span>
+                  <span className="work-country-chip-count">{country.count} jobs</span>
+                </button>
+              ))}
             </div>
 
             {activeCountryMeta ? (
@@ -238,78 +359,56 @@ function WorkAbroad() {
                 <span>{activeCountryMeta.flag}</span>
                 <div>
                   <strong>{activeCountryMeta.country}</strong>
-                  <p>{filteredJobs.filter((job) => job.country === activeCountryMeta.country).length} matching openings</p>
+                  <p>{jobs.filter((job) => job.country === activeCountryMeta.country).length} matching openings</p>
                 </div>
               </div>
             ) : null}
-          </article>
-        </div>
-      </section>
+          </div>
+        </section>
+      </AnimatedSection>
 
-      <AnimatedSection>
-        <section className="work-filter-section">
+      <AnimatedSection delay={0.06}>
+        <section className="work-filter-wrap">
           <div className="container">
-            <div className="work-filter-shell">
-              <div className="work-filter-head">
-                <div>
-                  <span className="section-badge">Search Jobs</span>
-                  <h2>Filter live work abroad opportunities</h2>
-                </div>
-                <p>{hero.settings?.filter_hint || 'Narrow jobs by country, type, category, and job title.'}</p>
+            <div className="work-filter-bar">
+              <label>
+                <span>Category</span>
+                <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Salary</span>
+                <select value={salaryFilter} onChange={(event) => setSalaryFilter(event.target.value)}>
+                  {SALARY_OPTIONS.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="work-filter-toggle">
+                {TYPE_OPTIONS.map((option) => (
+                  <button
+                    key={option.key}
+                    type="button"
+                    className={typeFilter === option.key ? 'active' : ''}
+                    onClick={() => setTypeFilter(option.key)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
               </div>
 
-              <div className="work-filter-grid">
-                <label>
-                  <span>Country</span>
-                  <select value={countryFilter} onChange={(event) => handleCountryChange(event.target.value)}>
-                    <option value="All Countries">All Countries</option>
-                    {JOB_COUNTRY_OPTIONS.map((item) => (
-                      <option key={item.slug} value={item.country}>
-                        {item.country}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  <span>Type</span>
-                  <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
-                    {TYPE_OPTIONS.map((option) => (
-                      <option key={option.key} value={option.key}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  <span>Category</span>
-                  <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="work-search-field">
-                  <span>Search</span>
-                  <div className="work-search-input">
-                    <Search size={16} />
-                    <input
-                      type="search"
-                      value={searchTerm}
-                      onChange={(event) => setSearchTerm(event.target.value)}
-                      placeholder={hero.settings?.search_hint || 'Search by job title or employer'}
-                    />
-                  </div>
-                </label>
-              </div>
-
-              <div className="work-filter-footer">
+              <div className="work-filter-count">
                 <strong>{resultsLabel}</strong>
-                <button type="button" className="work-reset-btn" onClick={resetFilters}>
+                <button type="button" onClick={resetFilters}>
                   Clear filters
                 </button>
               </div>
@@ -318,52 +417,27 @@ function WorkAbroad() {
         </section>
       </AnimatedSection>
 
-      <AnimatedSection delay={0.06}>
-        <section className="work-section">
+      <AnimatedSection delay={0.1}>
+        <section id="work-jobs" className="work-section">
           <div className="container">
             <div className="work-section-header">
               <div>
-                <span className="section-badge">Featured Jobs</span>
-                <h2>Highlighted roles people are applying for right now</h2>
+                <span className="section-badge">Available jobs</span>
+                <h2>Lean listings with the key details front and center</h2>
               </div>
-              <Link to="/work-abroad" className="btn-secondary work-header-link">
-                View all jobs
-              </Link>
+              <p>{hero.settings?.filter_hint || 'Filter by country, category, salary, and job type.'}</p>
             </div>
 
-            <div className="work-featured-strip">
-              {featuredJobs.map((job) => (
-                <JobCard key={job.id} job={job} featured />
-              ))}
-            </div>
-          </div>
-        </section>
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.12}>
-        <section className="work-section alt">
-          <div className="container">
-            <div className="work-section-header">
-              <div>
-                <span className="section-badge">All Jobs</span>
-                <h2>Explore every filtered opening</h2>
-              </div>
-              <p>Open a role to see the full requirements, benefits, and direct application button.</p>
-            </div>
-
-            {filteredJobs.length ? (
+            {jobs.length ? (
               <div className="work-job-grid">
-                {filteredJobs.map((job) => (
+                {jobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
               </div>
             ) : (
-              <article className="work-empty-state">
+              <article className="work-empty">
                 <h3>No jobs matched your filters</h3>
-                <p>
-                  Try clearing the filters or broadening your search. You can also contact Brightpath and we will help
-                  you find a better fit.
-                </p>
+                <p>Try a wider country, category, or salary range. You can also clear filters and start again.</p>
                 <div className="work-empty-actions">
                   <button type="button" className="btn-primary" onClick={resetFilters}>
                     Reset filters
@@ -378,8 +452,62 @@ function WorkAbroad() {
         </section>
       </AnimatedSection>
 
-      <AnimatedSection delay={0.18}>
-        <section className="work-section">
+      <AnimatedSection delay={0.16}>
+        <section className="work-trust-section">
+          <div className="container">
+            <div className="work-section-header compact">
+              <div>
+                <span className="section-badge">Trust first</span>
+                <h2>Applicants want proof before they click apply</h2>
+              </div>
+              <p>These are the credibility signals people look for when they are deciding whether to trust a job board.</p>
+            </div>
+
+            <div className="work-trust-grid">
+              {TRUST_ITEMS.map((item) => {
+                const Icon = item.icon
+
+                return (
+                  <article key={item.title} className="work-trust-card">
+                    <div className="work-trust-icon">
+                      <Icon size={18} />
+                    </div>
+                    <div>
+                      <h3>{item.title}</h3>
+                      <p>{item.body}</p>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.22}>
+        <section className="work-steps-section">
+          <div className="container">
+            <div className="work-section-header compact centered">
+              <span className="section-badge">How it works</span>
+              <h2>A simple route from search to departure</h2>
+              <p>We keep the process short and predictable so applicants know exactly what happens next.</p>
+            </div>
+
+            <div className="work-steps-grid">
+              {HOW_IT_WORKS.map((step, index) => (
+                <article key={step.title} className="work-step-card">
+                  <div className="work-step-circle">{index + 1}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      </AnimatedSection>
+
+      <AnimatedSection delay={0.28}>
+        <section className="work-cta-section">
           <div className="container">
             <div className="work-cta-panel">
               <div>
@@ -389,11 +517,11 @@ function WorkAbroad() {
               </div>
 
               <div className="work-cta-actions">
-                <Link to={cta.primary_btn_url} className="btn-primary">
-                  {cta.primary_btn_text}
+                <Link to={cta.primary_btn_url || '/work-abroad'} className="btn-primary work-cta-primary">
+                  {cta.primary_btn_text || 'Browse All Jobs'}
                 </Link>
-                <Link to={cta.secondary_btn_url} className="btn-secondary">
-                  {cta.secondary_btn_text}
+                <Link to={cta.secondary_btn_url || '/contact'} className="work-cta-secondary">
+                  {cta.secondary_btn_text || 'Create Profile'}
                 </Link>
               </div>
             </div>

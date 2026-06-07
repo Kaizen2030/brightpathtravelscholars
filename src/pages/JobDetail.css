@@ -446,6 +446,38 @@
 @media (max-width: 768px) {
   .job-detail-hero,
   .job-detail-section {
-    padding: 4rem 0;
+    padding: 3.7rem 0;
+  }
+
+  .job-detail-similar-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .job-detail-similar-card {
+    border-radius: 1rem;
+  }
+
+  .job-detail-similar-image {
+    min-height: 10rem;
+    padding: 0.85rem;
+  }
+
+  .job-detail-similar-body {
+    padding: 0.85rem;
+  }
+
+  .job-detail-similar-footer {
+    gap: 0.5rem;
+  }
+
+  .job-detail-similar-footer a {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .job-detail-similar-grid {
+    grid-template-columns: 1fr;
   }
 }
