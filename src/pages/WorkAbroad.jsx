@@ -128,7 +128,7 @@ function JobCard({ job }) {
     <article className="work-job-card">
       <div className="work-job-strip" style={visualStyle}>
         <span className="work-job-country">
-          {job.flag} {job.country}
+          {job.country}
         </span>
         <span className={`work-job-type ${job.type}`}>{job.type === 'skilled' ? 'Skilled' : 'Unskilled'}</span>
       </div>
@@ -325,6 +325,20 @@ function WorkAbroad() {
                 View all
                 <ChevronRight size={16} />
               </Link>
+            </div>
+
+            <div className="work-country-selector">
+              <label>
+                <span>Country</span>
+                <select value={countryFilter} onChange={(event) => handleCountrySelect(event.target.value)}>
+                  <option value="All Countries">All Countries ({JOB_CATALOG.length} jobs)</option>
+                  {countryCards.map((country) => (
+                    <option key={country.slug} value={country.country}>
+                      {country.country} ({country.count} jobs)
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             <div className="work-country-row">

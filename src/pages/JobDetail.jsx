@@ -42,7 +42,7 @@ function SimilarJobCard({ job }) {
           backgroundImage: `linear-gradient(180deg, rgba(53, 21, 83, 0.08) 0%, rgba(53, 21, 83, 0.54) 100%), url(${imageUrl})`,
         }}
       >
-        <span>{job.flag}</span>
+        <span>{job.country}</span>
       </div>
       <div className="job-detail-similar-body">
         <p className="job-detail-similar-country">{job.country}</p>
@@ -82,7 +82,7 @@ function JobDetail() {
         <div className="container job-detail-hero-grid">
           <div className="job-detail-copy">
             <span className="section-badge job-detail-badge">
-              {job.flag} {job.country}
+              {job.country}
             </span>
             <h1>{job.title}</h1>
             <p>{job.description}</p>
