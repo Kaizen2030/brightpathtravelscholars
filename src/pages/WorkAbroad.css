@@ -959,23 +959,21 @@
 
 @media (max-width: 480px) {
   .work-hero-pills {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    align-items: center;
-    overflow-x: auto;
-    padding-bottom: 0.15rem;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .work-hero-pills::-webkit-scrollbar {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+    align-items: stretch;
+    gap: 0.5rem;
+    overflow: visible;
+    padding-bottom: 0;
   }
 
   .work-hero-pill {
-    flex: 0 0 auto;
-    white-space: nowrap;
+    width: 100%;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.2;
   }
 
   .work-job-grid {
