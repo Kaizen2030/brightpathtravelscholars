@@ -25,6 +25,7 @@ function ResetPassword() {
   const [verifyingLink, setVerifyingLink] = useState(
     Boolean(searchParams.get('code') || searchParams.get('token_hash') || hashParams.get('access_token')),
   )
+  const [awaitingRecoverySession, setAwaitingRecoverySession] = useState(Boolean(searchParams.get('code') || searchParams.get('token_hash') || hashParams.get('access_token')))
 
   const code = searchParams.get('code')
   const tokenHash = searchParams.get('token_hash')
@@ -38,11 +39,13 @@ function ResetPassword() {
     async function verifyRecoveryLink() {
       if (!hasRecoveryParams) {
         setVerifyingLink(false)
+        setAwaitingRecoverySession(false)
         return
       }
 
       if (user) {
         setVerifyingLink(false)
+        setAwaitingRecoverySession(false)
         return
       }
 
@@ -71,9 +74,12 @@ function ResetPassword() {
         if (typeof window !== 'undefined') {
           window.history.replaceState({}, document.title, '/reset-password')
         }
+
+        setAwaitingRecoverySession(true)
       } catch (exchangeError) {
         console.error('[ResetPassword] Recovery link verification failed:', exchangeError)
         if (isActive) {
+          setAwaitingRecoverySession(false)
           setError(exchangeError.message || 'This password reset link is no longer valid.')
         }
       } finally {
@@ -89,6 +95,28 @@ function ResetPassword() {
       isActive = false
     }
   }, [accessToken, code, hasRecoveryParams, loading, refreshToken, tokenHash, user])
+
+  useEffect(() => {
+    if (!hasRecoveryParams) return undefined
+
+    let isActive = true
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (!isActive) return
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setAwaitingRecoverySession(true)
+        setVerifyingLink(false)
+        setError('')
+      }
+    })
+
+    return () => {
+      isActive = false
+      subscription.unsubscribe()
+    }
+  }, [hasRecoveryParams])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -157,11 +185,11 @@ function ResetPassword() {
               <p>Choose a new password and confirm it before going back to sign in.</p>
             </div>
 
-            {verifyingLink || loading ? (
+            {verifyingLink || loading || (awaitingRecoverySession && !user) ? (
               <p className="auth-message">Checking your reset link...</p>
             ) : null}
 
-            {!verifyingLink && !loading && !user && hasRecoveryParams ? (
+            {!verifyingLink && !loading && !awaitingRecoverySession && !user && hasRecoveryParams ? (
               <p className="auth-message error">
                 This reset link is not active anymore. Please request a new one from the forgot password page.
               </p>

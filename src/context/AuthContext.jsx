@@ -192,7 +192,18 @@ export function AuthProvider({ children }) {
         return
       }
 
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY') {
+        if (!hasResolvedProfile) {
+          setLoading(true)
+        }
+        void applySession(session, { keepResolvedState: hasResolvedProfile })
+        if (typeof window !== 'undefined' && window.location.pathname !== '/reset-password') {
+          window.location.replace('/reset-password')
+        }
+        return
+      }
+
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
         if (!hasResolvedProfile) {
           setLoading(true)
         }
