@@ -1,14 +1,119 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Copy, Download, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react'
+﻿import { useEffect, useMemo, useState } from 'react'
+import { Copy, Download, GripVertical, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
-import workPermitPreviewImage from '../../assets/work-permit-preview.png'
 import './CertificateBuilder.css'
 
 const STORAGE_KEY = 'brightpath-ielts-builder-cache-v2'
 const TABLE_NAME = 'ielts_reports'
 const IMAGE_BUCKET = 'site-assets'
 const TEMPLATE_VERSION = '2026'
+const WORK_PERMIT_TEMPLATE_IMAGE = '/documents/work-permit-template-v5.png'
+
+const WORK_PERMIT_DECOR_LINES = [
+  { key: 'title_rule', style: { left: '4.4%', top: '31.95%', width: '88.5%' } },
+  { key: 'client_rule_top', style: { left: '4.4%', top: '36.11%', width: '89.6%' } },
+  { key: 'client_rule_bottom', style: { left: '2.4%', top: '54.31%', width: '85.8%' } },
+  { key: 'additional_rule_top', style: { left: '2.4%', top: '58.46%', width: '85.8%' } },
+  { key: 'footer_rule', style: { left: '21.5%', top: '97.55%', width: '46.9%' } },
+]
+
+const WORK_PERMIT_EDITABLE_FIELDS = [
+  { key: 'permit_number', type: 'input', style: { left: '68.19%', top: '8.13%', width: '16.01%', height: '2.01%' } },
+  { key: 'uci_application', type: 'textarea', style: { left: '61.47%', top: '19.02%', width: '15.22%', height: '4.11%' } },
+  { key: 'work_permit_title', type: 'input', style: { left: '33.35%', top: '29.31%', width: '37.19%', height: '1.79%' } },
+  { key: 'top_left', type: 'textarea', style: { left: '4.80%', top: '17.53%', width: '26.88%', height: '7.31%' } },
+  { key: 'client_heading', type: 'input', style: { left: '4.50%', top: '30.21%', width: '89.54%', height: '2.01%' } },
+  { key: 'client_labels', type: 'textarea', style: { left: '2.49%', top: '37.84%', width: '52.95%', height: '20.83%' } },
+  { key: 'client_values', type: 'textarea', style: { left: '56.34%', top: '37.90%', width: '13.62%', height: '14.43%' } },
+  { key: 'additional_heading', type: 'input', style: { left: '20.73%', top: '55.49%', width: '32.64%', height: '2.01%' } },
+  { key: 'additional_labels', type: 'textarea', style: { left: '5.78%', top: '60.07%', width: '32.19%', height: '14.43%' } },
+  { key: 'additional_values', type: 'textarea', style: { left: '42.80%', top: '60.09%', width: '53.17%', height: '14.43%' } },
+  { key: 'conditions_heading', type: 'input', style: { left: '6.62%', top: '78.39%', width: '12.60%', height: '2.01%' } },
+  { key: 'condition_1', type: 'textarea', style: { left: '7.04%', top: '81.83%', width: '79.64%', height: '1.52%' } },
+  { key: 'condition_2', type: 'textarea', style: { left: '7.04%', top: '83.54%', width: '79.64%', height: '2.65%' } },
+  { key: 'condition_3', type: 'textarea', style: { left: '7.04%', top: '86.34%', width: '79.64%', height: '2.35%' } },
+  { key: 'condition_4', type: 'textarea', style: { left: '7.04%', top: '88.92%', width: '79.64%', height: '1.66%' } },
+  { key: 'remarks_heading', type: 'input', style: { left: '7.71%', top: '90.45%', width: '19.20%', height: '1.57%' } },
+  { key: 'reentry_text', type: 'textarea', style: { left: '21.47%', top: '94.18%', width: '46.92%', height: '3.41%' } },
+  { key: 'footer_text', type: 'textarea', style: { left: '7.00%', top: '96.70%', width: '82.50%', height: '2.20%' } },
+  { key: 'footer_code', type: 'input', style: { left: '4.20%', top: '97.95%', width: '12.10%', height: '0.82%' } },
+]
+
+const WORK_PERMIT_FIELD_LABELS = {
+  permit_number: 'Permit number',
+  uci_application: 'UCI / Application block',
+  work_permit_title: 'Permit title',
+  top_left: 'Name and address block',
+  client_heading: 'Client heading',
+  client_labels: 'Client labels',
+  client_values: 'Client values',
+  additional_heading: 'Additional heading',
+  additional_labels: 'Additional labels',
+  additional_values: 'Additional values',
+  conditions_heading: 'Conditions heading',
+  condition_1: 'Condition 1',
+  condition_2: 'Condition 2',
+  condition_3: 'Condition 3',
+  condition_4: 'Condition 4',
+  remarks_heading: 'Remarks heading',
+  reentry_text: 'Re-entry text',
+  footer_text: 'Footer legal text',
+  footer_code: 'Footer code',
+}
+
+const WORK_PERMIT_MOVE_STEPS = [0.05, 0.15, 0.3]
+const WORK_PERMIT_GRID_STEPS = [0.1, 0.25, 0.5]
+const WORK_PERMIT_CUSTOM_KEY_PREFIX = 'work-permit-custom'
+
+function createInitialWorkPermitFieldPositions() {
+  return Object.fromEntries(WORK_PERMIT_EDITABLE_FIELDS.map((field) => [field.key, { ...field.style }]))
+}
+
+function createWorkPermitCustomTextItem(kind, index = 0) {
+  const key = `${WORK_PERMIT_CUSTOM_KEY_PREFIX}-${kind}-${createId()}`
+  const baseStyle =
+    kind === 'footer'
+      ? {
+          left: '7.00%',
+          top: formatPercentValue(96.95 + index * 0.92),
+          width: '82.50%',
+          height: '1.08%',
+        }
+      : {
+          left: '7.04%',
+          top: formatPercentValue(90.95 + index * 1.38),
+          width: '79.64%',
+          height: '1.20%',
+        }
+
+  return {
+    key,
+    kind,
+    label: kind === 'footer' ? `Footer line ${index + 1}` : `Condition line ${index + 1}`,
+    type: 'textarea',
+    value: '',
+    style: baseStyle,
+  }
+}
+
+function parsePercentValue(value) {
+  const parsed = Number.parseFloat(`${value}`.replace('%', ''))
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function formatPercentValue(value) {
+  return `${value.toFixed(2)}%`
+}
+
+function snapPercentValue(value, step) {
+  if (!Number.isFinite(step) || step <= 0) return value
+  return Math.round(value / step) * step
+}
 
 const IMAGE_FIELDS = [
   {
@@ -102,77 +207,248 @@ function createBlankRecord() {
 function createBlankPermitRecord() {
   return {
     id: createId(),
-    ea_number: 'DD 719 253',
-    client_number: '721 332',
-    application_number: 'A123456789',
-    ucu_number: 'UC0123456789',
-    family_name: 'SMITH',
-    given_names: 'JOHN',
-    date_of_birth: '',
-    sex: 'M',
-    country_of_birth: 'INDIA',
-    nationality: 'INDIAN',
-    travel_doc: 'A123456789',
+    ea_number: 'E 12086856989',
+    client_number: '11-4120-5426',
+    application_number: 'S186308598568',
+    ucu_number: '',
+    full_name_line: 'RAMNATH BHANDARI',
+    family_name: 'BHANDARI',
+    given_names: 'RAMNATH',
+    address_line1: '34-389 BALMORAL STREET',
+    address_line2: 'WINNIPEG MB R3B 2P7',
+    country_line: 'CANADA',
+    date_of_birth: '14 APR 1994',
+    sex: 'MALE',
+    country_of_birth: 'NEPAL',
+    nationality: 'NEPAL',
+    travel_doc: '12474494',
     travel_doc_type: 'PASSPORT',
-    date_issued: getTodayInputValue(),
-    expiry_date: '',
-    case_type: 'Employer-specific',
-    lmia_number: 'LMIA 1234567',
-    employer: 'ACME Industries',
-    employment_location: 'Toronto, ON',
-    occupation: 'Software Engineer',
-    in_force_from: getTodayInputValue(),
-    remarks: 'This work permit is issued for internal use only. It does not confer any immigration status.',
+    date_issued: '08/05/2025',
+    expiry_date: '07/05/2027',
+    case_type: 'WORK PERMIT TWO YEARS CANADA TORONTO',
+    lmia_number: '',
+    employer: 'EDEN FOODS COMPANY IN CANADA TORONTO',
+    employment_location: 'EDEN FOODS COMPANY IN CANADA',
+    occupation: 'FOOD PACKING WORKER',
+    in_force_from: '08/05/2025',
+    remarks: 'TEMPORARY RESIDENT STATUS MAINTAINED AS PER R183(B)',
     conditions: [
-      'Work must be performed for the employer named on this permit.',
-      'The foreign national must comply with all permit conditions.',
+      '1. MUST LEAVE CANADA BY.   2027-05-07',
+      '2. NOT VALID FOR EMPLOYMENT IN BUSINESSES RELATED TO THE SEX TRADE SUCH AS STRIP CLUBS, MASSAGE PARLOURS OR ESCORT SERVICES.',
+      '3. MAY ACCEPT EMPLOYMENT ON OR OFF CAMPUS IF MEETING ELIGIBILITY CRITERIA AS PER R186(F), (V) OR (W).',
+      '. MUST CEASE WORKING IF NO LONGER MEETING THESE CRITERIA',
     ],
-    reentry_text: 'This does not authorize re-entry to Canada.',
+    reentry_text: "THIS DOES NOT AUTHORIZE RE-ENTRY/CECI N'AUTORISE PAS LA RE-ENTREE",
   }
-}
-
-function formatPermitDate(value) {
-  if (!value) return ''
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-
-  return date.toISOString().slice(0, 10).replace(/-/g, '/')
 }
 
 function buildWorkPermitPreview(record) {
   return {
-    ea_number: record.ea_number || 'DD 719 253',
-    client_number: record.client_number || '721 332',
-    application_text: record.application_number || 'A123456789',
-    ucu_text: record.ucu_number || 'UC0123456789',
-    family_name: record.family_name || 'SMITH',
-    given_names: record.given_names || 'JOHN',
-    date_of_birth: formatPermitDate(record.date_of_birth) || '1980/01/01',
-    sex: record.sex || 'M',
-    country_of_birth: record.country_of_birth || 'INDIA',
-    nationality: record.nationality || 'INDIAN',
-    travel_doc_display: record.travel_doc
-      ? `${record.travel_doc_type ? `${record.travel_doc_type} ` : ''}${record.travel_doc}`
-      : 'PASSPORT A123456789',
-    date_issued: formatPermitDate(record.date_issued) || '2025/08/01',
-    expiry_date: formatPermitDate(record.expiry_date) || '2026/08/01',
-    case_type: record.case_type || 'Employer-specific',
-    lmia_number: record.lmia_number || 'LMIA 1234567',
-    employer: record.employer || 'ACME Industries',
-    employment_location: record.employment_location || 'Toronto, ON',
-    occupation: record.occupation || 'Software Engineer',
-    in_force_from: formatPermitDate(record.in_force_from) || '2025/08/01',
-    dotted_number: record.ea_number || 'DD 719 253',
+    ea_number: record.ea_number || 'E 12086856989',
+    client_number: record.client_number || '11-4120-5426',
+    application_text: record.application_number || 'S186308598568',
+    ucu_text: record.ucu_number || '',
+    family_name: record.family_name || 'BHANDARI',
+    given_names: record.given_names || 'RAMNATH',
+    full_name_line:
+      record.full_name_line || `${record.given_names || 'RAMNATH'} ${record.family_name || 'BHANDARI'}`.trim(),
+    address_line1: record.address_line1 || '34-389 BALMORAL STREET',
+    address_line2: record.address_line2 || 'WINNIPEG MB R3B 2P7',
+    country_line: record.country_line || 'CANADA',
+    date_of_birth: record.date_of_birth || '14 APR 1994',
+    sex: record.sex || 'MALE',
+    country_of_birth: record.country_of_birth || 'NEPAL',
+    nationality: record.nationality || 'NEPAL',
+    travel_doc_display: record.travel_doc || '12474494',
+    date_issued: record.date_issued || '08/05/2025',
+    expiry_date: record.expiry_date || '07/05/2027',
+    case_type: record.case_type || 'WORK PERMIT TWO YEARS CANADA TORONTO',
+    lmia_number: record.lmia_number || '',
+    employer: record.employer || 'EDEN FOODS COMPANY IN CANADA TORONTO',
+    employment_location: record.employment_location || 'EDEN FOODS COMPANY IN CANADA',
+    occupation: record.occupation || 'FOOD PACKING WORKER',
+    in_force_from: record.in_force_from || '08/05/2025',
     conditions:
       Array.isArray(record.conditions) && record.conditions.length
         ? record.conditions
         : [
-            'Work must be performed for the employer named on this permit.',
-            'The foreign national must comply with all permit conditions.',
+            '1. MUST LEAVE CANADA BY.   2027-05-07',
+            '2. NOT VALID FOR EMPLOYMENT IN BUSINESSES RELATED TO THE SEX TRADE SUCH AS STRIP CLUBS, MASSAGE PARLOURS OR ESCORT SERVICES.',
+            '3. MAY ACCEPT EMPLOYMENT ON OR OFF CAMPUS IF MEETING ELIGIBILITY CRITERIA AS PER R186(F), (V) OR (W).',
+            '. MUST CEASE WORKING IF NO LONGER MEETING THESE CRITERIA',
           ],
     remarks_display: record.remarks || 'No additional remarks.',
-    reentry_text: record.reentry_text || 'This does not authorize re-entry to Canada.',
+    reentry_text: record.reentry_text || "THIS DOES NOT AUTHORIZE RE-ENTRY/CECI N'AUTORISE PAS LA RE-ENTREE",
+  }
+}
+
+function getWorkPermitEditableValue(fieldKey, preview) {
+  switch (fieldKey) {
+    case 'permit_number':
+      return preview.ea_number
+    case 'uci_application':
+      return `UCI NO:${preview.client_number}\nAPPLICATION\nNO:${preview.application_text}`
+    case 'work_permit_title':
+      return 'WORK PERMIT TWO YEARS CANADA'
+    case 'top_left':
+      return `${preview.full_name_line}\n${preview.address_line1}\n ${preview.address_line2}\n${preview.country_line}`
+    case 'client_heading':
+      return 'CLIENT INFORMATION/INFORMATION DU CLIENT'
+    case 'client_labels':
+      return [
+        'Family Name/Nom de Familie:',
+        'Given Name(s)/Prénom(s):',
+        'Date of Birth/Date de naissance:',
+        'Sex/Sexe:',
+        'Country of Birth/Pays de naissance:',
+        'Country of Citizenship/Citoyenneté:',
+        'Travel Doc No./N" du document de voyage:',
+      ].join('\n')
+    case 'client_values':
+      return [
+        preview.family_name,
+        preview.given_names,
+        preview.date_of_birth,
+        preview.sex,
+        preview.country_of_birth,
+        preview.nationality,
+        preview.travel_doc_display,
+      ].join('\n')
+    case 'additional_heading':
+      return 'ADDITIONAL INFORMATION/INFORMATION SUPPLÉMENTAIRE'
+    case 'additional_labels':
+      return [
+        'Issue Date/Date',
+        "Expiry Date/Date d'expiration:",
+        'Case Type/Genre de cas',
+        'Work Place Employee',
+        ' Company Name',
+        'Job Designation',
+        'In Force From/En vigueur le:',
+      ].join('\n')
+    case 'additional_values':
+      return [
+        preview.date_issued,
+        preview.expiry_date,
+        preview.case_type,
+        preview.employer,
+        preview.employment_location,
+        preview.occupation,
+        preview.in_force_from,
+      ].join('\n')
+    case 'conditions_heading':
+      return 'Conditions:'
+    case 'condition_1':
+      return Array.isArray(preview.conditions) ? preview.conditions[0] || '' : ''
+    case 'condition_2':
+      return Array.isArray(preview.conditions) ? preview.conditions[1] || '' : ''
+    case 'condition_3':
+      return Array.isArray(preview.conditions) ? preview.conditions[2] || '' : ''
+    case 'condition_4':
+      return Array.isArray(preview.conditions) ? preview.conditions[3] || '' : ''
+    case 'remarks_heading':
+      return 'Remarks/Observations'
+    case 'reentry_text':
+      return "***THIS DOES NOT AUTHORIZE RE-ENTRY/CECI N'AUTORISE PAS LA RE-ENTREE***"
+    case 'footer_text':
+      return "THIS FORM HAS BEEN ESTABLISHED BY THE MINISTER OF IMMIGRATION, REFUGEES AND CITIZENSHIP CANADA - THIS DOCUMENT IS THE PROPERTY OF THE GOVERNMENT OF CANADA.\nFORMULAIRE ÉTABLI PAR LE MINISTRE DE L'IMMIGRATION, RÉFUGIÉS ET CITOYENNETÉ CANADA - LE PRÉSENT DOCUMENT EST LA PROPRIÉTÉ DU GOUVERNEMENT DU CANADA."
+    case 'footer_code':
+      return 'IMM 1442B (1-2019)'
+    default:
+      return ''
+  }
+}
+
+function createBlankWorkPermitTextDraft() {
+  const preview = buildWorkPermitPreview(createBlankPermitRecord())
+
+  return {
+    permit_number: preview.ea_number,
+    uci_application: `UCI NO:${preview.client_number}\nAPPLICATION\nNO:${preview.application_text}`,
+    work_permit_title: 'WORK PERMIT TWO YEARS CANADA',
+    top_left: `${preview.full_name_line}\n${preview.address_line1}\n ${preview.address_line2}\n${preview.country_line}`,
+    client_heading: 'CLIENT INFORMATION/INFORMATION DU CLIENT',
+    client_labels: [
+      'Family Name/Nom de Familie:',
+      'Given Name(s)/Prénom(s):',
+      'Date of Birth/Date de naissance:',
+      'Sex/Sexe:',
+      'Country of Birth/Pays de naissance:',
+      'Country of Citizenship/Citoyenneté:',
+      'Travel Doc No./N" du document de voyage:',
+    ].join('\n'),
+    client_values: [
+      preview.family_name,
+      preview.given_names,
+      preview.date_of_birth,
+      preview.sex,
+      preview.country_of_birth,
+      preview.nationality,
+      preview.travel_doc_display,
+    ].join('\n'),
+    additional_heading: 'ADDITIONAL INFORMATION/INFORMATION SUPPLÉMENTAIRE',
+    additional_labels: [
+      'Issue Date/Date',
+      "Expiry Date/Date d'expiration:",
+      'Case Type/Genre de cas',
+      'Work Place Employee',
+      ' Company Name',
+      'Job Designation',
+      'In Force From/En vigueur le:',
+    ].join('\n'),
+    additional_values: [
+      preview.date_issued,
+      preview.expiry_date,
+      preview.case_type,
+      preview.employer,
+      preview.employment_location,
+      preview.occupation,
+      preview.in_force_from,
+    ].join('\n'),
+    conditions_heading: 'Conditions:',
+    condition_1: Array.isArray(preview.conditions) ? preview.conditions[0] || '' : '',
+    condition_2: Array.isArray(preview.conditions) ? preview.conditions[1] || '' : '',
+    condition_3: Array.isArray(preview.conditions) ? preview.conditions[2] || '' : '',
+    condition_4: Array.isArray(preview.conditions) ? preview.conditions[3] || '' : '',
+    remarks_heading: 'Remarks/Observations',
+    reentry_text: "***THIS DOES NOT AUTHORIZE RE-ENTRY/CECI N'AUTORISE PAS LA RE-ENTREE***",
+    footer_text:
+      "THIS FORM HAS BEEN ESTABLISHED BY THE MINISTER OF IMMIGRATION, REFUGEES AND CITIZENSHIP CANADA - THIS DOCUMENT IS THE PROPERTY OF THE GOVERNMENT OF CANADA.\nFORMULAIRE ÉTABLI PAR LE MINISTRE DE L'IMMIGRATION, RÉFUGIÉS ET CITOYENNETÉ CANADA - LE PRÉSENT DOCUMENT EST LA PROPRIÉTÉ DU GOUVERNEMENT DU CANADA.",
+    footer_code: 'IMM 1442B (1-2019)',
+  }
+}
+
+function getWorkPermitTextValueUpdates(record) {
+  const preview = buildWorkPermitPreview(record)
+
+  return {
+    permit_number: preview.ea_number,
+    uci_application: `UCI NO:${preview.client_number}\nAPPLICATION\nNO:${preview.application_text}`,
+    top_left: `${preview.full_name_line}\n${preview.address_line1}\n ${preview.address_line2}\n${preview.country_line}`,
+    client_values: [
+      preview.family_name,
+      preview.given_names,
+      preview.date_of_birth,
+      preview.sex,
+      preview.country_of_birth,
+      preview.nationality,
+      preview.travel_doc_display,
+    ].join('\n'),
+    additional_values: [
+      preview.date_issued,
+      preview.expiry_date,
+      preview.case_type,
+      preview.employer,
+      preview.employment_location,
+      preview.occupation,
+      preview.in_force_from,
+    ].join('\n'),
+    conditions_body: Array.isArray(preview.conditions) ? preview.conditions.join('\n') : '',
+    condition_1: Array.isArray(preview.conditions) ? preview.conditions[0] || '' : '',
+    condition_2: Array.isArray(preview.conditions) ? preview.conditions[1] || '' : '',
+    condition_3: Array.isArray(preview.conditions) ? preview.conditions[2] || '' : '',
+    condition_4: Array.isArray(preview.conditions) ? preview.conditions[3] || '' : '',
+    reentry_text: preview.reentry_text,
   }
 }
 
@@ -451,6 +727,15 @@ function CertificateBuilder() {
   const [records, setRecords] = useState(initialCachedRecords)
   const [draft, setDraft] = useState(() => initialCachedRecords[0] ?? createBlankRecord())
   const [permitDraft, setPermitDraft] = useState(createBlankPermitRecord())
+  const [workPermitTextDraft, setWorkPermitTextDraft] = useState(createBlankWorkPermitTextDraft())
+  const [workPermitFieldPositions, setWorkPermitFieldPositions] = useState(() => createInitialWorkPermitFieldPositions())
+  const [workPermitCustomTextItems, setWorkPermitCustomTextItems] = useState([])
+  const [workPermitArrangeMode, setWorkPermitArrangeMode] = useState(false)
+  const [selectedWorkPermitField, setSelectedWorkPermitField] = useState(WORK_PERMIT_EDITABLE_FIELDS[0].key)
+  const [workPermitDraggingField, setWorkPermitDraggingField] = useState('')
+  const [workPermitNudgeStep, setWorkPermitNudgeStep] = useState(0.15)
+  const [workPermitSnapEnabled, setWorkPermitSnapEnabled] = useState(true)
+  const [workPermitSnapStep, setWorkPermitSnapStep] = useState(0.25)
   const [templateMode, setTemplateMode] = useState('ielts')
   const [storageMode, setStorageMode] = useState(initialCachedRecords.length ? 'local-cache' : 'loading')
   const [loading, setLoading] = useState(true)
@@ -522,6 +807,28 @@ function CertificateBuilder() {
   const overallBand = getOverallBand(draft)
   const preview = useMemo(() => buildPreviewSnapshot(draft, overallBand), [draft, overallBand])
   const permitPreview = useMemo(() => buildWorkPermitPreview(permitDraft), [permitDraft])
+  const workPermitOverlayItems = useMemo(
+    () => [
+      ...WORK_PERMIT_EDITABLE_FIELDS.map((field) => ({
+        key: field.key,
+        label: WORK_PERMIT_FIELD_LABELS[field.key] || field.key,
+        type: field.type,
+        style: workPermitFieldPositions[field.key] || field.style,
+        value: workPermitTextDraft[field.key] ?? '',
+        isCustom: false,
+      })),
+      ...workPermitCustomTextItems.map((item) => ({
+        key: item.key,
+        label: item.label,
+        type: item.type,
+        style: item.style,
+        value: item.value,
+        kind: item.kind,
+        isCustom: true,
+      })),
+    ],
+    [workPermitCustomTextItems, workPermitFieldPositions, workPermitTextDraft],
+  )
   const workPermitBarcode = useMemo(() => {
     const widths = [3,1,2,1,3,2,1,1,2,3,1,2,1,1,3,1,2,1,2,3,1,1,2,1,3,2,1,3,1,2,1,1,2,3,1,2,1,2,1,3,1,1,2,3,1]
     return widths.map((w, index) => ({
@@ -545,7 +852,191 @@ function CertificateBuilder() {
   }
 
   function updatePermitField(key, value) {
-    setPermitDraft((current) => ({ ...current, [key]: value }))
+    setPermitDraft((current) => {
+      if (key === 'full_name_line') {
+        const clean = `${value ?? ''}`.trim()
+        const parts = clean.split(/\s+/).filter(Boolean)
+        if (parts.length <= 1) {
+          return {
+            ...current,
+            full_name_line: clean,
+          }
+        }
+
+        return {
+          ...current,
+          full_name_line: clean,
+          given_names: parts.slice(0, -1).join(' '),
+          family_name: parts.slice(-1).join(' '),
+        }
+      }
+
+      const next = { ...current, [key]: value }
+      if (key === 'given_names' || key === 'family_name') {
+        next.full_name_line = `${key === 'given_names' ? value : current.given_names || ''} ${key === 'family_name' ? value : current.family_name || ''}`.trim()
+      }
+
+      const valueUpdates = getWorkPermitTextValueUpdates(next)
+      setWorkPermitTextDraft((currentText) => ({ ...currentText, ...valueUpdates }))
+
+      return next
+    })
+  }
+
+  function getWorkPermitCurrentStyle(fieldKey) {
+    const fixedField = WORK_PERMIT_EDITABLE_FIELDS.find((field) => field.key === fieldKey)
+    if (fixedField) {
+      return workPermitFieldPositions[fieldKey] || fixedField.style
+    }
+
+    const customField = workPermitCustomTextItems.find((item) => item.key === fieldKey)
+    return customField?.style || null
+  }
+
+  function addWorkPermitCustomTextItem(kind) {
+    const nextIndex = workPermitCustomTextItems.filter((item) => item.kind === kind).length
+    const nextItem = createWorkPermitCustomTextItem(kind, nextIndex)
+
+    setWorkPermitCustomTextItems((current) => [...current, nextItem])
+    setWorkPermitArrangeMode(true)
+    setSelectedWorkPermitField(nextItem.key)
+
+    return nextItem
+  }
+
+  function updateWorkPermitCustomTextItem(fieldKey, value) {
+    setWorkPermitCustomTextItems((current) =>
+      current.map((item) => (item.key === fieldKey ? { ...item, value } : item)),
+    )
+  }
+
+  function updateWorkPermitFieldPosition(fieldKey, deltaLeft, deltaTop) {
+    const fixedField = WORK_PERMIT_EDITABLE_FIELDS.find((field) => field.key === fieldKey)
+    const customField = workPermitCustomTextItems.find((item) => item.key === fieldKey)
+    const currentStyle = getWorkPermitCurrentStyle(fieldKey)
+    if (!currentStyle) return
+
+    const width = parsePercentValue(currentStyle.width)
+    const height = parsePercentValue(currentStyle.height)
+    const rawLeft = parsePercentValue(currentStyle.left) + deltaLeft
+    const rawTop = parsePercentValue(currentStyle.top) + deltaTop
+    const snappedLeft = workPermitSnapEnabled ? snapPercentValue(rawLeft, workPermitSnapStep) : rawLeft
+    const snappedTop = workPermitSnapEnabled ? snapPercentValue(rawTop, workPermitSnapStep) : rawTop
+    const nextLeft = clampNumber(snappedLeft, 0, Math.max(0, 100 - width))
+    const nextTop = clampNumber(snappedTop, 0, Math.max(0, 100 - height))
+
+    if (fixedField) {
+      setWorkPermitFieldPositions((current) => ({
+        ...current,
+        [fieldKey]: {
+          ...currentStyle,
+          left: formatPercentValue(nextLeft),
+          top: formatPercentValue(nextTop),
+        },
+      }))
+      return
+    }
+
+    if (!customField) return
+
+    setWorkPermitCustomTextItems((current) =>
+      current.map((item) =>
+        item.key === fieldKey
+          ? {
+              ...item,
+              style: {
+                ...item.style,
+                left: formatPercentValue(nextLeft),
+                top: formatPercentValue(nextTop),
+              },
+            }
+          : item,
+      ),
+    )
+  }
+
+  function removeWorkPermitCustomTextItem(fieldKey) {
+    setWorkPermitCustomTextItems((current) => current.filter((item) => item.key !== fieldKey))
+    if (selectedWorkPermitField === fieldKey) {
+      setSelectedWorkPermitField(WORK_PERMIT_EDITABLE_FIELDS[0].key)
+    }
+  }
+
+  function clearWorkPermitCustomTextItems() {
+    setWorkPermitCustomTextItems([])
+    setSelectedWorkPermitField(WORK_PERMIT_EDITABLE_FIELDS[0].key)
+  }
+
+  function resetWorkPermitLayout() {
+    setWorkPermitFieldPositions(createInitialWorkPermitFieldPositions())
+    setWorkPermitCustomTextItems([])
+    setSelectedWorkPermitField(WORK_PERMIT_EDITABLE_FIELDS[0].key)
+    setWorkPermitDraggingField('')
+  }
+
+  function beginWorkPermitDrag(event, fieldKey) {
+    if (!workPermitArrangeMode) return
+    if (event.button != null && event.button !== 0) return
+
+    const stageElement = event.currentTarget.closest('.work-permit-stage')
+    const stageRect = stageElement?.getBoundingClientRect()
+    const currentStyle = getWorkPermitCurrentStyle(fieldKey)
+
+    if (!stageRect || !currentStyle) return
+
+    event.preventDefault()
+    event.stopPropagation()
+
+    setSelectedWorkPermitField(fieldKey)
+    setWorkPermitDraggingField(fieldKey)
+
+    const startX = event.clientX
+    const startY = event.clientY
+    const baseLeft = parsePercentValue(currentStyle.left)
+    const baseTop = parsePercentValue(currentStyle.top)
+    const width = parsePercentValue(currentStyle.width)
+    const height = parsePercentValue(currentStyle.height)
+
+    function updateFromPointer(clientX, clientY) {
+      const deltaLeft = ((clientX - startX) / stageRect.width) * 100
+      const deltaTop = ((clientY - startY) / stageRect.height) * 100
+      const rawLeft = baseLeft + deltaLeft
+      const rawTop = baseTop + deltaTop
+      const snappedLeft = workPermitSnapEnabled ? snapPercentValue(rawLeft, workPermitSnapStep) : rawLeft
+      const snappedTop = workPermitSnapEnabled ? snapPercentValue(rawTop, workPermitSnapStep) : rawTop
+      const nextLeft = clampNumber(snappedLeft, 0, Math.max(0, 100 - width))
+      const nextTop = clampNumber(snappedTop, 0, Math.max(0, 100 - height))
+
+      setWorkPermitFieldPositions((current) => {
+        const existing = current[fieldKey] || currentStyle
+        return {
+          ...current,
+          [fieldKey]: {
+            ...existing,
+            left: formatPercentValue(nextLeft),
+            top: formatPercentValue(nextTop),
+          },
+        }
+      })
+    }
+
+    function finishDrag() {
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', finishDrag)
+      window.removeEventListener('pointercancel', finishDrag)
+      setWorkPermitDraggingField('')
+    }
+
+    function handlePointerMove(moveEvent) {
+      moveEvent.preventDefault()
+      updateFromPointer(moveEvent.clientX, moveEvent.clientY)
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', finishDrag)
+    window.addEventListener('pointercancel', finishDrag)
+
+    updateFromPointer(event.clientX, event.clientY)
   }
 
   async function handleImageUpload(fieldKey, file) {
@@ -633,6 +1124,9 @@ function CertificateBuilder() {
       setNotice('New IELTS applicant started.')
     } else {
       setPermitDraft(createBlankPermitRecord())
+      setWorkPermitTextDraft(createBlankWorkPermitTextDraft())
+      resetWorkPermitLayout()
+      setWorkPermitArrangeMode(false)
       setNotice('New work permit preview started.')
     }
   }
@@ -753,6 +1247,13 @@ function CertificateBuilder() {
   function handleCopySummary() {
     if (templateMode === 'workpermit') {
       const lines = [
+        `Permit No: ${permitDraft.ea_number}`,
+        `UCI No: ${permitDraft.client_number}`,
+        `Application No: ${permitDraft.application_number}`,
+        `Name: ${permitDraft.given_names} ${permitDraft.family_name}`.trim(),
+        `Address: ${permitDraft.address_line1}`,
+        `${permitDraft.address_line2}`,
+        `${permitDraft.country_line}`,
         `Family name: ${permitDraft.family_name}`,
         `Given names: ${permitDraft.given_names}`,
         `DOB: ${permitDraft.date_of_birth}`,
@@ -802,7 +1303,169 @@ function CertificateBuilder() {
   function renderWorkPermitPreview() {
     return (
       <div className="work-permit-preview">
-        <img className="work-permit-preview-image" src={workPermitPreviewImage} alt="Canada work permit preview" />
+        <div className="work-permit-arrange-toolbar no-print">
+          <div className="work-permit-arrange-copy">
+            <strong>Arrange layout</strong>
+            <span>Choose a field and nudge it without changing the permit background or artwork.</span>
+          </div>
+          <button
+            type="button"
+            className={`admin-btn admin-btn-soft work-permit-arrange-toggle${workPermitArrangeMode ? ' is-active' : ''}`}
+            onClick={() => {
+              if (workPermitArrangeMode) {
+                setWorkPermitDraggingField('')
+              }
+              setWorkPermitArrangeMode((current) => !current)
+            }}
+          >
+            {workPermitArrangeMode ? 'Finish arranging' : 'Arrange text'}
+          </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={resetWorkPermitLayout}>
+            Reset positions
+          </button>
+          <button
+            type="button"
+            className={`admin-btn admin-btn-soft work-permit-arrange-toggle${workPermitSnapEnabled ? ' is-active' : ''}`}
+            onClick={() => setWorkPermitSnapEnabled((current) => !current)}
+          >
+            {workPermitSnapEnabled ? 'Snap on' : 'Snap off'}
+          </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={() => addWorkPermitCustomTextItem('condition')}>
+            + Condition line
+          </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={() => addWorkPermitCustomTextItem('footer')}>
+            + Footer line
+          </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={clearWorkPermitCustomTextItems}>
+            Clear extras
+          </button>
+          {selectedWorkPermitField.startsWith(WORK_PERMIT_CUSTOM_KEY_PREFIX) ? (
+            <button
+              type="button"
+              className="admin-btn admin-btn-soft"
+              onClick={() => removeWorkPermitCustomTextItem(selectedWorkPermitField)}
+            >
+              Remove selected
+            </button>
+          ) : null}
+          <label className="work-permit-arrange-field">
+            <span>Field</span>
+            <select value={selectedWorkPermitField} onChange={(event) => setSelectedWorkPermitField(event.target.value)}>
+              {workPermitOverlayItems.map((item) => (
+                <option key={item.key} value={item.key}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="work-permit-arrange-field">
+            <span>Grid</span>
+            <select value={workPermitSnapStep} onChange={(event) => setWorkPermitSnapStep(Number.parseFloat(event.target.value) || 0.25)}>
+              {WORK_PERMIT_GRID_STEPS.map((step) => (
+                <option key={step} value={step}>
+                  {step.toFixed(2)}%
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="work-permit-arrange-field">
+            <span>Step</span>
+            <select
+              value={workPermitNudgeStep}
+              onChange={(event) => setWorkPermitNudgeStep(Number.parseFloat(event.target.value) || 0.15)}
+            >
+              {WORK_PERMIT_MOVE_STEPS.map((step) => (
+                <option key={step} value={step}>
+                  {step.toFixed(2)}%
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="work-permit-nudge-pad">
+            <button type="button" className="work-permit-nudge-btn" onClick={() => updateWorkPermitFieldPosition(selectedWorkPermitField, 0, -workPermitNudgeStep)}>
+              Up
+            </button>
+            <div className="work-permit-nudge-middle">
+              <button type="button" className="work-permit-nudge-btn" onClick={() => updateWorkPermitFieldPosition(selectedWorkPermitField, -workPermitNudgeStep, 0)}>
+                Left
+              </button>
+              <button type="button" className="work-permit-nudge-btn" onClick={() => updateWorkPermitFieldPosition(selectedWorkPermitField, workPermitNudgeStep, 0)}>
+                Right
+              </button>
+            </div>
+            <button type="button" className="work-permit-nudge-btn" onClick={() => updateWorkPermitFieldPosition(selectedWorkPermitField, 0, workPermitNudgeStep)}>
+              Down
+            </button>
+          </div>
+        </div>
+        <div className={`work-permit-stage${workPermitArrangeMode ? ' is-arrange-mode' : ''}`}>
+          <img className="work-permit-preview-image" src={WORK_PERMIT_TEMPLATE_IMAGE} alt="Work permit template preview" />
+          <div className="work-permit-rules" aria-hidden="true">
+            {WORK_PERMIT_DECOR_LINES.map((line) => (
+              <span key={line.key} className={`work-permit-rule is-${line.key}`} style={line.style} />
+            ))}
+          </div>
+          <div className="work-permit-overlay" aria-label="Editable work permit fields">
+            {workPermitOverlayItems.map((item) => {
+              const value = item.value ?? ''
+              const style = item.style
+              const kindClass = item.isCustom ? ` is-custom-text is-${item.kind}` : ''
+
+              return (
+                <div
+                  key={item.key}
+                  className={`work-permit-hotspot is-${item.type} is-${item.key}${kindClass}${selectedWorkPermitField === item.key ? ' is-selected' : ''}${workPermitDraggingField === item.key ? ' is-dragging' : ''}`}
+                  style={style}
+                  onPointerDown={
+                    workPermitArrangeMode
+                      ? (event) => {
+                          beginWorkPermitDrag(event, item.key)
+                        }
+                      : undefined
+                  }
+                  onClick={() => {
+                    if (workPermitArrangeMode) {
+                      setSelectedWorkPermitField(item.key)
+                    }
+                  }}
+                >
+                  {workPermitArrangeMode ? (
+                    <button
+                      type="button"
+                      className="work-permit-drag-handle"
+                      aria-label={`Move ${item.label}`}
+                      onPointerDown={(event) => beginWorkPermitDrag(event, item.key)}
+                    >
+                      <GripVertical size={14} />
+                    </button>
+                  ) : null}
+                  {item.type === 'textarea' ? (
+                    <textarea
+                      aria-label={item.key}
+                      spellCheck={false}
+                      value={value}
+                      onChange={(event) => {
+                        if (item.isCustom) {
+                          updateWorkPermitCustomTextItem(item.key, event.target.value)
+                          return
+                        }
+
+                        setWorkPermitTextDraft((current) => ({ ...current, [item.key]: event.target.value }))
+                      }}
+                    />
+                  ) : (
+                    <input
+                      aria-label={item.key}
+                      spellCheck={false}
+                      value={value}
+                      onChange={(event) => setWorkPermitTextDraft((current) => ({ ...current, [item.key]: event.target.value }))}
+                    />
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     )
 
@@ -816,13 +1479,13 @@ function CertificateBuilder() {
 
             <div className="header-center">
               <div className="canada-crest">
-                <div className="crest-symbol" aria-hidden="true">🇨🇦</div>
+                <div className="crest-symbol" aria-hidden="true">ðŸ‡¨ðŸ‡¦</div>
               </div>
             </div>
 
             <div className="header-right">
               <div className="permit-number-box">{permitPreview.ea_number}</div>
-              <div className="client-number">{permitPreview.client_number}</div>
+              <div className="client-number">UCI NO: {permitPreview.client_number}</div>
               <div className="barcode-wrap">
                 {workPermitBarcode.map((bar) => (
                   <span
@@ -840,17 +1503,19 @@ function CertificateBuilder() {
 
           <div className="header-subtext">
             <span>Immigration, Refugees and Citizenship Canada</span>
-            <span>Immigration, Réfugiés et citoyenneté Canada</span>
+            <span>Immigration, RÃ©fugiÃ©s et citoyennetÃ© Canada</span>
           </div>
 
-          <div className="canada-bg">
-            <div className="app-uc-row">
-              <div>
-                APPLICATION/DEMANDE <span>{permitPreview.application_text}</span>
-              </div>
-              <div>
-                UCU/UC: <span>{permitPreview.ucu_text}</span>
-              </div>
+          <div className="permit-meta-row">
+            <div className="permit-meta-left">
+              <div className="permit-meta-line">{permitPreview.full_name_line}</div>
+              <div className="permit-meta-line">{permitPreview.address_line1}</div>
+              <div className="permit-meta-line">{permitPreview.address_line2}</div>
+              <div className="permit-meta-pill">{permitPreview.country_line}</div>
+            </div>
+            <div className="permit-meta-right">
+              <div className="permit-meta-line">APPLICATION NO: {permitPreview.application_text}</div>
+              <div className="permit-meta-line">UCU/UC: {permitPreview.ucu_text}</div>
             </div>
           </div>
 
@@ -865,7 +1530,7 @@ function CertificateBuilder() {
                   <span className="val">{permitPreview.family_name}</span>
                 </td>
                 <td>
-                  <span className="lbl">Given names / Prénom(s)</span>
+                  <span className="lbl">Given names / PrÃ©nom(s)</span>
                   <span className="val">{permitPreview.given_names}</span>
                 </td>
               </tr>
@@ -892,7 +1557,7 @@ function CertificateBuilder() {
               </tr>
               <tr>
                 <td colSpan="2">
-                  <span className="lbl">Travel document number / Numéro du document de voyage</span>
+                  <span className="lbl">Travel document number / NumÃ©ro du document de voyage</span>
                   <span className="val" style={{ whiteSpace: 'pre-wrap' }}>
                     {permitPreview.travel_doc_display}
                   </span>
@@ -901,12 +1566,12 @@ function CertificateBuilder() {
             </tbody>
           </table>
 
-          <div className="section-label">ADDITIONAL INFORMATION / INFORMATION SUPPLÉMENTAIRE</div>
+          <div className="section-label">ADDITIONAL INFORMATION / INFORMATION SUPPLÃ‰MENTAIRE</div>
           <table>
             <tbody>
               <tr>
                 <td style={{ width: '38%' }}>
-                  <span className="lbl">Date issued / Délivré le</span>
+                  <span className="lbl">Date issued / DÃ©livrÃ© le</span>
                   <span className="val">{permitPreview.date_issued}</span>
                   <span className="val-small">(yyyy/mm/dd - aaaa/mm/jj)</span>
                 </td>
@@ -922,7 +1587,7 @@ function CertificateBuilder() {
                   <span className="val">{permitPreview.case_type}</span>
                 </td>
                 <td>
-                  <span className="lbl">LMIA or exempt no. / N° d'EIMT ou de dispense</span>
+                  <span className="lbl">LMIA or exempt no. / NÂ° d'EIMT ou de dispense</span>
                   <span className="val">{permitPreview.lmia_number}</span>
                 </td>
               </tr>
@@ -970,12 +1635,12 @@ function CertificateBuilder() {
 
           <div className="footer-legal">
             THIS FORM HAS BEEN ESTABLISHED BY THE MINISTER OF IMMIGRATION, REFUGEES AND CITIZENSHIP CANADA. THIS DOCUMENT IS THE PROPERTY OF THE GOVERNMENT OF CANADA.
-            <br />FORMULAIRE ÉTABLI PAR LE MINISTRE DE L'IMMIGRATION, RÉFUGIÉS ET CITOYENNETÉ CANADA. LE PRÉSENT DOCUMENT EST LA PROPRIÉTÉ DU GOUVERNEMENT DU CANADA.
+            <br />FORMULAIRE Ã‰TABLI PAR LE MINISTRE DE L'IMMIGRATION, RÃ‰FUGIÃ‰S ET CITOYENNETÃ‰ CANADA. LE PRÃ‰SENT DOCUMENT EST LA PROPRIÃ‰TÃ‰ DU GOUVERNEMENT DU CANADA.
           </div>
 
           <div className="canada-logo-row">
             <div className="canada-logo">
-              Canad<span>ä</span>
+              Canad<span>Ã¤</span>
             </div>
           </div>
         </div>
@@ -1213,32 +1878,40 @@ function CertificateBuilder() {
           ) : (
             <div className="certificate-form-grid work-permit-form-grid">
               <label className="admin-field">
-                <span>EA Number</span>
+                <span>Permit No.</span>
                 <input type="text" value={permitDraft.ea_number} onChange={(event) => updatePermitField('ea_number', event.target.value)} />
               </label>
               <label className="admin-field">
-                <span>Client Number</span>
+                <span>UCI No.</span>
                 <input type="text" value={permitDraft.client_number} onChange={(event) => updatePermitField('client_number', event.target.value)} />
               </label>
               <label className="admin-field">
-                <span>Application / Demande</span>
+                <span>Application No.</span>
                 <input type="text" value={permitDraft.application_number} onChange={(event) => updatePermitField('application_number', event.target.value)} />
-              </label>
-              <label className="admin-field">
-                <span>UCU / UC</span>
-                <input type="text" value={permitDraft.ucu_number} onChange={(event) => updatePermitField('ucu_number', event.target.value)} />
               </label>
               <label className="admin-field">
                 <span>Family name / Nom</span>
                 <input type="text" value={permitDraft.family_name} onChange={(event) => updatePermitField('family_name', event.target.value)} />
               </label>
               <label className="admin-field">
-                <span>Given names / Prénom(s)</span>
+                <span>Given names / PrÃ©nom(s)</span>
                 <input type="text" value={permitDraft.given_names} onChange={(event) => updatePermitField('given_names', event.target.value)} />
               </label>
               <label className="admin-field">
+                <span>Address Line 1</span>
+                <input type="text" value={permitDraft.address_line1 || ''} onChange={(event) => updatePermitField('address_line1', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Address Line 2</span>
+                <input type="text" value={permitDraft.address_line2 || ''} onChange={(event) => updatePermitField('address_line2', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Country</span>
+                <input type="text" value={permitDraft.country_line || ''} onChange={(event) => updatePermitField('country_line', event.target.value)} />
+              </label>
+              <label className="admin-field">
                 <span>Date of Birth</span>
-                <input type="date" value={permitDraft.date_of_birth} onChange={(event) => updatePermitField('date_of_birth', event.target.value)} />
+                <input type="text" value={permitDraft.date_of_birth} onChange={(event) => updatePermitField('date_of_birth', event.target.value)} />
               </label>
               <label className="admin-field">
                 <span>Sex</span>
@@ -1262,11 +1935,11 @@ function CertificateBuilder() {
               </label>
               <label className="admin-field">
                 <span>Date Issued</span>
-                <input type="date" value={permitDraft.date_issued} onChange={(event) => updatePermitField('date_issued', event.target.value)} />
+                <input type="text" value={permitDraft.date_issued} onChange={(event) => updatePermitField('date_issued', event.target.value)} />
               </label>
               <label className="admin-field">
                 <span>Expiry Date</span>
-                <input type="date" value={permitDraft.expiry_date} onChange={(event) => updatePermitField('expiry_date', event.target.value)} />
+                <input type="text" value={permitDraft.expiry_date} onChange={(event) => updatePermitField('expiry_date', event.target.value)} />
               </label>
               <label className="admin-field">
                 <span>Case Type</span>
@@ -1290,7 +1963,7 @@ function CertificateBuilder() {
               </label>
               <label className="admin-field">
                 <span>In Force From</span>
-                <input type="date" value={permitDraft.in_force_from} onChange={(event) => updatePermitField('in_force_from', event.target.value)} />
+                <input type="text" value={permitDraft.in_force_from} onChange={(event) => updatePermitField('in_force_from', event.target.value)} />
               </label>
               <label className="admin-field admin-field-full">
                 <span>Remarks</span>
@@ -1647,3 +2320,6 @@ function CertificateBuilder() {
 }
 
 export default CertificateBuilder
+
+
+

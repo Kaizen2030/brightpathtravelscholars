@@ -790,19 +790,341 @@
 
 .work-permit-preview {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: flex-start;
   overflow-x: auto;
   padding: 24px;
   background: #e7e6e4;
+  gap: 12px;
+}
+
+.work-permit-arrange-toolbar {
+  width: min(780px, 100%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(10, 31, 68, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.work-permit-arrange-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 220px;
+  flex: 1 1 240px;
+}
+
+.work-permit-arrange-copy strong {
+  font-size: 0.92rem;
+  color: var(--navy);
+}
+
+.work-permit-arrange-copy span {
+  font-size: 0.75rem;
+  color: rgba(26, 26, 46, 0.7);
+  line-height: 1.4;
+}
+
+.work-permit-arrange-toggle.is-active {
+  border-color: rgba(15, 79, 138, 0.45);
+  background: rgba(15, 79, 138, 0.08);
+  color: #0f4f8a;
+}
+
+.work-permit-arrange-field {
+  display: grid;
+  gap: 4px;
+  min-width: 170px;
+}
+
+.work-permit-arrange-field span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(26, 26, 46, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.work-permit-arrange-field select {
+  width: 100%;
+  border: 1px solid rgba(10, 31, 68, 0.14);
+  border-radius: 10px;
+  background: #fff;
+  color: #1a1a2e;
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0.55rem 0.65rem;
+}
+
+.work-permit-nudge-pad {
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.work-permit-nudge-middle {
+  display: flex;
+  gap: 6px;
+}
+
+.work-permit-nudge-btn {
+  flex: 1;
+  border: 1px solid rgba(10, 31, 68, 0.14);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f2f5f8);
+  color: #1a1a2e;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  cursor: pointer;
+}
+
+.work-permit-nudge-btn:hover {
+  border-color: rgba(15, 79, 138, 0.28);
+  color: #0f4f8a;
+}
+
+.work-permit-stage {
+  position: relative;
+  width: min(780px, 100%);
+  aspect-ratio: 1489 / 1874;
+  flex-shrink: 0;
+}
+
+.work-permit-stage.is-arrange-mode .work-permit-hotspot {
+  outline: 1px dashed rgba(15, 79, 138, 0.55);
+  outline-offset: 1px;
+  cursor: default;
+  touch-action: none;
+}
+
+.work-permit-stage.is-arrange-mode .work-permit-hotspot.is-selected {
+  outline: 2px solid rgba(15, 79, 138, 0.85);
+  box-shadow: 0 0 0 2px rgba(15, 79, 138, 0.12);
+}
+
+.work-permit-stage.is-arrange-mode .work-permit-hotspot.is-dragging {
+  outline: 2px solid rgba(15, 79, 138, 0.95);
+  box-shadow: 0 0 0 3px rgba(15, 79, 138, 0.14);
+  cursor: grabbing;
+  z-index: 3;
 }
 
 .work-permit-preview-image {
+  position: absolute;
+  inset: 0;
   display: block;
-  width: min(780px, 100%);
-  height: auto;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border: 1px solid #b7b0aa;
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.18);
+}
+
+.work-permit-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.work-permit-rules {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.work-permit-rule {
+  position: absolute;
+  display: block;
+  height: 1px;
+  background: rgba(44, 44, 44, 0.72);
+  box-shadow: 0 0 0 0.5px rgba(44, 44, 44, 0.28);
+}
+
+.work-permit-hotspot {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.work-permit-drag-handle {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0f4f8a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  cursor: grab;
+}
+
+.work-permit-drag-handle:active {
+  cursor: grabbing;
+}
+
+.work-permit-hotspot input,
+.work-permit-hotspot textarea {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: none;
+  border-radius: 0;
+  background: transparent;
+  color: #111;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: none;
+}
+
+.work-permit-hotspot input {
+  font-size: 10.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.work-permit-hotspot textarea {
+  font-size: 8.7px;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  line-height: 1.06;
+}
+
+.work-permit-hotspot input:focus,
+.work-permit-hotspot textarea:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
+.work-permit-stage.is-arrange-mode .work-permit-hotspot input,
+.work-permit-stage.is-arrange-mode .work-permit-hotspot textarea {
+  pointer-events: none;
+  user-select: none;
+  cursor: move;
+}
+
+.work-permit-stage.is-arrange-mode .work-permit-drag-handle {
+  display: inline-flex;
+}
+
+.work-permit-stage:not(.is-arrange-mode) .work-permit-drag-handle {
+  display: none;
+}
+
+.work-permit-stage.is-arrange-mode .work-permit-hotspot textarea,
+.work-permit-stage.is-arrange-mode .work-permit-hotspot input {
+  cursor: move;
+}
+
+.work-permit-hotspot.is-permit_number input {
+  color: #d54136;
+}
+
+.work-permit-hotspot.is-uci_application textarea,
+.work-permit-hotspot.is-top_left textarea,
+.work-permit-hotspot.is-client_labels textarea,
+.work-permit-hotspot.is-additional_labels textarea,
+.work-permit-hotspot.is-client_values textarea,
+.work-permit-hotspot.is-additional_values textarea,
+.work-permit-hotspot.is-conditions_body textarea,
+.work-permit-hotspot.is-reentry_text textarea {
+  font-size: 7.8px;
+  line-height: 1.03;
+}
+
+.work-permit-hotspot.is-work_permit_title input,
+.work-permit-hotspot.is-client_heading input,
+.work-permit-hotspot.is-additional_heading input,
+.work-permit-hotspot.is-conditions_heading input,
+.work-permit-hotspot.is-remarks_heading input {
+  font-size: 8.3px;
+}
+
+.work-permit-hotspot.is-footer_text textarea {
+  font-size: 5.6px;
+  line-height: 1.08;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.work-permit-hotspot.is-footer_code input {
+  font-size: 6.2px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.work-permit-hotspot.is-top_left textarea {
+  font-size: 8px;
+}
+
+.work-permit-hotspot.is-client_labels textarea,
+.work-permit-hotspot.is-additional_labels textarea {
+  font-size: 7.2px;
+}
+
+.work-permit-hotspot.is-client_values textarea,
+.work-permit-hotspot.is-additional_values textarea {
+  font-size: 7.8px;
+}
+
+.work-permit-hotspot.is-conditions_body textarea {
+  font-size: 6.7px;
+}
+
+.work-permit-hotspot.is-reentry_text textarea {
+  font-size: 6.6px;
+}
+
+.work-permit-hotspot.is-uci_application textarea {
+  font-size: 7.2px;
+}
+
+.work-permit-hotspot.is-top_left textarea {
+  line-height: 1.08;
+}
+
+.work-permit-hotspot.is-reentry_text textarea {
+  font-size: 6.6px;
+  line-height: 1;
+}
+
+.work-permit-hotspot.is-custom-text textarea {
+  font-size: 7.4px;
+  line-height: 1.03;
+}
+
+.work-permit-hotspot.is-custom-text.is-condition textarea {
+  font-size: 6.7px;
+}
+
+.work-permit-hotspot.is-custom-text.is-footer textarea {
+  font-size: 5.6px;
+  line-height: 1.08;
+  text-align: center;
 }
 
 .work-permit-page {
@@ -898,6 +1220,45 @@
 
 .header-subtext span {
   display: block;
+}
+
+.permit-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  margin: 10px 18px 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.permit-meta-left {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  max-width: 60%;
+  color: #111;
+}
+
+.permit-meta-right {
+  display: grid;
+  gap: 6px;
+  justify-items: end;
+  text-align: right;
+  min-width: 240px;
+}
+
+.permit-meta-line {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #1a1a1a;
+}
+
+.permit-meta-pill {
+  font-size: 11px;
+  font-weight: 800;
+  color: #1a1a1a;
 }
 
 .canada-bg {
@@ -1204,5 +1565,42 @@
     border: 1px solid #cfd7e3;
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  .certificate-builder-header,
+  .certificate-builder-warning,
+  .certificate-builder-status,
+  .certificate-builder-form,
+  .certificate-records-panel,
+  .certificate-builder-actions,
+  .certificate-builder-template-tabs,
+  .certificate-form-actions,
+  .admin-panel-card-header.compact {
+    display: none !important;
+  }
+
+  .certificate-builder-layout {
+    display: block !important;
+  }
+
+  .certificate-preview-column {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  .work-permit-preview {
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .work-permit-page {
+    box-shadow: none !important;
+    margin: 0 auto !important;
   }
 }
