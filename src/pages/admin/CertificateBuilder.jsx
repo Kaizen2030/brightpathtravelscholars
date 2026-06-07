@@ -1,5 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
 import { Copy, Download, GripVertical, Plus, RotateCcw, Save, Trash2, Upload, X } from 'lucide-react'
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import './CertificateBuilder.css'
@@ -15,7 +17,7 @@ const WORK_PERMIT_DECOR_LINES = [
   { key: 'client_rule_top', style: { left: '4.4%', top: '36.11%', width: '89.6%' } },
   { key: 'client_rule_bottom', style: { left: '2.4%', top: '54.31%', width: '85.8%' } },
   { key: 'additional_rule_top', style: { left: '2.4%', top: '58.46%', width: '85.8%' } },
-  { key: 'footer_rule', style: { left: '21.5%', top: '97.55%', width: '46.9%' } },
+  { key: 'footer_rule', style: { left: '21.5%', top: '96.68%', width: '46.9%' } },
 ]
 
 const WORK_PERMIT_EDITABLE_FIELDS = [
@@ -35,9 +37,9 @@ const WORK_PERMIT_EDITABLE_FIELDS = [
   { key: 'condition_3', type: 'textarea', style: { left: '7.04%', top: '86.34%', width: '79.64%', height: '2.35%' } },
   { key: 'condition_4', type: 'textarea', style: { left: '7.04%', top: '88.92%', width: '79.64%', height: '1.66%' } },
   { key: 'remarks_heading', type: 'input', style: { left: '7.71%', top: '90.45%', width: '19.20%', height: '1.57%' } },
-  { key: 'reentry_text', type: 'textarea', style: { left: '21.47%', top: '94.18%', width: '46.92%', height: '3.41%' } },
-  { key: 'footer_text', type: 'textarea', style: { left: '7.00%', top: '96.70%', width: '82.50%', height: '2.20%' } },
-  { key: 'footer_code', type: 'input', style: { left: '4.20%', top: '97.95%', width: '12.10%', height: '0.82%' } },
+  { key: 'reentry_text', type: 'textarea', style: { left: '21.47%', top: '93.72%', width: '46.92%', height: '2.40%' } },
+  { key: 'footer_text', type: 'textarea', style: { left: '7.00%', top: '96.88%', width: '82.50%', height: '2.60%' } },
+  { key: 'footer_code', type: 'input', style: { left: '4.20%', top: '98.74%', width: '12.10%', height: '0.82%' } },
 ]
 
 const WORK_PERMIT_FIELD_LABELS = {
@@ -70,29 +72,72 @@ function createInitialWorkPermitFieldPositions() {
   return Object.fromEntries(WORK_PERMIT_EDITABLE_FIELDS.map((field) => [field.key, { ...field.style }]))
 }
 
-function createWorkPermitCustomTextItem(kind, index = 0) {
+function createWorkPermitCustomTextItem(kind, index = 0, placement = null) {
   const key = `${WORK_PERMIT_CUSTOM_KEY_PREFIX}-${kind}-${createId()}`
-  const baseStyle =
-    kind === 'footer'
+  const hasPlacement = Number.isFinite(placement?.left) && Number.isFinite(placement?.top)
+  const baseStyle = hasPlacement
+    ? {
+        left: formatPercentValue(clampNumber(placement.left, 0, 100)),
+        top: formatPercentValue(clampNumber(placement.top, 0, 100)),
+        width:
+          kind === 'footer'
+            ? '82.50%'
+            : kind === 'image'
+              ? '18.00%'
+              : kind === 'text'
+                ? '28.00%'
+                : '79.64%',
+        height:
+          kind === 'footer'
+            ? '2.35%'
+            : kind === 'image'
+              ? '12.00%'
+              : kind === 'text'
+                ? '5.80%'
+                : '1.20%',
+      }
+    : kind === 'footer'
       ? {
           left: '7.00%',
-          top: formatPercentValue(96.95 + index * 0.92),
+          top: formatPercentValue(97.72 + index * 0.88),
           width: '82.50%',
-          height: '1.08%',
+          height: '1.55%',
         }
-      : {
-          left: '7.04%',
-          top: formatPercentValue(90.95 + index * 1.38),
-          width: '79.64%',
-          height: '1.20%',
-        }
+      : kind === 'text'
+        ? {
+            left: '12.00%',
+            top: '12.00%',
+            width: '28.00%',
+            height: '5.80%',
+          }
+        : kind === 'image'
+          ? {
+              left: '12.00%',
+              top: '20.00%',
+              width: '18.00%',
+              height: '12.00%',
+            }
+          : {
+              left: '7.04%',
+              top: formatPercentValue(90.95 + index * 1.38),
+              width: '79.64%',
+              height: '1.20%',
+            }
 
   return {
     key,
     kind,
-    label: kind === 'footer' ? `Footer line ${index + 1}` : `Condition line ${index + 1}`,
-    type: 'textarea',
+    label:
+      kind === 'footer'
+        ? `Footer line ${index + 1}`
+        : kind === 'text'
+          ? `Text box ${index + 1}`
+          : kind === 'image'
+            ? `Image box ${index + 1}`
+            : `Condition line ${index + 1}`,
+    type: kind === 'image' ? 'image' : 'textarea',
     value: '',
+    src: '',
     style: baseStyle,
   }
 }
@@ -736,6 +781,7 @@ function CertificateBuilder() {
   const [workPermitNudgeStep, setWorkPermitNudgeStep] = useState(0.15)
   const [workPermitSnapEnabled, setWorkPermitSnapEnabled] = useState(true)
   const [workPermitSnapStep, setWorkPermitSnapStep] = useState(0.25)
+  const [workPermitExporting, setWorkPermitExporting] = useState(false)
   const [templateMode, setTemplateMode] = useState('ielts')
   const [storageMode, setStorageMode] = useState(initialCachedRecords.length ? 'local-cache' : 'loading')
   const [loading, setLoading] = useState(true)
@@ -822,7 +868,7 @@ function CertificateBuilder() {
         label: item.label,
         type: item.type,
         style: item.style,
-        value: item.value,
+        value: item.type === 'image' ? item.src : item.value,
         kind: item.kind,
         isCustom: true,
       })),
@@ -904,9 +950,28 @@ function CertificateBuilder() {
     return nextItem
   }
 
+  function addWorkPermitCustomImageItem(src) {
+    const nextIndex = workPermitCustomTextItems.filter((item) => item.kind === 'image').length
+    const nextItem = createWorkPermitCustomTextItem('image', nextIndex)
+
+    nextItem.src = src
+
+    setWorkPermitCustomTextItems((current) => [...current, nextItem])
+    setWorkPermitArrangeMode(true)
+    setSelectedWorkPermitField(nextItem.key)
+
+    return nextItem
+  }
+
   function updateWorkPermitCustomTextItem(fieldKey, value) {
     setWorkPermitCustomTextItems((current) =>
-      current.map((item) => (item.key === fieldKey ? { ...item, value } : item)),
+      current.map((item) =>
+        item.key === fieldKey
+          ? item.kind === 'image'
+            ? { ...item, src: value }
+            : { ...item, value }
+          : item,
+      ),
     )
   }
 
@@ -965,6 +1030,40 @@ function CertificateBuilder() {
   function clearWorkPermitCustomTextItems() {
     setWorkPermitCustomTextItems([])
     setSelectedWorkPermitField(WORK_PERMIT_EDITABLE_FIELDS[0].key)
+  }
+
+  function handleAddWorkPermitImage() {
+    const picker = document.createElement('input')
+    picker.type = 'file'
+    picker.accept = 'image/*'
+    picker.onchange = () => {
+      const file = picker.files?.[0]
+      if (!file) return
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        const src = typeof reader.result === 'string' ? reader.result : ''
+        if (!src) return
+        addWorkPermitCustomImageItem(src)
+      }
+      reader.readAsDataURL(file)
+    }
+    picker.click()
+  }
+
+  function handleWorkPermitStageDoubleClick(event) {
+    if (!workPermitArrangeMode) return
+    if (event.target !== event.currentTarget) return
+
+    const stageRect = event.currentTarget.getBoundingClientRect()
+    if (!stageRect) return
+
+    const left = ((event.clientX - stageRect.left) / stageRect.width) * 100
+    const top = ((event.clientY - stageRect.top) / stageRect.height) * 100
+    addWorkPermitCustomTextItem('text', workPermitCustomTextItems.filter((item) => item.kind === 'text').length, {
+      left,
+      top,
+    })
   }
 
   function resetWorkPermitLayout() {
@@ -1241,7 +1340,51 @@ function CertificateBuilder() {
   }
 
   function handlePrint() {
-    window.print()
+    if (templateMode !== 'workpermit') {
+      window.print()
+      return
+    }
+
+    async function exportWorkPermitPdf() {
+      const stage = document.querySelector('.work-permit-stage')
+      if (!stage) {
+        setNotice('Could not find the work permit canvas.')
+        return
+      }
+
+      try {
+        setWorkPermitExporting(true)
+        setNotice('Preparing work permit PDF...')
+
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
+        const canvas = await html2canvas(stage, {
+          backgroundColor: null,
+          scale: Math.max(2, window.devicePixelRatio || 1),
+          useCORS: true,
+          allowTaint: false,
+        })
+
+        const imageData = canvas.toDataURL('image/png')
+        const pdf = new jsPDF({
+          orientation: 'p',
+          unit: 'px',
+          format: [canvas.width, canvas.height],
+          hotfixes: ['px_scaling'],
+        })
+
+        pdf.addImage(imageData, 'PNG', 0, 0, canvas.width, canvas.height)
+        pdf.save('brightpath-work-permit.pdf')
+        setNotice('Work permit PDF downloaded.')
+      } catch (error) {
+        console.error('[CertificateBuilder] Work permit PDF export failed:', error)
+        setNotice('Could not generate the work permit PDF.')
+      } finally {
+        setWorkPermitExporting(false)
+      }
+    }
+
+    exportWorkPermitPdf()
   }
 
   function handleCopySummary() {
@@ -1330,6 +1473,12 @@ function CertificateBuilder() {
           >
             {workPermitSnapEnabled ? 'Snap on' : 'Snap off'}
           </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={() => addWorkPermitCustomTextItem('text')}>
+            + Text box
+          </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={handleAddWorkPermitImage}>
+            + Image
+          </button>
           <button type="button" className="admin-btn admin-btn-soft" onClick={() => addWorkPermitCustomTextItem('condition')}>
             + Condition line
           </button>
@@ -1398,7 +1547,10 @@ function CertificateBuilder() {
             </button>
           </div>
         </div>
-        <div className={`work-permit-stage${workPermitArrangeMode ? ' is-arrange-mode' : ''}`}>
+        <div
+          className={`work-permit-stage${workPermitArrangeMode ? ' is-arrange-mode' : ''}${workPermitExporting ? ' is-exporting' : ''}`}
+          onDoubleClick={handleWorkPermitStageDoubleClick}
+        >
           <img className="work-permit-preview-image" src={WORK_PERMIT_TEMPLATE_IMAGE} alt="Work permit template preview" />
           <div className="work-permit-rules" aria-hidden="true">
             {WORK_PERMIT_DECOR_LINES.map((line) => (
@@ -1453,6 +1605,12 @@ function CertificateBuilder() {
                         setWorkPermitTextDraft((current) => ({ ...current, [item.key]: event.target.value }))
                       }}
                     />
+                  ) : item.type === 'image' ? (
+                    value ? (
+                      <img className="work-permit-freeform-image" src={value} alt={item.label} draggable={false} />
+                    ) : (
+                      <div className="work-permit-freeform-image-placeholder">{item.label}</div>
+                    )
                   ) : (
                     <input
                       aria-label={item.key}
@@ -1681,9 +1839,9 @@ function CertificateBuilder() {
             <Copy size={16} />
             Copy Summary
           </button>
-          <button type="button" className="admin-btn admin-btn-soft" onClick={handlePrint}>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={handlePrint} disabled={workPermitExporting}>
             <Download size={16} />
-            Download PDF
+            {workPermitExporting ? 'Creating PDF...' : 'Download PDF'}
           </button>
         </div>
       </div>
