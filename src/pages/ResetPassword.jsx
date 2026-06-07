@@ -10,6 +10,9 @@ function ResetPassword() {
   const { user, loading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const hashParams = new URLSearchParams(
+    typeof window !== 'undefined' ? window.location.hash.replace(/^#/, '') : '',
+  )
   const [form, setForm] = useState({
     password: '',
     confirmPassword: '',
@@ -19,15 +22,21 @@ function ResetPassword() {
   const [message, setMessage] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [verifyingLink, setVerifyingLink] = useState(Boolean(searchParams.get('code')))
+  const [verifyingLink, setVerifyingLink] = useState(
+    Boolean(searchParams.get('code') || searchParams.get('token_hash') || hashParams.get('access_token')),
+  )
 
   const code = searchParams.get('code')
+  const tokenHash = searchParams.get('token_hash')
+  const accessToken = hashParams.get('access_token')
+  const refreshToken = hashParams.get('refresh_token')
+  const hasRecoveryParams = Boolean(code || tokenHash || (accessToken && refreshToken))
 
   useEffect(() => {
     let isActive = true
 
-    async function verifyRecoveryCode() {
-      if (!code) {
+    async function verifyRecoveryLink() {
+      if (!hasRecoveryParams) {
         setVerifyingLink(false)
         return
       }
@@ -42,8 +51,26 @@ function ResetPassword() {
       }
 
       try {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-        if (exchangeError) throw exchangeError
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          if (exchangeError) throw exchangeError
+        } else if (tokenHash) {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: 'recovery',
+          })
+          if (verifyError) throw verifyError
+        } else if (accessToken && refreshToken) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (sessionError) throw sessionError
+        }
+
+        if (typeof window !== 'undefined') {
+          window.history.replaceState({}, document.title, '/reset-password')
+        }
       } catch (exchangeError) {
         console.error('[ResetPassword] Recovery link verification failed:', exchangeError)
         if (isActive) {
@@ -56,12 +83,12 @@ function ResetPassword() {
       }
     }
 
-    verifyRecoveryCode()
+    verifyRecoveryLink()
 
     return () => {
       isActive = false
     }
-  }, [code, loading, user])
+  }, [accessToken, code, hasRecoveryParams, loading, refreshToken, tokenHash, user])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -134,7 +161,7 @@ function ResetPassword() {
               <p className="auth-message">Checking your reset link...</p>
             ) : null}
 
-            {!verifyingLink && !loading && !user ? (
+            {!verifyingLink && !loading && !user && hasRecoveryParams ? (
               <p className="auth-message error">
                 This reset link is not active anymore. Please request a new one from the forgot password page.
               </p>

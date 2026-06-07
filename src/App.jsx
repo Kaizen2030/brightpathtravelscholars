@@ -156,6 +156,9 @@ function AppLayout() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/update-password" element={<ResetPassword />} />
+          <Route path="/auth/callback" element={<ResetPassword />} />
+          <Route path="/auth/reset-password" element={<ResetPassword />} />
+          <Route path="/password-reset" element={<ResetPassword />} />
           <Route
             path="/dashboard"
             element={

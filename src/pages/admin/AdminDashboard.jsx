@@ -18,6 +18,7 @@ import SEO from '../../components/SEO'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import { SITE_SETTING_FIELDS } from '../../lib/siteSettings'
+import CertificateBuilder from './CertificateBuilder'
 import PageContentManager from './PageContentManager'
 import AnalyticsPanel from './AnalyticsPanel'
 import './AdminDashboard.css'
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
   { key: 'blog', label: 'Blog Posts', icon: Megaphone },
   { key: 'testimonials', label: 'Testimonials', icon: Star },
   { key: 'team', label: 'Team Members', icon: Users },
+  { key: 'certificates', label: 'IELTS Builder', icon: FileText },
   { key: 'analytics', label: 'Analytics', icon: Activity },
   { key: 'content', label: 'Page Content', icon: Megaphone },
   { key: 'settings', label: 'Settings', icon: Settings },
@@ -326,7 +328,7 @@ function AdminDashboard() {
     return () => {
       ignore = true
     }
-  }, [isAdmin, user?.id])
+  }, [cachedDashboard, isAdmin, user?.id])
 
   const overviewStats = useMemo(
     () => [
@@ -1337,6 +1339,8 @@ function AdminDashboard() {
         return renderTestimonials()
       case 'team':
         return renderTeam()
+      case 'certificates':
+        return <CertificateBuilder />
       case 'analytics':
         return <AnalyticsPanel />
       case 'settings':
