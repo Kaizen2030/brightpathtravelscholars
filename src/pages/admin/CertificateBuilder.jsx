@@ -1352,34 +1352,77 @@ function CertificateBuilder() {
         return
       }
 
+      const waitForImages = async (root) => {
+        const images = Array.from(root.querySelectorAll('img'))
+        await Promise.all(
+          images.map((img) => {
+            if (img.complete && img.naturalWidth > 0) return Promise.resolve()
+            return new Promise((resolve) => {
+              img.addEventListener('load', resolve, { once: true })
+              img.addEventListener('error', resolve, { once: true })
+            })
+          }),
+        )
+      }
+
+      const exportWrapper = document.createElement('div')
+      exportWrapper.style.position = 'fixed'
+      exportWrapper.style.left = '-10000px'
+      exportWrapper.style.top = '0'
+      exportWrapper.style.width = `${stage.getBoundingClientRect().width}px`
+      exportWrapper.style.pointerEvents = 'none'
+      exportWrapper.style.opacity = '1'
+      exportWrapper.style.zIndex = '-1'
+
+      const exportStage = stage.cloneNode(true)
+      exportStage.classList.remove('is-arrange-mode', 'is-exporting')
+      exportStage.style.width = `${stage.getBoundingClientRect().width}px`
+      exportStage.style.maxWidth = `${stage.getBoundingClientRect().width}px`
+      exportStage.style.pointerEvents = 'none'
+
+      exportWrapper.appendChild(exportStage)
+      document.body.appendChild(exportWrapper)
+
       try {
         setWorkPermitExporting(true)
         setNotice('Preparing work permit PDF...')
 
+        await document.fonts?.ready
+        await waitForImages(exportStage)
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
-        const canvas = await html2canvas(stage, {
+        const canvas = await html2canvas(exportStage, {
           backgroundColor: null,
           scale: Math.max(2, window.devicePixelRatio || 1),
           useCORS: true,
           allowTaint: false,
+          scrollX: 0,
+          scrollY: 0,
+          width: exportStage.getBoundingClientRect().width,
+          height: exportStage.getBoundingClientRect().height,
         })
 
         const imageData = canvas.toDataURL('image/png')
         const pdf = new jsPDF({
           orientation: 'p',
-          unit: 'px',
-          format: [canvas.width, canvas.height],
-          hotfixes: ['px_scaling'],
+          unit: 'pt',
+          format: 'a4',
         })
 
-        pdf.addImage(imageData, 'PNG', 0, 0, canvas.width, canvas.height)
+        const pageWidth = pdf.internal.pageSize.getWidth()
+        const pageHeight = pdf.internal.pageSize.getHeight()
+        const imageWidth = pageWidth
+        const imageHeight = (canvas.height * imageWidth) / canvas.width
+        const offsetY = Math.max(0, (pageHeight - imageHeight) / 2)
+
+        pdf.addImage(imageData, 'PNG', 0, offsetY, imageWidth, imageHeight)
         pdf.save('brightpath-work-permit.pdf')
         setNotice('Work permit PDF downloaded.')
       } catch (error) {
         console.error('[CertificateBuilder] Work permit PDF export failed:', error)
         setNotice('Could not generate the work permit PDF.')
       } finally {
+        exportWrapper.remove()
         setWorkPermitExporting(false)
       }
     }
@@ -1548,7 +1591,7 @@ function CertificateBuilder() {
           </div>
         </div>
         <div
-          className={`work-permit-stage${workPermitArrangeMode ? ' is-arrange-mode' : ''}${workPermitExporting ? ' is-exporting' : ''}`}
+          className={`work-permit-stage${workPermitArrangeMode ? ' is-arrange-mode' : ''}`}
           onDoubleClick={handleWorkPermitStageDoubleClick}
         >
           <img className="work-permit-preview-image" src={WORK_PERMIT_TEMPLATE_IMAGE} alt="Work permit template preview" />
