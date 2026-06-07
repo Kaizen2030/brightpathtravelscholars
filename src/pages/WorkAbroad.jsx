@@ -241,7 +241,6 @@ function WorkAbroad() {
   }, [categoryFilter, countryFilter, searchTerm, salaryFilter, typeFilter])
 
   const resultsLabel = `Showing ${jobs.length} of ${JOB_CATALOG.length} jobs`
-  const activeCountryMeta = countryFilter === 'All Countries' ? null : routeCountryMeta || JOB_COUNTRY_OPTIONS.find((item) => item.country === countryFilter) || null
   const trustPills = hero.settings?.trust_pills?.length
     ? hero.settings.trust_pills
     : [
@@ -313,22 +312,11 @@ function WorkAbroad() {
         </div>
       </section>
 
-      <AnimatedSection>
-        <section className="work-countries-section">
+      <AnimatedSection delay={0.06}>
+        <section className="work-filter-wrap">
           <div className="container">
-            <div className="work-section-header compact">
-              <div>
-                <span className="section-badge">Top destinations</span>
-                <h2>Choose a country and jump straight into live openings</h2>
-              </div>
-              <Link to="/work-abroad" className="work-section-link">
-                View all
-                <ChevronRight size={16} />
-              </Link>
-            </div>
-
-            <div className="work-country-selector">
-              <label>
+            <div className="work-filter-bar">
+              <label className="work-country-filter work-filter-field work-filter-country">
                 <span>Country</span>
                 <select value={countryFilter} onChange={(event) => handleCountrySelect(event.target.value)}>
                   <option value="All Countries">All Countries ({JOB_CATALOG.length} jobs)</option>
@@ -339,53 +327,8 @@ function WorkAbroad() {
                   ))}
                 </select>
               </label>
-            </div>
 
-            <div className="work-country-row">
-              <button
-                type="button"
-                className={`work-country-chip${countryFilter === 'All Countries' ? ' active' : ''}`}
-                onClick={() => handleCountrySelect('All Countries')}
-              >
-                <span className="work-country-chip-flag">
-                  <Globe2 size={18} />
-                </span>
-                <span className="work-country-chip-name">All Countries</span>
-                <span className="work-country-chip-count">{JOB_CATALOG.length} jobs</span>
-              </button>
-
-              {countryCards.map((country) => (
-                <button
-                  key={country.slug}
-                  type="button"
-                  className={`work-country-chip${country.country === countryFilter ? ' active' : ''}`}
-                  onClick={() => handleCountrySelect(country.country)}
-                >
-                  <span className="work-country-chip-flag">{country.flag}</span>
-                  <span className="work-country-chip-name">{country.country}</span>
-                  <span className="work-country-chip-count">{country.count} jobs</span>
-                </button>
-              ))}
-            </div>
-
-            {activeCountryMeta ? (
-              <div className="work-country-focus">
-                <span>{activeCountryMeta.flag}</span>
-                <div>
-                  <strong>{activeCountryMeta.country}</strong>
-                  <p>{jobs.filter((job) => job.country === activeCountryMeta.country).length} matching openings</p>
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      </AnimatedSection>
-
-      <AnimatedSection delay={0.06}>
-        <section className="work-filter-wrap">
-          <div className="container">
-            <div className="work-filter-bar">
-              <label>
+              <label className="work-filter-field work-filter-category">
                 <span>Category</span>
                 <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
                   {categories.map((category) => (
@@ -396,7 +339,7 @@ function WorkAbroad() {
                 </select>
               </label>
 
-              <label>
+              <label className="work-filter-field work-filter-salary">
                 <span>Salary</span>
                 <select value={salaryFilter} onChange={(event) => setSalaryFilter(event.target.value)}>
                   {SALARY_OPTIONS.map((option) => (
@@ -420,7 +363,7 @@ function WorkAbroad() {
                 ))}
               </div>
 
-              <div className="work-filter-count">
+              <div className="work-filter-count work-filter-results">
                 <strong>{resultsLabel}</strong>
                 <button type="button" onClick={resetFilters}>
                   Clear filters
