@@ -72,6 +72,80 @@ function createInitialWorkPermitFieldPositions() {
   return Object.fromEntries(WORK_PERMIT_EDITABLE_FIELDS.map((field) => [field.key, { ...field.style }]))
 }
 
+function syncWorkPermitExportClone(sourceStage, clonedStage) {
+  if (!sourceStage || !clonedStage) return
+
+  const sourceControls = Array.from(sourceStage.querySelectorAll('input, textarea'))
+  const clonedControls = Array.from(clonedStage.querySelectorAll('input, textarea'))
+
+  sourceControls.forEach((sourceControl, index) => {
+    const clonedControl = clonedControls[index]
+    if (!clonedControl) return
+
+    const nextValue = sourceControl.value ?? ''
+    clonedControl.value = nextValue
+
+    if (clonedControl.tagName === 'TEXTAREA') {
+      clonedControl.textContent = nextValue
+    } else {
+      clonedControl.setAttribute('value', nextValue)
+    }
+  })
+
+  clonedStage.querySelectorAll('.work-permit-drag-handle').forEach((handle) => handle.remove())
+  clonedStage.classList.add('is-exporting')
+  clonedStage.classList.remove('is-arrange-mode')
+}
+
+function getWorkPermitControlFontMetrics(control) {
+  if (!control || typeof window === 'undefined') {
+    return { fontSizePx: 8, lineHeightFactor: 1.1, align: 'left' }
+  }
+
+  const computed = window.getComputedStyle(control)
+  const fontSizePx = Number.parseFloat(computed.fontSize) || 8
+  const lineHeightPx = Number.parseFloat(computed.lineHeight)
+  const lineHeightFactor = Number.isFinite(lineHeightPx) && fontSizePx > 0 ? lineHeightPx / fontSizePx : 1.1
+  const align = computed.textAlign || 'left'
+
+  return { fontSizePx, lineHeightFactor, align }
+}
+
+function addInvisibleWorkPermitTextLayer(pdf, stage, workPermitItems, imageHeight, offsetY) {
+  if (!stage) return
+
+  const controlsByKey = new Map(
+    Array.from(stage.querySelectorAll('input, textarea')).map((control) => [control.getAttribute('aria-label') || '', control]),
+  )
+
+  workPermitItems.forEach((item) => {
+    if (item.type === 'image') return
+
+    const text = `${item.value ?? ''}`
+    if (!text.trim()) return
+
+    const control = controlsByKey.get(item.key)
+    const { fontSizePx, lineHeightFactor, align } = getWorkPermitControlFontMetrics(control)
+    const fontSizePt = fontSizePx * 0.75
+    const left = parsePercentValue(item.style?.left || 0)
+    const top = parsePercentValue(item.style?.top || 0)
+    const width = parsePercentValue(item.style?.width || 0)
+    const x = (left / 100) * pdf.internal.pageSize.getWidth()
+    const y = offsetY + (top / 100) * imageHeight + fontSizePt * 0.85
+    const maxWidth = width > 0 ? (width / 100) * pdf.internal.pageSize.getWidth() : undefined
+    const lines = text.split(/\r?\n/)
+
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(fontSizePt)
+    pdf.text(lines, x, y, {
+      renderingMode: 'invisible',
+      lineHeightFactor,
+      align,
+      maxWidth,
+    })
+  })
+}
+
 function createWorkPermitCustomTextItem(kind, index = 0, placement = null) {
   const key = `${WORK_PERMIT_CUSTOM_KEY_PREFIX}-${kind}-${createId()}`
   const hasPlacement = Number.isFinite(placement?.left) && Number.isFinite(placement?.top)
@@ -1352,6 +1426,8 @@ function CertificateBuilder() {
         return
       }
 
+      const stageBounds = stage.getBoundingClientRect()
+
       const waitForImages = async (root) => {
         const images = Array.from(root.querySelectorAll('img'))
         await Promise.all(
@@ -1365,41 +1441,32 @@ function CertificateBuilder() {
         )
       }
 
-      const exportWrapper = document.createElement('div')
-      exportWrapper.style.position = 'fixed'
-      exportWrapper.style.left = '-10000px'
-      exportWrapper.style.top = '0'
-      exportWrapper.style.width = `${stage.getBoundingClientRect().width}px`
-      exportWrapper.style.pointerEvents = 'none'
-      exportWrapper.style.opacity = '1'
-      exportWrapper.style.zIndex = '-1'
-
-      const exportStage = stage.cloneNode(true)
-      exportStage.classList.remove('is-arrange-mode', 'is-exporting')
-      exportStage.style.width = `${stage.getBoundingClientRect().width}px`
-      exportStage.style.maxWidth = `${stage.getBoundingClientRect().width}px`
-      exportStage.style.pointerEvents = 'none'
-
-      exportWrapper.appendChild(exportStage)
-      document.body.appendChild(exportWrapper)
-
       try {
         setWorkPermitExporting(true)
         setNotice('Preparing work permit PDF...')
 
         await document.fonts?.ready
-        await waitForImages(exportStage)
+        await waitForImages(stage)
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
 
-        const canvas = await html2canvas(exportStage, {
+        const canvas = await html2canvas(stage, {
           backgroundColor: null,
           scale: Math.max(2, window.devicePixelRatio || 1),
           useCORS: true,
           allowTaint: false,
           scrollX: 0,
           scrollY: 0,
-          width: exportStage.getBoundingClientRect().width,
-          height: exportStage.getBoundingClientRect().height,
+          width: stageBounds.width,
+          height: stageBounds.height,
+          onclone: (clonedDocument) => {
+            const clonedStage = clonedDocument.querySelector('.work-permit-stage')
+            if (clonedStage) {
+              syncWorkPermitExportClone(stage, clonedStage)
+              clonedStage.style.width = `${stageBounds.width}px`
+              clonedStage.style.maxWidth = `${stageBounds.width}px`
+              clonedStage.style.height = `${stageBounds.height}px`
+            }
+          },
         })
 
         const imageData = canvas.toDataURL('image/png')
@@ -1416,13 +1483,13 @@ function CertificateBuilder() {
         const offsetY = Math.max(0, (pageHeight - imageHeight) / 2)
 
         pdf.addImage(imageData, 'PNG', 0, offsetY, imageWidth, imageHeight)
+        addInvisibleWorkPermitTextLayer(pdf, stage, workPermitOverlayItems, imageHeight, offsetY)
         pdf.save('brightpath-work-permit.pdf')
         setNotice('Work permit PDF downloaded.')
       } catch (error) {
         console.error('[CertificateBuilder] Work permit PDF export failed:', error)
         setNotice('Could not generate the work permit PDF.')
       } finally {
-        exportWrapper.remove()
         setWorkPermitExporting(false)
       }
     }
