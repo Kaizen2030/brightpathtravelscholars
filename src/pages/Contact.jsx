@@ -234,15 +234,32 @@ function Contact() {
 
             <div className="contact-sidebar">
               <div className="contact-map-card">
-                <div className="contact-map-placeholder">
-                  <div className="contact-map-pin">
-                    <MapPin size={18} />
-                  </div>
-                  <div>
-                    <strong>{sidebar.settings?.map_title}</strong>
-                    <p>{sidebar.settings?.map_body}</p>
-                  </div>
-                </div>
+                {(() => {
+                  const location = (siteSettings.office_location || sidebar.settings?.map_body || '').trim()
+                  const mapQuery = encodeURIComponent(location || 'Jacksonville, GA 31544, USA')
+                  const mapSrc = `https://www.google.com/maps?q=${mapQuery}&output=embed`
+
+                  return (
+                    <div className="contact-map-embed">
+                      <iframe
+                        title="Brightpath Office Location"
+                        src={mapSrc}
+                        width="100%"
+                        height="100%"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        style={{ border: 0, borderRadius: '12px', minHeight: '17rem' }}
+                      />
+                      <div style={{ marginTop: 8 }}>
+                        <strong>{sidebar.settings?.map_title || 'U.S. Office'}</strong>
+                        <p>{location}</p>
+                        <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer">
+                          Open in Google Maps
+                        </a>
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
 
               <div className="contact-side-card">
