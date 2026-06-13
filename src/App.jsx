@@ -23,6 +23,7 @@ import ScholarshipDetail from './pages/ScholarshipDetail'
 import UniversityDetail from './pages/UniversityDetail'
 import JobDetail from './pages/JobDetail'
 import AdminDashboard from './pages/admin/AdminDashboard'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -178,7 +179,9 @@ function AppLayout() {
             path="/admin"
             element={
               <AdminRoute>
-                <AdminDashboard />
+                <ErrorBoundary>
+                  <AdminDashboard />
+                </ErrorBoundary>
               </AdminRoute>
             }
           />

@@ -2,89 +2,123 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
   Activity,
-  CalendarDays,
-  FileText,
-  LayoutDashboard,
-  Megaphone,
-  Save,
-  Settings,
-  ShieldCheck,
-  Star,
-  Users,
-  X,
-} from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
-import SEO from '../../components/SEO'
-import { fetchCached, clearCache } from '../../lib/dataCache'
-import FALLBACK_TEAM from '../../lib/fallbackTeam'
-import { useAuth } from '../../context/AuthContext'
-import { supabase } from '../../lib/supabaseClient'
-import { SITE_SETTING_FIELDS } from '../../lib/siteSettings'
-import CertificateBuilder from './CertificateBuilder'
-import PageContentManager from './PageContentManager'
-import AnalyticsPanel from './AnalyticsPanel'
-import './AdminDashboard.css'
+    async function loadAdminData() {
+      const hasCachedData = Boolean(cachedDashboard)
+      if (!hasCachedData) {
+        setLoading(true)
+      }
+      setNotice(null)
 
-const NAV_ITEMS = [
-  { key: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { key: 'applications', label: 'Applications', icon: FileText },
-  { key: 'events', label: 'Events', icon: CalendarDays },
-  { key: 'blog', label: 'Blog Posts', icon: Megaphone },
-  { key: 'testimonials', label: 'Testimonials', icon: Star },
-  { key: 'team', label: 'Team Members', icon: Users },
-  { key: 'certificates', label: 'IELTS Builder', icon: FileText },
-  { key: 'analytics', label: 'Analytics', icon: Activity },
-  { key: 'content', label: 'Page Content', icon: Megaphone },
-  { key: 'settings', label: 'Settings', icon: Settings },
-]
+      // Collect results individually so a single failing endpoint doesn't block the whole dashboard
+      let applicationsData = []
+      let eventsData = []
+      let postsData = []
+      let testimonialsData = []
+      let teamData = []
+      let adminProfilesData = []
+      let settingsData = []
 
-const APPLICATION_STATUSES = ['pending', 'reviewing', 'accepted', 'rejected']
-const EVENT_CATEGORIES = [
-  'university_open_day',
-  'visa_talk',
-  'pre_departure',
-  'webinar',
-  'scholarship',
-]
+      try {
+        // applications
+        try {
+          const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
+          if (!applicationsResult.error) applicationsData = applicationsResult.data ?? []
+          else console.warn('[AdminDashboard] applications fetch failed', applicationsResult.error)
+        } catch (err) {
+          console.warn('[AdminDashboard] applications fetch threw', err)
+        }
 
-const SETTINGS_SECTIONS = [
-  {
-    key: 'basic',
-    title: 'Basic Info',
-    description: 'Name the site and set the main public web address.',
-  },
-  {
-    key: 'contact',
-    title: 'Contact & Support',
-    description: 'Control the email, phone, and WhatsApp details people will use to reach you.',
-  },
-  {
-    key: 'social',
-    title: 'Social Links',
-    description: 'Paste your live social profile URLs so the footer and contact page stay up to date.',
-  },
-]
+        // events
+        try {
+          const eventsResult = await supabase.from('events').select('*').order('date', { ascending: false })
+          if (!eventsResult.error) eventsData = eventsResult.data ?? []
+          else console.warn('[AdminDashboard] events fetch failed', eventsResult.error)
+        } catch (err) {
+          console.warn('[AdminDashboard] events fetch threw', err)
+        }
 
-const EMPTY_EVENT_FORM = {
-  title: '',
-  date: '',
-  location: '',
-  description: '',
-  image_url: '',
-  register_url: '',
-  category: 'university_open_day',
-  is_online: false,
-}
+        // posts
+        try {
+          const postsResult = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
+          if (!postsResult.error) postsData = postsResult.data ?? []
+          else console.warn('[AdminDashboard] posts fetch failed', postsResult.error)
+        } catch (err) {
+          console.warn('[AdminDashboard] posts fetch threw', err)
+        }
 
-const EMPTY_TEAM_FORM = {
-  name: '',
-  role: '',
-  bio: '',
-  photo_url: '',
-  order_index: 0,
-}
-const EMPTY_BLOG_FORM = {
-  title: '',
+        // testimonials
+        try {
+          const testimonialsResult = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
+          if (!testimonialsResult.error) testimonialsData = testimonialsResult.data ?? []
+          else console.warn('[AdminDashboard] testimonials fetch failed', testimonialsResult.error)
+        } catch (err) {
+          console.warn('[AdminDashboard] testimonials fetch threw', err)
+        }
+
+        // team (cached)
+        try {
+          teamData = await fetchCached(
+            'team_members',
+            async () => {
+              const { data, error } = await supabase.from('team_members').select('*').order('order_index', { ascending: true })
+              if (error) throw error
+              return data ?? []
+            },
+            5 * 60 * 1000,
+          )
+        } catch (err) {
+          console.warn('[AdminDashboard] team_members fetch failed', err)
+          teamData = []
+        }
+
+        // admin profiles
+        try {
+          const adminProfilesResult = await supabase
+            .from('profiles')
+            .select('id, email, full_name, phone, role, created_at')
+            .eq('role', 'admin')
+            .order('created_at', { ascending: false })
+          // Debug: log adminProfilesResult to diagnose empty results
+          // eslint-disable-next-line no-console
+          console.debug('[AdminDashboard] adminProfilesResult', adminProfilesResult)
+          if (!adminProfilesResult.error) adminProfilesData = adminProfilesResult.data ?? []
+          else console.warn('[AdminDashboard] adminProfiles fetch failed', adminProfilesResult.error)
+        } catch (err) {
+          console.warn('[AdminDashboard] adminProfiles fetch threw', err)
+          adminProfilesData = []
+        }
+
+        // settings (cached)
+        try {
+          settingsData = await fetchCached(
+            'site_settings',
+            async () => {
+              const { data, error } = await supabase.from('site_settings').select('*').order('key', { ascending: true })
+              if (error) throw error
+              return data ?? []
+            },
+            5 * 60 * 1000,
+          )
+        } catch (err) {
+          console.warn('[AdminDashboard] site_settings fetch failed', err)
+          settingsData = []
+        }
+      } catch (error) {
+        console.error('[AdminDashboard] Failed during admin data load:', error)
+      } finally {
+        if (!ignore) {
+          setApplications(applicationsData)
+          setEvents(eventsData)
+          setPosts(postsData)
+          setTestimonials(testimonialsData)
+          setTeamMembers(sortByOrderThenName(teamData ?? []))
+          setAdminProfiles(adminProfilesData)
+          setSettingsRows(settingsData)
+          setSettingsForm(buildSettingsForm(settingsData))
+          setLoading(false)
+        }
+      }
+    }
   slug: '',
   excerpt: '',
   content: '',
