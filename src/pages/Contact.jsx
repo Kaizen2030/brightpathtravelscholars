@@ -237,7 +237,7 @@ function Contact() {
                 {(() => {
                   const location = (siteSettings.office_location || sidebar.settings?.map_body || '').trim()
                   const mapQuery = encodeURIComponent(location || 'Jacksonville, GA 31544, USA')
-                  const mapSrc = `https://www.google.com/maps?q=${mapQuery}&output=embed`
+                  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=15&output=embed`
 
                   return (
                     <div className="contact-map-embed">
