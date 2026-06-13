@@ -47,7 +47,9 @@ export function isAnalyticsDisabled() {
   if (typeof window === 'undefined') return false
   // Allow build-time env override in Vite: VITE_DISABLE_ANALYTICS='true'
   try {
+    // Opt-in: only enable analytics when VITE_ENABLE_ANALYTICS is explicitly set to 'true'
     if (import.meta?.env?.VITE_DISABLE_ANALYTICS === 'true') return true
+    if (import.meta?.env?.VITE_ENABLE_ANALYTICS !== 'true') return true
   } catch {
     // ignore access errors
   }
