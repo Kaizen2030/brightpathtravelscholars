@@ -271,6 +271,16 @@ function AdminDashboard() {
       setNotice(null)
 
       try {
+        // Debug: log current Supabase session for troubleshooting auth/RLS
+        try {
+          const { data: sessionData } = await supabase.auth.getSession()
+          // eslint-disable-next-line no-console
+          console.debug('[AdminDashboard] supabase.session', sessionData)
+        } catch (sessErr) {
+          // eslint-disable-next-line no-console
+          console.warn('[AdminDashboard] supabase.getSession() failed', sessErr)
+        }
+
         // Fetch sequentially to avoid too many concurrent network requests
         const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
         if (applicationsResult.error) throw applicationsResult.error
@@ -304,7 +314,14 @@ function AdminDashboard() {
           .select('id, email, full_name, phone, role, created_at')
           .eq('role', 'admin')
           .order('created_at', { ascending: false })
-        if (adminProfilesResult.error) throw adminProfilesResult.error
+        // Debug: log adminProfilesResult to diagnose empty results
+        // eslint-disable-next-line no-console
+        console.debug('[AdminDashboard] adminProfilesResult', adminProfilesResult)
+        if (adminProfilesResult.error) {
+          // eslint-disable-next-line no-console
+          console.error('[AdminDashboard] adminProfiles fetch error', adminProfilesResult.error)
+          throw adminProfilesResult.error
+        }
         if (ignore) return
 
         const nextSettings = await fetchCached(
