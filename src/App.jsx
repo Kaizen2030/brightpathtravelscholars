@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { recordPageView, touchAnalyticsSession, isAnalyticsDisabled } from './lib/analytics'
@@ -22,7 +22,7 @@ import BlogPost from './pages/BlogPost'
 import ScholarshipDetail from './pages/ScholarshipDetail'
 import UniversityDetail from './pages/UniversityDetail'
 import JobDetail from './pages/JobDetail'
-import AdminDashboard from './pages/admin/AdminDashboard'
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 import ErrorBoundary from './components/ErrorBoundary'
 
 function ProtectedRoute({ children }) {
@@ -180,7 +180,9 @@ function AppLayout() {
             element={
               <AdminRoute>
                 <ErrorBoundary>
-                  <AdminDashboard />
+                  <Suspense fallback={<div className="route-status">Loading admin...</div>}>
+                    <AdminDashboard />
+                  </Suspense>
                 </ErrorBoundary>
               </AdminRoute>
             }
