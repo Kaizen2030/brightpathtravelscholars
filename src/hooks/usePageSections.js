@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { getPageSectionDefaults, mergePageSections } from '../lib/pageSections'
+import { fetchCached } from '../lib/dataCache'
 
 export function usePageSections(pageKey) {
   const [sections, setSections] = useState(() => getPageSectionDefaults(pageKey))
@@ -13,22 +14,27 @@ export function usePageSections(pageKey) {
       setLoading(true)
 
       try {
-        const { data, error } = await supabase
-          .from('page_sections')
-          .select(
-            'id, page_key, section_key, label, heading, subheading, body_text, badge_text, primary_btn_text, primary_btn_url, secondary_btn_text, secondary_btn_url, media_url, media_secondary_url, enabled, order_index, items_json, settings_json',
-          )
-          .eq('page_key', pageKey)
-          .order('order_index', { ascending: true })
+        const cacheKey = `page_sections:${pageKey}`
+        const data = await fetchCached(
+          cacheKey,
+          async () => {
+            const { data, error } = await supabase
+              .from('page_sections')
+              .select(
+                'id, page_key, section_key, label, heading, subheading, body_text, badge_text, primary_btn_text, primary_btn_url, secondary_btn_text, secondary_btn_url, media_url, media_secondary_url, enabled, order_index, items_json, settings_json',
+              )
+              .eq('page_key', pageKey)
+              .order('order_index', { ascending: true })
+
+            if (error) throw error
+            return data ?? []
+          },
+          5 * 60 * 1000,
+        )
 
         if (ignore) return
 
-        if (error) {
-          console.error(`[PageSections] Failed to load sections for ${pageKey}:`, error)
-          setSections(getPageSectionDefaults(pageKey))
-        } else {
-          setSections(mergePageSections(pageKey, data ?? []))
-        }
+        setSections(mergePageSections(pageKey, data ?? []))
       } catch (error) {
         console.error(`[PageSections] Unexpected load failure for ${pageKey}:`, error)
         if (!ignore) {

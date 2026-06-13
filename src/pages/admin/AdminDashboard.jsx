@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import SEO from '../../components/SEO'
+import { fetchCached, clearCache } from '../../lib/dataCache'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import { SITE_SETTING_FIELDS } from '../../lib/siteSettings'
@@ -267,44 +268,57 @@ function AdminDashboard() {
       setNotice(null)
 
       try {
-        const [
-          applicationsResult,
-          eventsResult,
-          postsResult,
-          testimonialsResult,
-          teamResult,
-          adminProfilesResult,
-          settingsResult,
-        ] = await Promise.all([
-          supabase.from('applications').select('*').order('created_at', { ascending: false }),
-          supabase.from('events').select('*').order('date', { ascending: false }),
-          supabase.from('blog_posts').select('*').order('created_at', { ascending: false }),
-          supabase.from('testimonials').select('*').order('created_at', { ascending: false }),
-          supabase.from('team_members').select('*').order('order_index', { ascending: true }),
-          supabase.from('profiles').select('id, email, full_name, phone, role, created_at').eq('role', 'admin').order('created_at', { ascending: false }),
-          supabase.from('site_settings').select('*').order('key', { ascending: true }),
-        ])
-
-        const firstError = [
-          applicationsResult.error,
-          eventsResult.error,
-          postsResult.error,
-          testimonialsResult.error,
-          teamResult.error,
-          adminProfilesResult.error,
-          settingsResult.error,
-        ].find(Boolean)
-
-        if (firstError) throw firstError
+        // Fetch sequentially to avoid too many concurrent network requests
+        const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
+        if (applicationsResult.error) throw applicationsResult.error
         if (ignore) return
 
-        const nextSettings = settingsResult.data ?? []
+        const eventsResult = await supabase.from('events').select('*').order('date', { ascending: false })
+        if (eventsResult.error) throw eventsResult.error
+        if (ignore) return
+
+        const postsResult = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
+        if (postsResult.error) throw postsResult.error
+        if (ignore) return
+
+        const testimonialsResult = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
+        if (testimonialsResult.error) throw testimonialsResult.error
+        if (ignore) return
+
+        const teamData = await fetchCached(
+          'team_members',
+          async () => {
+            const { data, error } = await supabase.from('team_members').select('*').order('order_index', { ascending: true })
+            if (error) throw error
+            return data ?? []
+          },
+          5 * 60 * 1000,
+        )
+        if (ignore) return
+
+        const adminProfilesResult = await supabase
+          .from('profiles')
+          .select('id, email, full_name, phone, role, created_at')
+          .eq('role', 'admin')
+          .order('created_at', { ascending: false })
+        if (adminProfilesResult.error) throw adminProfilesResult.error
+        if (ignore) return
+
+        const nextSettings = await fetchCached(
+          'site_settings',
+          async () => {
+            const { data, error } = await supabase.from('site_settings').select('*').order('key', { ascending: true })
+            if (error) throw error
+            return data ?? []
+          },
+          5 * 60 * 1000,
+        )
 
         setApplications(applicationsResult.data ?? [])
         setEvents(eventsResult.data ?? [])
         setPosts(postsResult.data ?? [])
         setTestimonials(testimonialsResult.data ?? [])
-        setTeamMembers(sortByOrderThenName(teamResult.data ?? []))
+        setTeamMembers(sortByOrderThenName(teamData ?? []))
         setAdminProfiles(adminProfilesResult.data ?? [])
         setSettingsRows(nextSettings)
         setSettingsForm(buildSettingsForm(nextSettings))
@@ -681,6 +695,12 @@ function AdminDashboard() {
       }
 
       resetTeamModal()
+        // Invalidate cached team members so UI elsewhere shows updates
+        try {
+          clearCache('team_members')
+        } catch {
+          // ignore cache errors
+        }
     } catch (error) {
       console.error('[AdminDashboard] Failed to save team member:', error)
       setNotice({ type: 'error', text: error.message || 'Could not save the team member.' })
@@ -699,6 +719,11 @@ function AdminDashboard() {
 
       setTeamMembers((current) => current.filter((item) => item.id !== memberId))
       setNotice({ type: 'success', text: 'Team member deleted.' })
+        try {
+          clearCache('team_members')
+        } catch {
+          // ignore
+        }
     } catch (error) {
       console.error('[AdminDashboard] Failed to delete team member:', error)
       setNotice({ type: 'error', text: error.message || 'Could not delete the team member.' })
@@ -729,6 +754,11 @@ function AdminDashboard() {
       setSettingsRows(nextRows)
       setSettingsForm(buildSettingsForm(nextRows))
       setNotice({ type: 'success', text: 'Site settings saved.' })
+      try {
+        clearCache('site_settings')
+      } catch {
+        // ignore
+      }
     } catch (error) {
       console.error('[AdminDashboard] Failed to save settings:', error)
       setNotice({ type: 'error', text: error.message || 'Could not save the settings.' })

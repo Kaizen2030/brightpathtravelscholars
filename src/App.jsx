@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { recordPageView, touchAnalyticsSession } from './lib/analytics'
+import { recordPageView, touchAnalyticsSession, isAnalyticsDisabled } from './lib/analytics'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -72,6 +72,8 @@ function AnalyticsTracker() {
   const location = useLocation()
   const { user } = useAuth()
   const lastTrackedRouteRef = useRef('')
+
+  if (isAnalyticsDisabled()) return null
 
   useEffect(() => {
     const pathname = `${location.pathname}${location.search}`

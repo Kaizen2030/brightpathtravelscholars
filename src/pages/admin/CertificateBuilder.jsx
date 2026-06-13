@@ -106,7 +106,8 @@ function getWorkPermitControlFontMetrics(control) {
   const fontSizePx = Number.parseFloat(computed.fontSize) || 8
   const lineHeightPx = Number.parseFloat(computed.lineHeight)
   const lineHeightFactor = Number.isFinite(lineHeightPx) && fontSizePx > 0 ? lineHeightPx / fontSizePx : 1.1
-  const align = computed.textAlign || 'left'
+  const rawAlign = `${computed.textAlign || 'left'}`.toLowerCase()
+  const align = rawAlign === 'center' || rawAlign === 'right' || rawAlign === 'justify' ? rawAlign : 'left'
 
   return { fontSizePx, lineHeightFactor, align }
 }

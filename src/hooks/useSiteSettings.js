@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { buildSiteSettings, readCachedSiteSettings, writeCachedSiteSettings, getDefaultSiteSettings } from '../lib/siteSettings'
+import { fetchCached } from '../lib/dataCache'
 
 export function useSiteSettings() {
   const [settings, setSettings] = useState(() => readCachedSiteSettings())
@@ -13,20 +14,21 @@ export function useSiteSettings() {
       setLoading(true)
 
       try {
-        const { data, error } = await supabase.from('site_settings').select('key, value').order('key', { ascending: true })
+        const data = await fetchCached(
+          'site_settings',
+          async () => {
+            const { data, error } = await supabase.from('site_settings').select('key, value').order('key', { ascending: true })
+            if (error) throw error
+            return data ?? []
+          },
+          5 * 60 * 1000,
+        )
 
         if (ignore) return
 
-        if (error) {
-          console.error('[SiteSettings] Failed to load site settings:', error)
-          const fallback = getDefaultSiteSettings()
-          setSettings(fallback)
-          writeCachedSiteSettings(fallback)
-        } else {
-          const nextSettings = buildSiteSettings(data ?? [])
-          setSettings(nextSettings)
-          writeCachedSiteSettings(nextSettings)
-        }
+        const nextSettings = buildSiteSettings(data ?? [])
+        setSettings(nextSettings)
+        writeCachedSiteSettings(nextSettings)
       } catch (error) {
         console.error('[SiteSettings] Unexpected load failure:', error)
         if (!ignore) {
