@@ -16,6 +16,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import SEO from '../../components/SEO'
 import { fetchCached, clearCache } from '../../lib/dataCache'
+import FALLBACK_TEAM from '../../lib/fallbackTeam'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
 import { SITE_SETTING_FIELDS } from '../../lib/siteSettings'
@@ -730,6 +731,39 @@ function AdminDashboard() {
     }
   }
 
+  async function handleImportFallbackTeam() {
+    if (!window.confirm('Import default team members into the database? This will add the sample team.')) return
+
+    try {
+      setLoading(true)
+      const payload = FALLBACK_TEAM.map((item) => ({
+        id: createRowId(),
+        name: item.name,
+        role: item.role,
+        bio: item.bio,
+        photo_url: item.photo_url || '',
+        order_index: 0,
+      }))
+
+      const { data, error } = await supabase.from('team_members').insert(payload).select()
+      if (error) throw error
+
+      const next = (data ?? payload).sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+      setTeamMembers(next)
+      setNotice({ type: 'success', text: 'Imported default team members.' })
+      try {
+        clearCache('team_members')
+      } catch {
+        // ignore
+      }
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to import fallback team:', error)
+      setNotice({ type: 'error', text: error.message || 'Could not import the default team.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   async function handleSettingsSave(event) {
     event.preventDefault()
     setSettingsSaving(true)
@@ -1105,9 +1139,14 @@ function AdminDashboard() {
               <h2>Team Members</h2>
               <p>{teamMembers.length} team profiles</p>
             </div>
-            <button type="button" className="admin-btn admin-btn-primary" onClick={() => openTeamEditor(null)}>
-              Add Team Member
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" className="admin-btn admin-btn-outline" onClick={() => handleImportFallbackTeam()}>
+                Import Default Team
+              </button>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={() => openTeamEditor(null)}>
+                Add Team Member
+              </button>
+            </div>
           </div>
           <div className="admin-table-wrap">
             <table className="admin-table">
