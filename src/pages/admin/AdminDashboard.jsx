@@ -2,7 +2,27 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   ArrowLeft,
   Activity,
-    async function loadAdminData() {
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Copy,
+  Edit2,
+  FileText,
+  ImagePlus,
+  MapPin,
+  MoreVertical,
+  Plus,
+  Save,
+  Trash2,
+  User,
+  Users,
+  X,
+} from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabaseClient'
+import { useAuth } from '../../context/AuthContext'
+import { fetchCached, clearCache } from '../../lib/dataCache'
+import { SITE_SETTING_FIELDS, buildSiteSettings, writeCachedSiteSettings } from '../../lib/siteSettings'
       const hasCachedData = Boolean(cachedDashboard)
       if (!hasCachedData) {
         setLoading(true)
@@ -892,7 +912,17 @@ function AdminDashboard() {
       setSettingsForm(buildSettingsForm(nextRows))
       setNotice({ type: 'success', text: 'Site settings saved.' })
       try {
+        // Clear in-memory cache used by fetchCached
         clearCache('site_settings')
+
+        // Also update the localStorage cached settings and notify listeners so the live site updates immediately
+        try {
+          const nextSettingsObj = buildSiteSettings(nextRows)
+          writeCachedSiteSettings(nextSettingsObj)
+          window.dispatchEvent(new CustomEvent('brightpath:site-settings-updated', { detail: { settings: nextSettingsObj } }))
+        } catch (e) {
+          // ignore local cache write/dispatch errors
+        }
       } catch {
         // ignore
       }

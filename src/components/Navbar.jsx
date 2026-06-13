@@ -128,37 +128,37 @@ function Navbar() {
 
   return (
     <>
-      <header className={`nexora-nav${scrolled ? ' scrolled' : ''}`}>
-        <div className="container nexora-nav-inner">
-          <Link to="/" className="nexora-logo" aria-label={`${SITE_NAME} home`}>
-            <img src="/favicon.ico" alt="" aria-hidden="true" className="nexora-logo-image" />
-            <span className="nexora-logo-text">{SITE_NAME}</span>
+      <header className={`brightpath-nav${scrolled ? ' scrolled' : ''}`}>
+        <div className="container brightpath-nav-inner">
+          <Link to="/" className="brightpath-logo" aria-label={`${SITE_NAME} home`}>
+            <img src="/favicon.ico" alt="" aria-hidden="true" className="brightpath-logo-image" />
+            <span className="brightpath-logo-text">{SITE_NAME}</span>
           </Link>
 
-          <div className="nexora-nav-desktop" ref={navInteractiveRef}>
-            <nav className="nexora-nav-center" aria-label="Primary">
+          <div className="brightpath-nav-desktop" ref={navInteractiveRef}>
+            <nav className="brightpath-nav-center" aria-label="Primary">
               {primaryLinks.map((link) => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className={`nexora-nav-link${isActive(link.to) ? ' active' : ''}`}
+                  className={`brightpath-nav-link${isActive(link.to) ? ' active' : ''}`}
                 >
                   {link.label}
                 </Link>
               ))}
 
-              <Link to="/work-abroad" className={`nexora-nav-link${isWorkActive ? ' active' : ''}`}>
+              <Link to="/work-abroad" className={`brightpath-nav-link${isWorkActive ? ' active' : ''}`}>
                 Work Abroad
               </Link>
 
               <div
-                className="nexora-nav-dropdown-wrap"
+                className="brightpath-nav-dropdown-wrap"
                 onMouseEnter={() => setStudyOpen(true)}
                 onMouseLeave={() => setStudyOpen(false)}
               >
                 <button
                   type="button"
-                  className={`nexora-nav-dropdown-trigger${isStudyActive ? ' active' : ''}`}
+                  className={`brightpath-nav-dropdown-trigger${isStudyActive ? ' active' : ''}`}
                   aria-haspopup="menu"
                   aria-expanded={studyOpen}
                   onClick={() => {
@@ -171,13 +171,13 @@ function Navbar() {
                 </button>
 
                 {studyOpen ? (
-                  <div className="nexora-dropdown-panel" role="menu" aria-label="Study abroad destinations">
+                  <div className="brightpath-dropdown-panel" role="menu" aria-label="Study abroad destinations">
                     {destinationLinks.map((link) => (
                       <Link
                         key={link.to}
                         to={link.to}
                         role="menuitem"
-                        className="nexora-dropdown-link"
+                        className="brightpath-dropdown-link"
                         onClick={() => setStudyOpen(false)}
                       >
                         {link.label}
@@ -188,16 +188,16 @@ function Navbar() {
               </div>
             </nav>
 
-            <div className="nexora-nav-actions">
-              <Link to="/contact" className="nexora-consult-btn">
+            <div className="brightpath-nav-actions">
+              <Link to="/contact" className="brightpath-consult-btn">
                 Book Free Consultation
               </Link>
 
               {user ? (
-                <div className="nexora-user-wrap">
+                <div className="brightpath-user-wrap">
                   <button
                     type="button"
-                    className={`nexora-user-trigger${userMenuOpen ? ' open' : ''}`}
+                    className={`brightpath-user-trigger${userMenuOpen ? ' open' : ''}`}
                     aria-haspopup="menu"
                     aria-expanded={userMenuOpen}
                     onClick={() => {
@@ -205,18 +205,18 @@ function Navbar() {
                       setUserMenuOpen((current) => !current)
                     }}
                   >
-                    <span className="nexora-user-avatar">{avatarInitial}</span>
-                    <span className="nexora-user-name">{displayName}</span>
+                    <span className="brightpath-user-avatar">{avatarInitial}</span>
+                    <span className="brightpath-user-name">{displayName}</span>
                     <ChevronDown size={16} className={userMenuOpen ? 'rotate' : ''} />
                   </button>
 
                   {userMenuOpen ? (
-                    <div className="nexora-dropdown-panel nexora-user-panel" role="menu" aria-label="User menu">
+                    <div className="brightpath-dropdown-panel brightpath-user-panel" role="menu" aria-label="User menu">
                       {isAdmin ? (
                         <Link
                           to="/admin"
                           role="menuitem"
-                          className="nexora-dropdown-link"
+                          className="brightpath-dropdown-link"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           Admin Dashboard
@@ -225,7 +225,7 @@ function Navbar() {
                       <Link
                         to="/dashboard"
                         role="menuitem"
-                        className="nexora-dropdown-link"
+                        className="brightpath-dropdown-link"
                         onClick={() => setUserMenuOpen(false)}
                       >
                         Dashboard
@@ -233,7 +233,7 @@ function Navbar() {
                       <button
                         type="button"
                         role="menuitem"
-                        className="nexora-dropdown-link nexora-danger-link"
+                        className="brightpath-dropdown-link brightpath-danger-link"
                         onClick={handleSignOut}
                       >
                         Sign Out
@@ -242,11 +242,11 @@ function Navbar() {
                   ) : null}
                 </div>
               ) : (
-                <div className="nexora-auth-actions">
-                  <Link to="/login" className="nexora-signin-link">
+                <div className="brightpath-auth-actions">
+                  <Link to="/login" className="brightpath-signin-link">
                     Sign In
                   </Link>
-                  <Link to="/register" className="btn-primary nexora-register-btn">
+                  <Link to="/register" className="btn-primary brightpath-register-btn">
                     Register
                   </Link>
                 </div>
@@ -254,16 +254,16 @@ function Navbar() {
             </div>
           </div>
 
-          <div className="nexora-mobile-actions">
-            <Link to="/contact" className="nexora-consult-btn mobile">
+          <div className="brightpath-mobile-actions">
+            <Link to="/contact" className="brightpath-consult-btn mobile">
               Book Free Consultation
             </Link>
             <button
               type="button"
-              className={`nexora-menu-toggle${menuOpen ? ' open' : ''}`}
+              className={`brightpath-menu-toggle${menuOpen ? ' open' : ''}`}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
-              aria-controls="nexora-mobile-drawer"
+              aria-controls="brightpath-mobile-drawer"
               onClick={() => setMenuOpen((current) => !current)}
             >
               <Menu size={22} className="menu-icon open-icon" />
@@ -273,22 +273,22 @@ function Navbar() {
         </div>
       </header>
 
-      {menuOpen ? <div className="nexora-mobile-overlay" /> : null}
+      {menuOpen ? <div className="brightpath-mobile-overlay" /> : null}
 
       <aside
         ref={drawerRef}
-        id="nexora-mobile-drawer"
-        className={`nexora-mobile-drawer${menuOpen ? ' open' : ''}`}
+        id="brightpath-mobile-drawer"
+        className={`brightpath-mobile-drawer${menuOpen ? ' open' : ''}`}
         aria-hidden={!menuOpen}
       >
-        <div className="nexora-mobile-header">
-          <Link to="/" className="nexora-logo" aria-label={`${SITE_NAME} home`}>
-            <img src="/favicon.ico" alt="" aria-hidden="true" className="nexora-logo-image" />
-            <span className="nexora-logo-text">{SITE_NAME}</span>
+        <div className="brightpath-mobile-header">
+          <Link to="/" className="brightpath-logo" aria-label={`${SITE_NAME} home`}>
+            <img src="/favicon.ico" alt="" aria-hidden="true" className="brightpath-logo-image" />
+            <span className="brightpath-logo-text">{SITE_NAME}</span>
           </Link>
           <button
             type="button"
-            className="nexora-drawer-close"
+            className="brightpath-drawer-close"
             aria-label="Close menu"
             onClick={() => setMenuOpen(false)}
           >
@@ -296,7 +296,7 @@ function Navbar() {
           </button>
         </div>
 
-        <nav className="nexora-mobile-links" aria-label="Mobile">
+        <nav className="brightpath-mobile-links" aria-label="Mobile">
           {primaryLinks.map((link) => (
             <Link key={link.to} to={link.to} className={isActive(link.to) ? 'active' : ''} onClick={closeMobileMenu}>
               {link.label}
@@ -307,10 +307,10 @@ function Navbar() {
             Work Abroad
           </Link>
 
-          <div className="nexora-mobile-group">
+          <div className="brightpath-mobile-group">
             <button
               type="button"
-              className={`nexora-mobile-group-trigger${studyOpen ? ' open' : ''}${isStudyActive ? ' active' : ''}`}
+              className={`brightpath-mobile-group-trigger${studyOpen ? ' open' : ''}${isStudyActive ? ' active' : ''}`}
               aria-expanded={studyOpen}
               onClick={() => setStudyOpen((current) => !current)}
             >
@@ -319,7 +319,7 @@ function Navbar() {
             </button>
 
             {studyOpen ? (
-              <div className="nexora-mobile-subgroup">
+              <div className="brightpath-mobile-subgroup">
                 {destinationLinks.map((link) => (
                   <Link key={link.to} to={link.to} onClick={closeMobileMenu}>
                     {link.label}
@@ -330,15 +330,15 @@ function Navbar() {
           </div>
         </nav>
 
-        <div className="nexora-mobile-auth">
-          <Link to="/contact" className="nexora-consult-btn full" onClick={closeMobileMenu}>
+        <div className="brightpath-mobile-auth">
+          <Link to="/contact" className="brightpath-consult-btn full" onClick={closeMobileMenu}>
             Book Free Consultation
           </Link>
 
           {user ? (
             <>
-              <div className="nexora-mobile-user">
-                <span className="nexora-user-avatar">{avatarInitial}</span>
+              <div className="brightpath-mobile-user">
+                <span className="brightpath-user-avatar">{avatarInitial}</span>
                 <div>
                   <strong>{displayName}</strong>
                   <span>{user.email}</span>
@@ -352,12 +352,12 @@ function Navbar() {
                   Admin Dashboard
                 </Link>
               ) : null}
-              <button type="button" className="btn-secondary nexora-mobile-signout" onClick={handleSignOut}>
+              <button type="button" className="btn-secondary brightpath-mobile-signout" onClick={handleSignOut}>
                 Sign Out
               </button>
             </>
           ) : (
-            <div className="nexora-mobile-auth-links">
+            <div className="brightpath-mobile-auth-links">
               <Link to="/login" className="btn-secondary" onClick={closeMobileMenu}>
                 Sign In
               </Link>
@@ -370,7 +370,7 @@ function Navbar() {
       </aside>
 
       <style>{`
-        .nexora-nav {
+        .brightpath-nav {
           position: fixed;
           inset: 0 0 auto;
           z-index: 1200;
@@ -379,12 +379,12 @@ function Navbar() {
           transition: box-shadow 0.22s ease, background 0.22s ease;
         }
 
-        .nexora-nav.scrolled {
+        .brightpath-nav.scrolled {
           box-shadow: 0 12px 34px rgba(10, 31, 68, 0.12);
           background: rgba(255, 255, 255, 0.98);
         }
 
-        .nexora-nav-inner {
+        .brightpath-nav-inner {
           min-height: 88px;
           display: flex;
           align-items: center;
@@ -392,7 +392,7 @@ function Navbar() {
           gap: 1rem;
         }
 
-        .nexora-logo {
+        .brightpath-logo {
           display: inline-flex;
           align-items: center;
           gap: 0.75rem;
@@ -400,7 +400,7 @@ function Navbar() {
           min-width: 0;
         }
 
-        .nexora-logo-image {
+        .brightpath-logo-image {
           width: 2.45rem;
           height: 2.45rem;
           display: block;
@@ -410,7 +410,7 @@ function Navbar() {
           box-shadow: 0 8px 20px rgba(91, 44, 137, 0.16);
         }
 
-        .nexora-logo-text {
+        .brightpath-logo-text {
           max-width: 16rem;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -421,7 +421,7 @@ function Navbar() {
           letter-spacing: -0.02em;
         }
 
-        .nexora-nav-desktop {
+        .brightpath-nav-desktop {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -429,7 +429,7 @@ function Navbar() {
           gap: 1.5rem;
         }
 
-        .nexora-nav-center {
+        .brightpath-nav-center {
           display: flex;
           align-items: center;
           justify-content: center;
@@ -437,44 +437,44 @@ function Navbar() {
           flex: 1;
         }
 
-        .nexora-nav-link,
-        .nexora-nav-dropdown-trigger,
-        .nexora-signin-link {
+        .brightpath-nav-link,
+        .brightpath-nav-dropdown-trigger,
+        .brightpath-signin-link {
           color: rgba(10, 31, 68, 0.78);
           font-size: 0.95rem;
           font-weight: 700;
           transition: color 0.2s ease;
         }
 
-        .nexora-nav-link:hover,
-        .nexora-nav-link.active,
-        .nexora-nav-dropdown-trigger:hover,
-        .nexora-nav-dropdown-trigger.active,
-        .nexora-signin-link:hover {
+        .brightpath-nav-link:hover,
+        .brightpath-nav-link.active,
+        .brightpath-nav-dropdown-trigger:hover,
+        .brightpath-nav-dropdown-trigger.active,
+        .brightpath-signin-link:hover {
           color: var(--gold-dark);
         }
 
-        .nexora-nav-dropdown-wrap {
+        .brightpath-nav-dropdown-wrap {
           position: relative;
         }
 
-        .nexora-nav-dropdown-trigger,
-        .nexora-user-trigger,
-        .nexora-menu-toggle,
-        .nexora-drawer-close {
+        .brightpath-nav-dropdown-trigger,
+        .brightpath-user-trigger,
+        .brightpath-menu-toggle,
+        .brightpath-drawer-close {
           border: none;
           background: transparent;
           cursor: pointer;
         }
 
-        .nexora-nav-dropdown-trigger {
+        .brightpath-nav-dropdown-trigger {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
           min-height: 42px;
         }
 
-        .nexora-dropdown-panel {
+        .brightpath-dropdown-panel {
           position: absolute;
           top: calc(100% + 0.9rem);
           left: 0;
@@ -488,7 +488,7 @@ function Navbar() {
           box-shadow: 0 24px 50px rgba(10, 31, 68, 0.16);
         }
 
-        .nexora-dropdown-link {
+        .brightpath-dropdown-link {
           display: flex;
           align-items: center;
           width: 100%;
@@ -502,25 +502,25 @@ function Navbar() {
           text-align: left;
         }
 
-        .nexora-dropdown-link:hover {
+        .brightpath-dropdown-link:hover {
           background: rgba(212, 175, 55, 0.12);
           color: var(--navy);
         }
 
-        .nexora-user-panel {
+        .brightpath-user-panel {
           right: 0;
           left: auto;
           min-width: 200px;
         }
 
-        .nexora-nav-actions {
+        .brightpath-nav-actions {
           display: flex;
           align-items: center;
           gap: 0.9rem;
           flex-shrink: 0;
         }
 
-        .nexora-consult-btn {
+        .brightpath-consult-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -535,27 +535,27 @@ function Navbar() {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .nexora-consult-btn:hover {
+        .brightpath-consult-btn:hover {
           transform: translateY(-1px);
           box-shadow: 0 14px 28px rgba(212, 175, 55, 0.32);
         }
 
-        .nexora-auth-actions {
+        .brightpath-auth-actions {
           display: flex;
           align-items: center;
           gap: 0.85rem;
         }
 
-        .nexora-register-btn {
+        .brightpath-register-btn {
           padding-inline: 1.3rem;
           font-size: 0.9rem;
         }
 
-        .nexora-user-wrap {
+        .brightpath-user-wrap {
           position: relative;
         }
 
-        .nexora-user-trigger {
+        .brightpath-user-trigger {
           display: inline-flex;
           align-items: center;
           gap: 0.6rem;
@@ -568,13 +568,13 @@ function Navbar() {
           transition: border-color 0.18s ease, background 0.18s ease;
         }
 
-        .nexora-user-trigger:hover,
-        .nexora-user-trigger.open {
+        .brightpath-user-trigger:hover,
+        .brightpath-user-trigger.open {
           border-color: rgba(212, 175, 55, 0.55);
           background: rgba(212, 175, 55, 0.08);
         }
 
-        .nexora-user-avatar {
+        .brightpath-user-avatar {
           width: 2rem;
           height: 2rem;
           display: inline-flex;
@@ -588,7 +588,7 @@ function Navbar() {
           flex-shrink: 0;
         }
 
-        .nexora-user-name {
+        .brightpath-user-name {
           max-width: 120px;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -597,11 +597,11 @@ function Navbar() {
           font-weight: 700;
         }
 
-        .nexora-danger-link {
+        .brightpath-danger-link {
           color: #b42318;
         }
 
-        .nexora-danger-link:hover {
+        .brightpath-danger-link:hover {
           background: rgba(180, 35, 24, 0.08);
           color: #8e1c11;
         }
@@ -611,7 +611,7 @@ function Navbar() {
           transition: transform 0.2s ease;
         }
 
-        .nexora-mobile-actions {
+        .brightpath-mobile-actions {
           display: none;
           align-items: center;
           gap: 0.75rem;
@@ -619,7 +619,7 @@ function Navbar() {
           flex-shrink: 0;
         }
 
-        .nexora-menu-toggle {
+        .brightpath-menu-toggle {
           position: relative;
           width: 44px;
           height: 44px;
@@ -632,7 +632,7 @@ function Navbar() {
           transition: background 0.2s ease;
         }
 
-        .nexora-menu-toggle:hover {
+        .brightpath-menu-toggle:hover {
           background: rgba(10, 31, 68, 0.08);
         }
 
@@ -651,24 +651,24 @@ function Navbar() {
           transform: rotate(-90deg) scale(0.7);
         }
 
-        .nexora-menu-toggle.open .open-icon {
+        .brightpath-menu-toggle.open .open-icon {
           opacity: 0;
           transform: rotate(90deg) scale(0.7);
         }
 
-        .nexora-menu-toggle.open .close-icon {
+        .brightpath-menu-toggle.open .close-icon {
           opacity: 1;
           transform: rotate(0deg) scale(1);
         }
 
-        .nexora-mobile-overlay {
+        .brightpath-mobile-overlay {
           position: fixed;
           inset: 0;
           z-index: 1190;
           background: rgba(7, 17, 38, 0.42);
         }
 
-        .nexora-mobile-drawer {
+        .brightpath-mobile-drawer {
           position: fixed;
           top: 0;
           right: 0;
@@ -684,11 +684,11 @@ function Navbar() {
           overflow-y: auto;
         }
 
-        .nexora-mobile-drawer.open {
+        .brightpath-mobile-drawer.open {
           transform: translateX(0);
         }
 
-        .nexora-mobile-header {
+        .brightpath-mobile-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -697,7 +697,7 @@ function Navbar() {
           border-bottom: 1px solid rgba(10, 31, 68, 0.08);
         }
 
-        .nexora-drawer-close {
+        .brightpath-drawer-close {
           width: 2.3rem;
           height: 2.3rem;
           display: inline-flex;
@@ -708,15 +708,15 @@ function Navbar() {
           background: rgba(10, 31, 68, 0.05);
         }
 
-        .nexora-mobile-links {
+        .brightpath-mobile-links {
           display: grid;
           gap: 0.2rem;
           padding: 1rem 1rem 0.3rem;
         }
 
-        .nexora-mobile-links > a,
-        .nexora-mobile-group-trigger,
-        .nexora-mobile-subgroup a {
+        .brightpath-mobile-links > a,
+        .brightpath-mobile-group-trigger,
+        .brightpath-mobile-subgroup a {
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -730,28 +730,28 @@ function Navbar() {
           text-align: left;
         }
 
-        .nexora-mobile-links > a:hover,
-        .nexora-mobile-links > a.active,
-        .nexora-mobile-group-trigger:hover,
-        .nexora-mobile-group-trigger.active,
-        .nexora-mobile-subgroup a:hover {
+        .brightpath-mobile-links > a:hover,
+        .brightpath-mobile-links > a.active,
+        .brightpath-mobile-group-trigger:hover,
+        .brightpath-mobile-group-trigger.active,
+        .brightpath-mobile-subgroup a:hover {
           background: rgba(212, 175, 55, 0.12);
           color: var(--navy);
         }
 
-        .nexora-mobile-subgroup {
+        .brightpath-mobile-subgroup {
           display: grid;
           gap: 0.2rem;
           padding-top: 0.3rem;
         }
 
-        .nexora-mobile-subgroup a {
+        .brightpath-mobile-subgroup a {
           padding-left: 1.35rem;
           font-size: 0.93rem;
           color: rgba(10, 31, 68, 0.75);
         }
 
-        .nexora-mobile-auth {
+        .brightpath-mobile-auth {
           margin-top: auto;
           display: grid;
           gap: 0.9rem;
@@ -760,14 +760,14 @@ function Navbar() {
           background: rgba(255, 255, 255, 0.82);
         }
 
-        .nexora-consult-btn.full,
-        .nexora-mobile-auth-links .btn-primary,
-        .nexora-mobile-auth-links .btn-secondary,
-        .nexora-mobile-auth .btn-secondary {
+        .brightpath-consult-btn.full,
+        .brightpath-mobile-auth-links .btn-primary,
+        .brightpath-mobile-auth-links .btn-secondary,
+        .brightpath-mobile-auth .btn-secondary {
           width: 100%;
         }
 
-        .nexora-mobile-user {
+        .brightpath-mobile-user {
           display: flex;
           align-items: center;
           gap: 0.85rem;
@@ -776,82 +776,82 @@ function Navbar() {
           background: rgba(10, 31, 68, 0.05);
         }
 
-        .nexora-mobile-user strong {
+        .brightpath-mobile-user strong {
           display: block;
           color: var(--navy);
           font-size: 0.94rem;
         }
 
-        .nexora-mobile-user span:last-child {
+        .brightpath-mobile-user span:last-child {
           color: rgba(10, 31, 68, 0.62);
           font-size: 0.82rem;
         }
 
-        .nexora-mobile-auth-links {
+        .brightpath-mobile-auth-links {
           display: grid;
           gap: 0.85rem;
         }
 
-        .nexora-mobile-signout {
+        .brightpath-mobile-signout {
           color: #8e1c11;
           border-color: rgba(180, 35, 24, 0.25);
         }
 
-        .nexora-mobile-signout:hover {
+        .brightpath-mobile-signout:hover {
           background: rgba(180, 35, 24, 0.08);
           color: #8e1c11;
         }
 
         @media (max-width: 1120px) {
-          .nexora-nav-center {
+          .brightpath-nav-center {
             gap: 0.95rem;
           }
 
-          .nexora-logo-text {
+          .brightpath-logo-text {
             max-width: 13rem;
             font-size: 1rem;
           }
 
-          .nexora-consult-btn {
+          .brightpath-consult-btn {
             padding-inline: 1rem;
           }
 
-          .nexora-user-name {
+          .brightpath-user-name {
             max-width: 92px;
           }
         }
 
         @media (max-width: 920px) {
-          .nexora-nav-desktop {
+          .brightpath-nav-desktop {
             display: none;
           }
 
-          .nexora-mobile-actions {
+          .brightpath-mobile-actions {
             display: flex;
           }
         }
 
         @media (max-width: 640px) {
-          .nexora-nav-inner {
+          .brightpath-nav-inner {
             min-height: 80px;
             gap: 0.5rem;
           }
 
-          .nexora-logo-image {
+          .brightpath-logo-image {
             width: 2.2rem;
             height: 2.2rem;
           }
 
-          .nexora-logo-text {
+          .brightpath-logo-text {
             max-width: 10rem;
             font-size: 0.96rem;
           }
 
-          .nexora-mobile-actions {
+          .brightpath-mobile-actions {
             gap: 0.5rem;
           }
 
-          .nexora-consult-btn.mobile {
+          .brightpath-consult-btn.mobile {
             display: none;
           }
         }

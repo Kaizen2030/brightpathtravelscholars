@@ -45,8 +45,16 @@ export function useSiteSettings() {
 
     loadSettings()
 
+    function handleExternalUpdate() {
+      // Reload settings when an external update is signalled (admin saved changes)
+      loadSettings()
+    }
+
+    window.addEventListener('brightpath:site-settings-updated', handleExternalUpdate)
+
     return () => {
       ignore = true
+      window.removeEventListener('brightpath:site-settings-updated', handleExternalUpdate)
     }
   }, [])
 

@@ -193,7 +193,7 @@ function Home() {
 
   const hero = sections.hero
   const eventsSection = sections.events
-  const whyNexora = sections.why_nexora
+  const whySection = sections.why_nexora
   const howItWorks = sections.how_it_works
   const destinationsSection = sections.destinations
   const testimonialsSection = sections.testimonials
@@ -218,9 +218,9 @@ function Home() {
         image_url,
         title: `Fallback hero background ${index + 1}`,
       }))
-  const whyPoints = whyNexora.items ?? []
-  const whyVisualValue = Number(whyNexora.settings?.visual_badge_value ?? 98)
-  const whyVisualSuffix = whyNexora.settings?.visual_badge_suffix ?? '%'
+  const whyPoints = whySection.items ?? []
+  const whyVisualValue = Number(whySection.settings?.visual_badge_value ?? 98)
+  const whyVisualSuffix = whySection.settings?.visual_badge_suffix ?? '%'
   const homeDestinations = useMemo(() => mergeDestinationCards(destinationsSection.items ?? []), [destinationsSection.items])
   const featuredWorkJobs = useMemo(() => JOB_CATALOG.filter((job) => job.featured).slice(0, 3), [])
   const homeSteps = howItWorks.items ?? []
@@ -437,8 +437,8 @@ function Home() {
                 <div
                   className="home-why-panel"
                   style={{
-                    background: buildOverlayBackground(
-                      whyNexora.media_url,
+                          buildOverlayBackground(
+                          whySection.media_url,
                       HERO_FALLBACK_IMAGE,
                       'rgba(91, 44, 137, 0.58)',
                       'rgba(53, 21, 83, 0.36)',
@@ -447,20 +447,20 @@ function Home() {
               >
                 <div className="home-why-badge">
                   <AnimatedCount value={whyVisualValue} suffix={whyVisualSuffix} className="home-why-badge-number" />
-                  <span>{whyNexora.settings?.visual_badge_label}</span>
+                  <span>{whySection.settings?.visual_badge_label}</span>
                 </div>
                 <div className="home-why-visual-copy">
                   <span>Student-first guidance</span>
-                  <h3>{whyNexora.settings?.visual_heading}</h3>
-                  <p>{whyNexora.settings?.visual_body}</p>
+                  <h3>{whySection.settings?.visual_heading}</h3>
+                  <p>{whySection.settings?.visual_body}</p>
                 </div>
               </div>
             </div>
 
             <div className="home-why-copy">
-              <span className="section-badge">{whyNexora.badge_text}</span>
-              <h2>{whyNexora.heading}</h2>
-              <p>{whyNexora.subheading}</p>
+              <span className="section-badge">{whySection.badge_text}</span>
+              <h2>{whySection.heading}</h2>
+              <p>{whySection.subheading}</p>
 
               <div className="home-why-list">
                 {whyPoints.map((point) => (
@@ -471,8 +471,8 @@ function Home() {
                 ))}
               </div>
 
-              <Link to={whyNexora.settings?.link_url || '/about'} className="home-inline-link">
-                {whyNexora.settings?.link_text || 'Learn More'}
+              <Link to={whySection.settings?.link_url || '/about'} className="home-inline-link">
+                {whySection.settings?.link_text || 'Learn More'}
                 <ChevronRight size={16} />
               </Link>
             </div>

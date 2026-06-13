@@ -53,20 +53,20 @@ function Footer() {
 
   return (
     <>
-      <footer className="nexora-footer">
-        <div className="container nexora-footer-inner">
-          <div className="nexora-footer-grid">
-            <div className="nexora-footer-brand">
+      <footer className="brightpath-footer">
+        <div className="container brightpath-footer-inner">
+          <div className="brightpath-footer-grid">
+            <div className="brightpath-footer-brand">
               <h3>{siteName}</h3>
-              <p className="nexora-footer-tagline">{siteTagline}</p>
-              <p className="nexora-footer-description">
+              <p className="brightpath-footer-tagline">{siteTagline}</p>
+              <p className="brightpath-footer-description">
                 A USA-based study abroad consultancy connecting students to 400+ universities worldwide.
               </p>
             </div>
 
-            <div className="nexora-footer-links-col">
+            <div className="brightpath-footer-links-col">
               <h4>Quick Links</h4>
-              <nav className="nexora-footer-links" aria-label="Quick links">
+              <nav className="brightpath-footer-links" aria-label="Quick links">
                 {quickLinks.map((link) => (
                   <Link key={link.to} to={link.to}>
                     {link.label}
@@ -75,14 +75,14 @@ function Footer() {
               </nav>
             </div>
 
-            <div className="nexora-footer-contact">
+            <div className="brightpath-footer-contact">
               <h4>Contact Info</h4>
-              <div className="nexora-contact-list">
+              <div className="brightpath-contact-list">
                 {contactItems.map((item) => {
                   const Icon = item.icon
                   const content = (
-                    <div key={item.label} className="nexora-contact-item">
-                      <span className="nexora-contact-icon">
+                    <div key={item.label} className="brightpath-contact-item">
+                      <span className="brightpath-contact-icon">
                         <Icon size={18} />
                       </span>
                       <span>{item.label}</span>
@@ -91,8 +91,8 @@ function Footer() {
 
                   if (item.href) {
                     return (
-                      <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="nexora-contact-item">
-                        <span className="nexora-contact-icon">
+                      <a key={item.label} href={item.href} target="_blank" rel="noreferrer" className="brightpath-contact-item">
+                        <span className="brightpath-contact-icon">
                           <Icon size={18} />
                         </span>
                         <span>{item.label}</span>
@@ -106,8 +106,8 @@ function Footer() {
             </div>
           </div>
 
-          <div className="nexora-footer-bottom">
-            <div className="nexora-socials" aria-label="Social media">
+          <div className="brightpath-footer-bottom">
+            <div className="brightpath-socials" aria-label="Social media">
               {socialLinks.map((item) => {
                 const Icon = item.icon
                 return (
@@ -129,76 +129,76 @@ function Footer() {
       </footer>
 
       <style>{`
-        .nexora-footer {
+        .brightpath-footer {
           background:
             radial-gradient(circle at top right, rgba(212, 175, 55, 0.18), transparent 24%),
             linear-gradient(180deg, #5b2c89 0%, #2f1346 100%);
           color: rgba(255, 255, 255, 0.9);
         }
 
-        .nexora-footer-inner {
+        .brightpath-footer-inner {
           padding-top: 4.5rem;
           padding-bottom: 1.5rem;
         }
 
-        .nexora-footer-grid {
+        .brightpath-footer-grid {
           display: grid;
           grid-template-columns: 1.2fr 0.85fr 1fr;
           gap: 2rem;
         }
 
-        .nexora-footer-brand h3,
-        .nexora-footer-links-col h4,
-        .nexora-footer-contact h4 {
+        .brightpath-footer-brand h3,
+        .brightpath-footer-links-col h4,
+        .brightpath-footer-contact h4 {
           color: var(--white);
           font-size: 1.2rem;
           font-weight: 800;
           margin-bottom: 1rem;
         }
 
-        .nexora-footer-tagline {
+        .brightpath-footer-tagline {
           color: var(--gold);
           font-weight: 700;
           margin-bottom: 0.85rem;
         }
 
-        .nexora-footer-description {
+        .brightpath-footer-description {
           max-width: 34rem;
           color: rgba(255, 255, 255, 0.76);
           line-height: 1.75;
         }
 
-        .nexora-footer-links {
+        .brightpath-footer-links {
           display: grid;
           gap: 0.8rem;
         }
 
-        .nexora-footer-links a,
-        .nexora-contact-item {
+        .brightpath-footer-links a,
+        .brightpath-contact-item {
           color: rgba(255, 255, 255, 0.78);
           text-decoration: none;
           transition: color 0.18s ease, transform 0.18s ease;
         }
 
-        .nexora-footer-links a:hover,
-        .nexora-contact-item:hover {
+        .brightpath-footer-links a:hover,
+        .brightpath-contact-item:hover {
           color: var(--gold);
           transform: translateX(2px);
         }
 
-        .nexora-contact-list {
+        .brightpath-contact-list {
           display: grid;
           gap: 0.95rem;
         }
 
-        .nexora-contact-item {
+        .brightpath-contact-item {
           display: flex;
           align-items: flex-start;
           gap: 0.8rem;
           line-height: 1.6;
         }
 
-        .nexora-contact-icon {
+        .brightpath-contact-icon {
           width: 2rem;
           height: 2rem;
           display: inline-flex;
@@ -210,7 +210,7 @@ function Footer() {
           flex-shrink: 0;
         }
 
-        .nexora-footer-bottom {
+        .brightpath-footer-bottom {
           margin-top: 2.5rem;
           padding-top: 1.35rem;
           border-top: 1px solid rgba(255, 255, 255, 0.12);
@@ -220,18 +220,18 @@ function Footer() {
           gap: 1rem;
         }
 
-        .nexora-footer-bottom p {
+        .brightpath-footer-bottom p {
           color: rgba(255, 255, 255, 0.72);
           font-size: 0.94rem;
         }
 
-        .nexora-socials {
+        .brightpath-socials {
           display: flex;
           align-items: center;
           gap: 0.7rem;
         }
 
-        .nexora-socials a {
+        .brightpath-socials a {
           width: 2.5rem;
           height: 2.5rem;
           display: inline-flex;
@@ -244,28 +244,28 @@ function Footer() {
           transition: transform 0.18s ease, border-color 0.18s ease, color 0.18s ease;
         }
 
-        .nexora-socials a:hover {
+        .brightpath-socials a:hover {
           transform: translateY(-2px);
           color: var(--gold);
           border-color: rgba(212, 175, 55, 0.45);
         }
 
         @media (max-width: 900px) {
-          .nexora-footer-grid {
+          .brightpath-footer-grid {
             grid-template-columns: 1fr;
           }
 
-          .nexora-footer-description {
+          .brightpath-footer-description {
             max-width: none;
           }
         }
 
         @media (max-width: 640px) {
-          .nexora-footer-inner {
+          .brightpath-footer-inner {
             padding-top: 3.75rem;
           }
 
-          .nexora-footer-bottom {
+          .brightpath-footer-bottom {
             flex-direction: column;
             align-items: flex-start;
           }
