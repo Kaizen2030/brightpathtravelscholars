@@ -10,6 +10,7 @@ export const SITE_SETTING_FIELDS = [
   { key: 'contact_email', label: 'Contact Email', group: 'contact', defaultValue: 'info@brightpathtravelscholars.com' },
   { key: 'contact_phone', label: 'Contact Phone', group: 'contact', defaultValue: '+18149274526' },
   { key: 'office_location', label: 'Office Location', group: 'contact', defaultValue: 'Jacksonville, GA 31544, USA' },
+  { key: 'map_zoom', label: 'Map Zoom', group: 'contact', defaultValue: '15' },
   { key: 'whatsapp_url', label: 'WhatsApp URL', group: 'contact', defaultValue: 'https://wa.me/18149274526' },
   { key: 'facebook_url', label: 'Facebook URL', group: 'social', defaultValue: 'https://facebook.com/brightpathtravelscholars' },
   { key: 'instagram_url', label: 'Instagram URL', group: 'social', defaultValue: 'https://instagram.com/brightpathtravelscholars' },
