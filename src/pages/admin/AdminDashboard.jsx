@@ -206,6 +206,8 @@ function AdminDashboard() {
   const [teamModalOpen, setTeamModalOpen] = useState(false)
   const [teamForm, setTeamForm] = useState(EMPTY_TEAM_FORM)
   const [teamSaving, setTeamSaving] = useState(false)
+  const [teamPhotoFile, setTeamPhotoFile] = useState(null)
+  const [teamPhotoPreview, setTeamPhotoPreview] = useState('')
   const [editingTeamId, setEditingTeamId] = useState(null)
   const [blogModalOpen, setBlogModalOpen] = useState(false)
   const [blogForm, setBlogForm] = useState(EMPTY_BLOG_FORM)
@@ -373,6 +375,15 @@ function AdminDashboard() {
     setTeamForm(EMPTY_TEAM_FORM)
     setEditingTeamId(null)
     setTeamModalOpen(false)
+    try {
+      if (teamPhotoPreview) {
+        URL.revokeObjectURL(teamPhotoPreview)
+      }
+    } catch {
+      // ignore
+    }
+    setTeamPhotoFile(null)
+    setTeamPhotoPreview('')
   }
 
   function openBlogEditor(post) {
@@ -647,6 +658,8 @@ function AdminDashboard() {
     if (!member) {
       setEditingTeamId(null)
       setTeamForm(EMPTY_TEAM_FORM)
+      setTeamPhotoFile(null)
+      setTeamPhotoPreview('')
       setTeamModalOpen(true)
       return
     }
@@ -659,6 +672,8 @@ function AdminDashboard() {
       photo_url: member.photo_url || '',
       order_index: member.order_index ?? 0,
     })
+    setTeamPhotoFile(null)
+    setTeamPhotoPreview(member.photo_url || '')
     setTeamModalOpen(true)
   }
 
@@ -668,12 +683,35 @@ function AdminDashboard() {
     setNotice(null)
 
     try {
+      const id = editingTeamId || createRowId()
+
+      let photoUrl = teamForm.photo_url?.trim() || ''
+
+      if (teamPhotoFile) {
+        // upload to Supabase storage under site-assets/team/
+        try {
+          const extension = (teamPhotoFile.name || '').split('.').pop() || 'jpg'
+          const safeName = `${id}-${Date.now()}-${(teamPhotoFile.name || '').replace(/[^a-z0-9.\-]/gi, '-')}`
+          const filePath = `team/${safeName}`
+          const { error: uploadError } = await supabase.storage.from('site-assets').upload(filePath, teamPhotoFile, {
+            upsert: true,
+          })
+          if (uploadError) throw uploadError
+
+          const { data } = supabase.storage.from('site-assets').getPublicUrl(filePath)
+          photoUrl = data?.publicUrl || photoUrl
+        } catch (uploadErr) {
+          console.error('[AdminDashboard] Photo upload failed:', uploadErr)
+          // proceed without uploaded photo
+        }
+      }
+
       const payload = {
-        id: editingTeamId || createRowId(),
+        id,
         name: teamForm.name.trim(),
         role: teamForm.role.trim(),
         bio: teamForm.bio.trim(),
-        photo_url: teamForm.photo_url.trim(),
+        photo_url: photoUrl,
         order_index: Number(teamForm.order_index) || 0,
       }
 
@@ -1656,6 +1694,28 @@ function AdminDashboard() {
                     setTeamForm((current) => ({ ...current, photo_url: event.target.value }))
                   }
                 />
+              </label>
+
+              <label className="admin-field">
+                <span>Upload Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0] ?? null
+                    setTeamPhotoFile(file)
+                    try {
+                      setTeamPhotoPreview(file ? URL.createObjectURL(file) : '')
+                    } catch {
+                      setTeamPhotoPreview('')
+                    }
+                  }}
+                />
+                {teamPhotoPreview ? (
+                  <div style={{ marginTop: 8 }}>
+                    <img src={teamPhotoPreview} alt="Preview" style={{ width: 96, height: 96, objectFit: 'cover', borderRadius: 8 }} />
+                  </div>
+                ) : null}
               </label>
 
               <label className="admin-field">
