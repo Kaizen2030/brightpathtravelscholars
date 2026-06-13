@@ -49,8 +49,21 @@ export function usePageSections(pageKey) {
 
     loadSections()
 
+    function handleExternalUpdate(e) {
+      try {
+        const updatedPage = e?.detail?.pageKey
+        if (!updatedPage || updatedPage !== pageKey) return
+        loadSections()
+      } catch {
+        // ignore
+      }
+    }
+
+    window.addEventListener('brightpath:page-sections-updated', handleExternalUpdate)
+
     return () => {
       ignore = true
+      window.removeEventListener('brightpath:page-sections-updated', handleExternalUpdate)
     }
   }, [pageKey])
 

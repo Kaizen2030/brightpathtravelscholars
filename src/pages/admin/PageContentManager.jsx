@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ImagePlus, Plus, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../../lib/supabaseClient'
+import { clearCache } from '../../lib/dataCache'
 import {
   buildPageSectionRowsForAdmin,
   getPageOptions,
@@ -9,8 +10,8 @@ import {
 
 const IMAGE_FIELD_KEYS = new Set(['media_url', 'media_secondary_url', 'image_url', 'photo_url', 'cover_image_url'])
 const LONG_TEXT_FIELD_KEYS = new Set(['subheading', 'body_text', 'description', 'summary', 'answer', 'eligibility', 'message_placeholder'])
-const CONTENT_ACTIVE_PAGE_STORAGE_KEY = 'nexora-admin-content-active-page'
-const CONTENT_DRAFTS_STORAGE_KEY = 'nexora-admin-content-drafts-v1'
+const CONTENT_ACTIVE_PAGE_STORAGE_KEY = 'brightpath-admin-content-active-page'
+const CONTENT_DRAFTS_STORAGE_KEY = 'brightpath-admin-content-drafts-v1'
 
 function cloneValue(value) {
   return JSON.parse(JSON.stringify(value))
@@ -296,6 +297,20 @@ function PageContentManager() {
         ...data,
       })
       setNotice({ type: 'success', text: `${section.label} saved.` })
+      try {
+        // Clear in-memory cache for this page so the live site reloads fresh data
+        const cacheKey = `page_sections:${section.page_key}`
+        clearCache(cacheKey)
+
+        // Notify listeners (hooks) in the running app to reload sections immediately
+        try {
+          window.dispatchEvent(new CustomEvent('brightpath:page-sections-updated', { detail: { pageKey: section.page_key } }))
+        } catch (e) {
+          // ignore dispatch errors
+        }
+      } catch (e) {
+        // ignore cache clear errors
+      }
     } catch (error) {
       console.error('[PageContentManager] Failed to save section:', error)
       setNotice({
