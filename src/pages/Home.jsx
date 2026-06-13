@@ -436,12 +436,14 @@ function Home() {
             <div className="home-why-visual">
                 <div
                     className="home-why-panel"
-                    style={buildOverlayBackground(
-                      whySection.media_url,
-                      HERO_FALLBACK_IMAGE,
-                      'rgba(91, 44, 137, 0.58)',
-                      'rgba(53, 21, 83, 0.36)',
-                    )}
+                    style={{
+                      background: buildOverlayBackground(
+                        whySection.media_url,
+                        HERO_FALLBACK_IMAGE,
+                        'rgba(91, 44, 137, 0.58)',
+                        'rgba(53, 21, 83, 0.36)',
+                      ),
+                    }}
               >
                 <div className="home-why-badge">
                   <AnimatedCount value={whyVisualValue} suffix={whyVisualSuffix} className="home-why-badge-number" />
