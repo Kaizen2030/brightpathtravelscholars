@@ -817,12 +817,26 @@ function AdminDashboard() {
           updated_at: new Date().toISOString(),
         }
       })
-
       const { data, error } = await supabase.from('site_settings').upsert(payload, { onConflict: 'key' }).select()
-
       if (error) throw error
 
-      const nextRows = data ?? payload
+      // Try to refetch persisted rows to ensure UI reflects actual DB state
+      let nextRows = data ?? payload
+      try {
+        const { data: fresh, error: freshErr } = await supabase
+          .from('site_settings')
+          .select('id, key, value')
+          .order('key', { ascending: true })
+
+        if (!freshErr && Array.isArray(fresh)) {
+          nextRows = fresh
+        } else if (freshErr) {
+          console.warn('[AdminDashboard] Could not refetch site_settings after upsert:', freshErr)
+        }
+      } catch (fetchErr) {
+        console.warn('[AdminDashboard] Unexpected refetch error for site_settings:', fetchErr)
+      }
+
       setSettingsRows(nextRows)
       setSettingsForm(buildSettingsForm(nextRows))
       setNotice({ type: 'success', text: 'Site settings saved.' })
