@@ -32,7 +32,7 @@ function Footer() {
 
   const contactItems = useMemo(
     () => [
-      { icon: MapPin, label: 'United States' },
+      { icon: MapPin, label: settings.office_location || 'Jacksonville, GA 31544, USA' },
       {
         icon: Mail,
         label: settings.contact_email || 'info@brightpathtravelscholars.com',
