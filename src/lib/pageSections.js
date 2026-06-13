@@ -741,9 +741,9 @@ const PAGE_SECTION_DEFAULTS = {
       label: 'Info Cards',
       enabled: true,
       order: 2,
-      items: [
-        { title: 'Visit Us', value: 'United States', description: 'Meet our counsellors in person or online for a detailed planning session.' },
-        { title: 'Call / WhatsApp', value: '+1 (555) 123-4567', description: 'WhatsApp Us', url: 'https://wa.me/15551234567' },
+        items: [
+        { title: 'Visit Us', value: 'Jacksonville, GA 31544, USA', description: 'Meet our counsellors in person or online for a detailed planning session.' },
+        { title: 'Call / WhatsApp', value: '+18149274526', description: 'WhatsApp Us', url: 'https://wa.me/18149274526' },
         { title: 'Email Us', value: 'info@brightpathtravelscholars.com', description: 'Send your questions and our team will respond with the best next steps.' },
       ],
       settings: {},
@@ -769,8 +769,8 @@ const PAGE_SECTION_DEFAULTS = {
       order: 4,
       items: [],
       settings: {
-        map_title: 'U.S. Office',
-        map_body: 'Map integration placeholder for the Brightpath office location.',
+      map_title: 'Jacksonville, GA Office',
+      map_body: 'Jacksonville, GA 31544, USA',
         hours_title: 'Office Hours',
         hours: ['Mon-Fri: 8:30AM - 5:00PM', 'Sat: 8:30AM - 3:00PM', 'Sun: Closed'],
         socials_title: 'Connect With Brightpath',
