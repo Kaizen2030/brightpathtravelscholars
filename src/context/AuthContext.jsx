@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 
 const AuthContext = createContext({})
 const SESSION_TIMEOUT_MS = 8000
-const AUTH_CACHE_STORAGE_KEY = 'nexora-auth-cache-v1'
+const AUTH_CACHE_STORAGE_KEY = 'brightpath-auth-cache-v1'
 
 function readAuthCache() {
   try {
