@@ -4,6 +4,9 @@ import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabaseClient'
+import IeltsBuilder from './IeltsBuilder'
+import WorkPermitBuilder from './WorkPermitBuilder'
+import JobOfferBuilder from './JobOfferBuilder'
 import './CertificateBuilder.css'
 
 const STORAGE_KEY = 'brightpath-ielts-builder-cache-v2'
@@ -11,6 +14,63 @@ const TABLE_NAME = 'ielts_reports'
 const IMAGE_BUCKET = 'site-assets'
 const TEMPLATE_VERSION = '2026'
 const WORK_PERMIT_TEMPLATE_IMAGE = '/documents/work-permit-template-v5.png'
+const JOB_OFFER_TEMPLATE_IMAGE = '/images/job-offer-header-reference.png'
+
+const JOB_OFFER_IMAGE_FIELDS = [
+  { key: 'company_logo_url', label: 'Company logo', helper: 'Shown in the top-right brand box.', fit: 'contain' },
+  { key: 'applicant_photo_url', label: 'Applicant photo', helper: 'Shown in the applicant photo box.', fit: 'cover' },
+  { key: 'stamp_image_url', label: 'Stamp image', helper: 'Shown in the circular stamp area.', fit: 'contain' },
+]
+
+function splitBlankLineBlocks(text) {
+  return `${text ?? ''}`
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+}
+
+function renderJobOfferTextBlocks(text, keyPrefix, className = '') {
+  const blocks = splitBlankLineBlocks(text)
+
+  return blocks.map((block, index) => {
+    const lines = block.split(/\r?\n/).map((line) => line.trimEnd())
+    const firstLine = lines[0] || ''
+    const remainder = lines.slice(1).join('\n').trim()
+    const headingMatch = firstLine.match(/^(.+?:)\s*$/)
+
+    if (headingMatch && remainder) {
+      return (
+        <section key={`${keyPrefix}-${index}`} className={`job-offer-text-block has-heading ${className}`.trim()}>
+          <h4>{headingMatch[1]}</h4>
+          <p>{remainder}</p>
+        </section>
+      )
+    }
+
+    if (headingMatch) {
+      return (
+        <section key={`${keyPrefix}-${index}`} className={`job-offer-text-block has-heading ${className}`.trim()}>
+          <h4>{headingMatch[1]}</h4>
+        </section>
+      )
+    }
+
+    return (
+      <p key={`${keyPrefix}-${index}`} className={`job-offer-text-block ${className}`.trim()}>
+        {block}
+      </p>
+    )
+  })
+}
+
+const JOB_OFFER_EDITABLE_FIELDS = [
+  { key: 'offer_reference', type: 'textarea', style: { left: '5.20%', top: '7.20%', width: '42.50%', height: '6.20%' } },
+  { key: 'recipient_block', type: 'textarea', style: { left: '5.20%', top: '10.20%', width: '47.50%', height: '9.50%' } },
+  { key: 'subject_heading', type: 'input', style: { left: '5.20%', top: '20.50%', width: '45.50%', height: '2.30%' } },
+  { key: 'offer_body', type: 'textarea', style: { left: '5.20%', top: '23.20%', width: '88.50%', height: '30.50%' } },
+  { key: 'job_details', type: 'textarea', style: { left: '5.20%', top: '55.20%', width: '88.50%', height: '22.00%' } },
+  { key: 'signoff', type: 'textarea', style: { left: '5.20%', top: '78.50%', width: '88.50%', height: '14.50%' } },
+]
 
 const WORK_PERMIT_DECOR_LINES = [
   { key: 'title_rule', style: { left: '4.4%', top: '31.95%', width: '88.5%' } },
@@ -62,6 +122,43 @@ const WORK_PERMIT_FIELD_LABELS = {
   reentry_text: 'Re-entry text',
   footer_text: 'Footer legal text',
   footer_code: 'Footer code',
+}
+
+function createBlankJobOfferRecord() {
+  return {
+    id: createId(),
+    offer_reference: '',
+    recipient_block: '',
+    subject_heading: 'REF: JOB OFFER',
+    offer_body: '',
+    job_details: '',
+    signoff: '',
+    company_logo_url: '',
+    applicant_photo_url: '',
+    stamp_image_url: '',
+    footer_text: '',
+    template_version: TEMPLATE_VERSION,
+  }
+}
+
+function buildJobOfferPreview(record) {
+  return {
+    company_logo_url: record.company_logo_url || '',
+    applicant_photo_url: record.applicant_photo_url || '',
+    stamp_image_url: record.stamp_image_url || '',
+    offer_reference: record.offer_reference || '<REF: CRH 38-1827-588686\n2023/07/26\nCHENGETAI SUNGANI\nAddress: Zimbabwe',
+    recipient_block: record.recipient_block || '',
+    subject_heading: record.subject_heading || 'REF: JOB OFFER',
+    offer_body: record.offer_body || '',
+    job_details: record.job_details || '',
+    signoff: record.signoff || '',
+    footer_text: record.footer_text || '',
+    company_name: record.company_name || 'Bright Path Travels',
+    candidate_name: record.candidate_name || '[Candidate Name]',
+    candidate_position: record.candidate_position || '[Job Title]',
+    start_date: record.start_date || '[Start Date]',
+    salary_info: record.salary_info || '[Salary details]',
+  }
 }
 
 const WORK_PERMIT_MOVE_STEPS = [0.05, 0.15, 0.3]
@@ -275,7 +372,11 @@ const IMAGE_FIELDS = [
 ]
 
 function getImageFieldLabel(fieldKey) {
-  return IMAGE_FIELDS.find((field) => field.key === fieldKey)?.label || fieldKey.replace(/_/g, ' ')
+  return (
+    IMAGE_FIELDS.find((field) => field.key === fieldKey)?.label ||
+    JOB_OFFER_IMAGE_FIELDS.find((field) => field.key === fieldKey)?.label ||
+    fieldKey.replace(/_/g, ' ')
+  )
 }
 
 function createId() {
@@ -850,6 +951,8 @@ function CertificateBuilder() {
   const [workPermitTextDraft, setWorkPermitTextDraft] = useState(createBlankWorkPermitTextDraft())
   const [workPermitFieldPositions, setWorkPermitFieldPositions] = useState(() => createInitialWorkPermitFieldPositions())
   const [workPermitCustomTextItems, setWorkPermitCustomTextItems] = useState([])
+  const [jobOfferDraft, setJobOfferDraft] = useState(createBlankJobOfferRecord())
+  const [jobOfferCustomTextItems, setJobOfferCustomTextItems] = useState([])
   const [workPermitArrangeMode, setWorkPermitArrangeMode] = useState(false)
   const [selectedWorkPermitField, setSelectedWorkPermitField] = useState(WORK_PERMIT_EDITABLE_FIELDS[0].key)
   const [workPermitDraggingField, setWorkPermitDraggingField] = useState('')
@@ -928,6 +1031,7 @@ function CertificateBuilder() {
   const overallBand = getOverallBand(draft)
   const preview = useMemo(() => buildPreviewSnapshot(draft, overallBand), [draft, overallBand])
   const permitPreview = useMemo(() => buildWorkPermitPreview(permitDraft), [permitDraft])
+  const jobOfferPreview = useMemo(() => buildJobOfferPreview(jobOfferDraft), [jobOfferDraft])
   const workPermitOverlayItems = useMemo(
     () => [
       ...WORK_PERMIT_EDITABLE_FIELDS.map((field) => ({
@@ -1242,6 +1346,34 @@ function CertificateBuilder() {
     }
   }
 
+  async function handleJobOfferImageUpload(fieldKey, file) {
+    if (!file) return
+
+    const recordId = jobOfferDraft.id
+    setUploadingField(fieldKey)
+    setNotice(null)
+
+    try {
+      const filePath = buildImageUploadPath(jobOfferDraft.id, fieldKey, file)
+      const { error: uploadError } = await supabase.storage.from(IMAGE_BUCKET).upload(filePath, file, {
+        upsert: true,
+      })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(filePath)
+      const publicUrl = data.publicUrl
+
+      setJobOfferDraft((current) => ({ ...current, [fieldKey]: publicUrl }))
+      setNotice(`${getImageFieldLabel(fieldKey)} uploaded.`)
+    } catch (error) {
+      console.error('[CertificateBuilder] Job offer image upload failed:', error)
+      setNotice(error.message || 'Could not upload the image.')
+    } finally {
+      setUploadingField('')
+    }
+  }
+
   function clearImageField(fieldKey) {
     const recordId = draft.id
     setDraft((current) => ({ ...current, [fieldKey]: '' }))
@@ -1249,8 +1381,12 @@ function CertificateBuilder() {
     setNotice(`${getImageFieldLabel(fieldKey)} removed.`)
   }
 
-  function renderUploadCard(field) {
-    const value = draft[field.key]
+  function clearJobOfferImageField(fieldKey) {
+    setJobOfferDraft((current) => ({ ...current, [fieldKey]: '' }))
+    setNotice(`${getImageFieldLabel(fieldKey)} removed.`)
+  }
+
+  function renderImageCard(field, value, onUpload, onClear) {
     const isUploading = uploadingField === field.key
 
     return (
@@ -1261,7 +1397,7 @@ function CertificateBuilder() {
             <span>{field.helper}</span>
           </div>
           {value ? (
-            <button type="button" className="certificate-image-clear" onClick={() => clearImageField(field.key)}>
+            <button type="button" className="certificate-image-clear" onClick={() => onClear(field.key)}>
               <X size={14} />
               Remove
             </button>
@@ -1285,24 +1421,40 @@ function CertificateBuilder() {
             type="file"
             accept="image/*"
             hidden
-            onChange={(event) => handleImageUpload(field.key, event.target.files?.[0])}
+            onChange={(event) => onUpload(field.key, event.target.files?.[0])}
           />
         </label>
       </div>
     )
   }
 
+  function renderUploadCard(field) {
+    return renderImageCard(field, draft[field.key], handleImageUpload, clearImageField)
+  }
+
+  function renderJobOfferUploadCard(field) {
+    return renderImageCard(field, jobOfferDraft[field.key], handleJobOfferImageUpload, clearJobOfferImageField)
+  }
+
   function handleReset() {
     if (templateMode === 'ielts') {
       setDraft(createBlankRecord())
       setNotice('New IELTS applicant started.')
-    } else {
-      setPermitDraft(createBlankPermitRecord())
-      setWorkPermitTextDraft(createBlankWorkPermitTextDraft())
-      resetWorkPermitLayout()
-      setWorkPermitArrangeMode(false)
-      setNotice('New work permit preview started.')
+      return
     }
+
+    if (templateMode === 'joboffer') {
+      setJobOfferDraft(createBlankJobOfferRecord())
+      setJobOfferCustomTextItems([])
+      setNotice('New job offer preview started.')
+      return
+    }
+
+    setPermitDraft(createBlankPermitRecord())
+    setWorkPermitTextDraft(createBlankWorkPermitTextDraft())
+    resetWorkPermitLayout()
+    setWorkPermitArrangeMode(false)
+    setNotice('New work permit preview started.')
   }
 
   function handleLoad(record) {
@@ -1416,7 +1568,100 @@ function CertificateBuilder() {
 
   function handlePrint() {
     if (templateMode !== 'workpermit') {
-      window.print()
+      if (templateMode !== 'joboffer') {
+        window.print()
+        return
+      }
+
+      async function exportJobOfferPdf() {
+        const stage = document.querySelector('.job-offer-stage')
+        if (!stage) {
+          setNotice('Could not find the job offer canvas.')
+          return
+        }
+
+        const stageBounds = stage.getBoundingClientRect()
+
+        const waitForImages = async (root) => {
+          const images = Array.from(root.querySelectorAll('img'))
+          await Promise.all(
+            images.map((img) => {
+              if (img.complete && img.naturalWidth > 0) return Promise.resolve()
+              return new Promise((resolve) => {
+                img.addEventListener('load', resolve, { once: true })
+                img.addEventListener('error', resolve, { once: true })
+              })
+            }),
+          )
+        }
+
+        try {
+          setWorkPermitExporting(true)
+          setNotice('Preparing job offer PDF...')
+
+          await document.fonts?.ready
+          await waitForImages(stage)
+          await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+
+          const canvas = await html2canvas(stage, {
+            backgroundColor: null,
+            scale: Math.max(2, window.devicePixelRatio || 1),
+            useCORS: true,
+            allowTaint: false,
+            scrollX: 0,
+            scrollY: 0,
+            width: stageBounds.width,
+            height: stageBounds.height,
+            onclone: (clonedDocument) => {
+              const clonedStage = clonedDocument.querySelector('.job-offer-stage')
+              if (clonedStage) {
+                clonedStage.classList.add('is-exporting')
+                clonedStage.style.width = `${stageBounds.width}px`
+                clonedStage.style.maxWidth = `${stageBounds.width}px`
+                clonedStage.style.height = `${stageBounds.height}px`
+                clonedStage.style.backgroundColor = '#f3f3f2'
+                // Ensure input/textarea values are copied into the cloned stage so html2canvas renders them
+                try {
+                  syncWorkPermitExportClone(stage, clonedStage)
+                } catch (e) {
+                  // ignore clone-sync errors
+                }
+              }
+            },
+          })
+
+          const imageData = canvas.toDataURL('image/png')
+          const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'pt',
+            format: 'a4',
+          })
+
+          const pageWidth = pdf.internal.pageSize.getWidth()
+          const pageHeight = pdf.internal.pageSize.getHeight()
+          let imageWidth = pageWidth
+          let imageHeight = (canvas.height * imageWidth) / canvas.width
+
+          if (imageHeight > pageHeight) {
+            imageHeight = pageHeight
+            imageWidth = (canvas.width * imageHeight) / canvas.height
+          }
+
+          const offsetX = Math.max(0, (pageWidth - imageWidth) / 2)
+          const offsetY = Math.max(0, (pageHeight - imageHeight) / 2)
+
+          pdf.addImage(imageData, 'PNG', offsetX, offsetY, imageWidth, imageHeight)
+          pdf.save('brightpath-job-offer.pdf')
+          setNotice('Job offer PDF downloaded.')
+        } catch (error) {
+          console.error('[CertificateBuilder] Job offer PDF export failed:', error)
+          setNotice('Could not generate the job offer PDF.')
+        } finally {
+          setWorkPermitExporting(false)
+        }
+      }
+
+      exportJobOfferPdf()
       return
     }
 
@@ -1530,6 +1775,27 @@ function CertificateBuilder() {
       return
     }
 
+    if (templateMode === 'joboffer') {
+      const lines = [
+        `Offer reference: ${jobOfferDraft.offer_reference || 'Not set'}`,
+        `Subject heading: ${jobOfferDraft.subject_heading || 'Not set'}`,
+        `Recipient block: ${jobOfferDraft.recipient_block || 'Not set'}`,
+        `Offer body: ${jobOfferDraft.offer_body || 'Not set'}`,
+        `Job details: ${jobOfferDraft.job_details || 'Not set'}`,
+        `Sign-off: ${jobOfferDraft.signoff || 'Not set'}`,
+      ]
+      const copyOperation = navigator.clipboard?.writeText(lines.join('\n'))
+      if (copyOperation?.then) {
+        copyOperation.then(
+          () => setNotice('Job offer summary copied to clipboard.'),
+          () => setNotice('Copy failed. You can still print to PDF.'),
+        )
+      } else {
+        setNotice('Copy failed. You can still print to PDF.')
+      }
+      return
+    }
+
     const lines = [
       `Applicant: ${draft.full_name || 'Not set'}`,
       `Candidate ID: ${draft.candidate_id || 'Not set'}`,
@@ -1554,7 +1820,138 @@ function CertificateBuilder() {
     }
   }
 
+  function updateWorkPermitTextDraft(fieldKey, valueOrDeltaLeft, maybeDeltaTop) {
+    if (typeof maybeDeltaTop === 'number') {
+      updateWorkPermitFieldPosition(fieldKey, Number(valueOrDeltaLeft) || 0, maybeDeltaTop)
+      return
+    }
+
+    setWorkPermitTextDraft((current) => ({ ...current, [fieldKey]: valueOrDeltaLeft }))
+  }
+
+  function updateJobOfferField(key, value) {
+    setJobOfferDraft((current) => ({ ...current, [key]: value }))
+  }
+
+  return (
+    <section className="admin-panel-card certificate-builder-shell">
+      <div className="admin-panel-card-header certificate-builder-header">
+        <div>
+          <h2>
+            {templateMode === 'ielts'
+              ? 'IELTS Builder'
+              : templateMode === 'joboffer'
+                ? 'Job Offer Builder'
+                : 'Work Permit Preview'}
+          </h2>
+          <p>
+            {templateMode === 'ielts'
+              ? 'Shared applicant report generator with live preview and print-to-PDF export.'
+              : templateMode === 'joboffer'
+                ? 'Job offer letter layout with a print-ready preview that matches the provided sample composition.'
+                : 'Canada work permit layout wired into the admin page with the same visual background as the PDF sample.'}
+          </p>
+          <div className="certificate-builder-template-tabs">
+            <button
+              type="button"
+              className={`template-tab${templateMode === 'ielts' ? ' active' : ''}`}
+              onClick={() => setTemplateMode('ielts')}
+            >
+              IELTS
+            </button>
+            <button
+              type="button"
+              className={`template-tab${templateMode === 'workpermit' ? ' active' : ''}`}
+              onClick={() => setTemplateMode('workpermit')}
+            >
+              Work Permit
+            </button>
+            <button
+              type="button"
+              className={`template-tab${templateMode === 'joboffer' ? ' active' : ''}`}
+              onClick={() => setTemplateMode('joboffer')}
+            >
+              Job Offer
+            </button>
+          </div>
+        </div>
+        <div className="certificate-builder-actions">
+          <button type="button" className="admin-btn admin-btn-soft" onClick={handleCopySummary}>
+            <Copy size={16} />
+            Copy Summary
+          </button>
+          <button type="button" className="admin-btn admin-btn-soft" onClick={handlePrint}>
+            <Download size={16} />
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <p className="certificate-builder-warning">
+        This layout is for Brightpath internal use only. It is clearly labeled and styled as a custom report, not an official
+        certificate.
+      </p>
+
+      {notice ? <p className="certificate-builder-status">{notice}</p> : null}
+
+      {templateMode === 'ielts' ? (
+        <IeltsBuilder
+          draft={draft}
+          preview={preview}
+          overallBand={overallBand}
+          records={records}
+          updateField={updateField}
+          renderUploadCard={renderUploadCard}
+          handleSave={handleSave}
+          handleDuplicate={handleDuplicate}
+          handleReset={handleReset}
+          handleLoad={handleLoad}
+          handleDelete={handleDelete}
+          saving={saving}
+        />
+      ) : templateMode === 'joboffer' ? (
+        renderJobOfferPreview()
+      ) : (
+        renderWorkPermitPreview()
+      )}
+    </section>
+  )
+
   function renderWorkPermitPreview() {
+    return (
+      <WorkPermitBuilder
+        permitDraft={permitDraft}
+        permitPreview={permitPreview}
+        workPermitTextDraft={workPermitTextDraft}
+        workPermitOverlayItems={workPermitOverlayItems}
+        workPermitBarcode={workPermitBarcode}
+        workPermitArrangeMode={workPermitArrangeMode}
+        selectedWorkPermitField={selectedWorkPermitField}
+        workPermitDraggingField={workPermitDraggingField}
+        workPermitNudgeStep={workPermitNudgeStep}
+        workPermitSnapEnabled={workPermitSnapEnabled}
+        workPermitSnapStep={workPermitSnapStep}
+        workPermitExporting={workPermitExporting}
+        updatePermitField={updatePermitField}
+        setWorkPermitArrangeMode={setWorkPermitArrangeMode}
+        setSelectedWorkPermitField={setSelectedWorkPermitField}
+        setWorkPermitSnapEnabled={setWorkPermitSnapEnabled}
+        setWorkPermitSnapStep={setWorkPermitSnapStep}
+        setWorkPermitNudgeStep={setWorkPermitNudgeStep}
+        addWorkPermitCustomTextItem={addWorkPermitCustomTextItem}
+        addWorkPermitCustomImageItem={addWorkPermitCustomImageItem}
+        clearWorkPermitCustomTextItems={clearWorkPermitCustomTextItems}
+        removeWorkPermitCustomTextItem={removeWorkPermitCustomTextItem}
+        handleAddWorkPermitImage={handleAddWorkPermitImage}
+        handleWorkPermitStageDoubleClick={handleWorkPermitStageDoubleClick}
+        resetWorkPermitLayout={resetWorkPermitLayout}
+        beginWorkPermitDrag={beginWorkPermitDrag}
+        updateWorkPermitTextDraft={updateWorkPermitTextDraft}
+        updateWorkPermitCustomTextItem={updateWorkPermitCustomTextItem}
+        handleReset={handleReset}
+      />
+    )
+
     return (
       <div className="work-permit-preview">
         <div className="work-permit-arrange-toolbar no-print">
@@ -1917,15 +2314,141 @@ function CertificateBuilder() {
     )
   }
 
+  function renderJobOfferPreview() {
+    return (
+      <JobOfferBuilder
+        jobOfferDraft={jobOfferDraft}
+        jobOfferPreview={jobOfferPreview}
+        renderJobOfferUploadCard={renderJobOfferUploadCard}
+        updateJobOfferField={updateJobOfferField}
+        handleReset={handleReset}
+      />
+    )
+
+    return (
+      <div className="job-offer-preview">
+        <div className="job-offer-stage">
+          <div className="job-offer-page">
+            <img className="job-offer-header-image" src={JOB_OFFER_TEMPLATE_IMAGE} alt="" aria-hidden="true" />
+
+            <div className="job-offer-watermark" aria-hidden="true">
+              <div className="job-offer-watermark-ring" />
+              <div className="job-offer-watermark-text">The Cardinal Residence</div>
+            </div>
+
+            <div className="job-offer-top-row">
+              <div className="job-offer-meta">
+                <div className="job-offer-reference">{jobOfferPreview.offer_reference}</div>
+              </div>
+
+              <div className="job-offer-company-logo">
+                {jobOfferPreview.company_logo_url ? (
+                  <img
+                    src={jobOfferPreview.company_logo_url}
+                    alt="Company logo"
+                    crossOrigin="anonymous"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span>Company logo</span>
+                )}
+              </div>
+
+              <div className="job-offer-headshot" aria-hidden={!jobOfferPreview.applicant_photo_url}>
+                <div className="job-offer-headshot-frame">
+                  {jobOfferPreview.applicant_photo_url ? (
+                    <img
+                      className="job-offer-headshot-image"
+                      src={jobOfferPreview.applicant_photo_url}
+                      alt="Applicant"
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="job-offer-headshot-silhouette" />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="job-offer-heading-block">
+              <div className="job-offer-heading">{jobOfferPreview.subject_heading}</div>
+            </div>
+
+            <div className="job-offer-body">
+              {renderJobOfferTextBlocks(jobOfferPreview.recipient_block, 'recipient-block')}
+              {renderJobOfferTextBlocks(jobOfferPreview.offer_body, 'offer-body')}
+              {renderJobOfferTextBlocks(jobOfferPreview.job_details, 'job-details')}
+              {renderJobOfferTextBlocks(jobOfferPreview.signoff, 'signoff')}
+              {renderJobOfferTextBlocks(jobOfferPreview.footer_text, 'footer-text')}
+            </div>
+
+            <div className="job-offer-signature-area">
+              <div className="job-offer-signature-column">
+                <div className="job-offer-signature-label">
+                  The Cardinal Residence Retirement Residence
+                  <br />
+                  Manager
+                </div>
+                <div className="job-offer-signature-line">
+                  <span className="job-offer-script-signature">H</span>
+                </div>
+                <div className="job-offer-signature-name">SIMON A. JOHNSON</div>
+              </div>
+
+              <div className="job-offer-applicant-signature">
+                <div className="job-offer-applicant-line" />
+                <div className="job-offer-applicant-label">Applicant&apos;s signature</div>
+              </div>
+
+              <div className="job-offer-stamp">
+                <div className="job-offer-stamp-inner">
+                  {jobOfferPreview.stamp_image_url ? (
+                    <img
+                      className="job-offer-stamp-image"
+                      src={jobOfferPreview.stamp_image_url}
+                      alt="Stamp"
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <>
+                      <span className="job-offer-stamp-title">RECEIVED</span>
+                      <span className="job-offer-stamp-date">DATE--/--/--</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="job-offer-footer">
+              <div className="job-offer-helpline">HELPLINE:+1 323 375 3997</div>
+              <div className="job-offer-bottom-row">
+                <div className="job-offer-canada-mark">Canada</div>
+                <div className="job-offer-small-print">
+                  Immigration, Refugees and Citizenship Canada
+                  <br />
+                  Immigration, Réfugiés et Citoyenneté Canada
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <section className="admin-panel-card certificate-builder-shell">
       <div className="admin-panel-card-header certificate-builder-header">
         <div>
-          <h2>{templateMode === 'ielts' ? 'IELTS Builder' : 'Work Permit Preview'}</h2>
+          <h2>{templateMode === 'ielts' ? 'IELTS Builder' : templateMode === 'joboffer' ? 'Job Offer Builder' : 'Work Permit Preview'}</h2>
           <p>
             {templateMode === 'ielts'
               ? 'Shared applicant report generator with live preview and print-to-PDF export.'
-              : 'Canada work permit layout wired into the admin page with the same visual background as the PDF sample.'}
+              : templateMode === 'joboffer'
+                ? 'Job offer letter layout with a print-ready preview that matches the provided sample composition.'
+                : 'Canada work permit layout wired into the admin page with the same visual background as the PDF sample.'}
           </p>
           <div className="certificate-builder-template-tabs">
             <button
@@ -1941,6 +2464,13 @@ function CertificateBuilder() {
               onClick={() => setTemplateMode('workpermit')}
             >
               Work Permit
+            </button>
+            <button
+              type="button"
+              className={`template-tab${templateMode === 'joboffer' ? ' active' : ''}`}
+              onClick={() => setTemplateMode('joboffer')}
+            >
+              Job Offer
             </button>
           </div>
         </div>
@@ -1969,7 +2499,7 @@ function CertificateBuilder() {
           <div className="certificate-form-actions">
             <button type="button" className="admin-btn admin-btn-soft" onClick={handleReset}>
               <Plus size={16} />
-              {templateMode === 'ielts' ? 'New Applicant' : 'New Work Permit'}
+              {templateMode === 'ielts' ? 'New Applicant' : templateMode === 'joboffer' ? 'New Job Offer' : 'New Work Permit'}
             </button>
             {templateMode === 'ielts' ? (
               <>
@@ -2144,7 +2674,93 @@ function CertificateBuilder() {
                 </label>
               </div>
             </>
-          ) : (
+          ) : templateMode === 'joboffer' ? (
+            <div className="certificate-form-grid work-permit-form-grid">
+              <label className="admin-field admin-field-full">
+                <span>Offer reference</span>
+                <textarea
+                  rows="4"
+                  value={jobOfferDraft.offer_reference}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, offer_reference: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Recipient block</span>
+                <textarea
+                  rows="4"
+                  value={jobOfferDraft.recipient_block}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, recipient_block: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field">
+                <span>Subject heading</span>
+                <input
+                  type="text"
+                  value={jobOfferDraft.subject_heading}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, subject_heading: event.target.value }))}
+                />
+              </label>
+              <div className="certificate-image-grid">
+                {JOB_OFFER_IMAGE_FIELDS.map((field) => renderJobOfferUploadCard(field))}
+              </div>
+              <label className="admin-field">
+                <span>Company logo URL</span>
+                <input
+                  type="text"
+                  value={jobOfferDraft.company_logo_url}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, company_logo_url: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field">
+                <span>Applicant photo URL</span>
+                <input
+                  type="text"
+                  value={jobOfferDraft.applicant_photo_url}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, applicant_photo_url: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field">
+                <span>Stamp image URL</span>
+                <input
+                  type="text"
+                  value={jobOfferDraft.stamp_image_url}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, stamp_image_url: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Offer body</span>
+                <textarea
+                  rows="6"
+                  value={jobOfferDraft.offer_body}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, offer_body: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Job details</span>
+                <textarea
+                  rows="6"
+                  value={jobOfferDraft.job_details}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, job_details: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Sign-off block</span>
+                <textarea
+                  rows="5"
+                  value={jobOfferDraft.signoff}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, signoff: event.target.value }))}
+                />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Footer text</span>
+                <textarea
+                  rows="3"
+                  value={jobOfferDraft.footer_text}
+                  onChange={(event) => setJobOfferDraft((current) => ({ ...current, footer_text: event.target.value }))}
+                />
+              </label>
+            </div>
+          ) : templateMode === 'workpermit' ? (
             <div className="certificate-form-grid work-permit-form-grid">
               <label className="admin-field">
                 <span>Permit No.</span>
@@ -2239,10 +2855,136 @@ function CertificateBuilder() {
                 <textarea rows="3" value={permitDraft.remarks} onChange={(event) => updatePermitField('remarks', event.target.value)} />
               </label>
             </div>
-          )}
+          ) : templateMode === 'joboffer' ? (
+            <div className="certificate-form-grid work-permit-form-grid">
+              <label className="admin-field">
+                <span>Offer reference</span>
+                <input type="text" value={jobOfferDraft.offer_reference} onChange={(event) => setJobOfferDraft((current) => ({ ...current, offer_reference: event.target.value }))} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Recipient block</span>
+                <textarea rows="4" value={jobOfferDraft.recipient_block} onChange={(event) => setJobOfferDraft((current) => ({ ...current, recipient_block: event.target.value }))} />
+              </label>
+              <label className="admin-field">
+                <span>Subject heading</span>
+                <input type="text" value={jobOfferDraft.subject_heading} onChange={(event) => setJobOfferDraft((current) => ({ ...current, subject_heading: event.target.value }))} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Offer body</span>
+                <textarea rows="6" value={jobOfferDraft.offer_body} onChange={(event) => setJobOfferDraft((current) => ({ ...current, offer_body: event.target.value }))} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Job details</span>
+                <textarea rows="6" value={jobOfferDraft.job_details} onChange={(event) => setJobOfferDraft((current) => ({ ...current, job_details: event.target.value }))} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Sign-off block</span>
+                <textarea rows="5" value={jobOfferDraft.signoff} onChange={(event) => setJobOfferDraft((current) => ({ ...current, signoff: event.target.value }))} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Footer text</span>
+                <textarea rows="3" value={jobOfferDraft.footer_text} onChange={(event) => setJobOfferDraft((current) => ({ ...current, footer_text: event.target.value }))} />
+              </label>
+            </div>
+          ) : templateMode === 'workpermit' ? (
+            <div className="certificate-form-grid work-permit-form-grid">
+              <label className="admin-field">
+                <span>Permit No.</span>
+                <input type="text" value={permitDraft.ea_number} onChange={(event) => updatePermitField('ea_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>UCI No.</span>
+                <input type="text" value={permitDraft.client_number} onChange={(event) => updatePermitField('client_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Application No.</span>
+                <input type="text" value={permitDraft.application_number} onChange={(event) => updatePermitField('application_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Family name / Nom</span>
+                <input type="text" value={permitDraft.family_name} onChange={(event) => updatePermitField('family_name', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Given names / PrÃ©nom(s)</span>
+                <input type="text" value={permitDraft.given_names} onChange={(event) => updatePermitField('given_names', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Address Line 1</span>
+                <input type="text" value={permitDraft.address_line1 || ''} onChange={(event) => updatePermitField('address_line1', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Address Line 2</span>
+                <input type="text" value={permitDraft.address_line2 || ''} onChange={(event) => updatePermitField('address_line2', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Country</span>
+                <input type="text" value={permitDraft.country_line || ''} onChange={(event) => updatePermitField('country_line', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Date of Birth</span>
+                <input type="text" value={permitDraft.date_of_birth} onChange={(event) => updatePermitField('date_of_birth', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Sex</span>
+                <input type="text" value={permitDraft.sex} onChange={(event) => updatePermitField('sex', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Country of Birth</span>
+                <input type="text" value={permitDraft.country_of_birth} onChange={(event) => updatePermitField('country_of_birth', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Nationality</span>
+                <input type="text" value={permitDraft.nationality} onChange={(event) => updatePermitField('nationality', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Travel Doc No</span>
+                <input type="text" value={permitDraft.travel_doc} onChange={(event) => updatePermitField('travel_doc', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Document Type</span>
+                <input type="text" value={permitDraft.travel_doc_type} onChange={(event) => updatePermitField('travel_doc_type', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Date Issued</span>
+                <input type="text" value={permitDraft.date_issued} onChange={(event) => updatePermitField('date_issued', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Expiry Date</span>
+                <input type="text" value={permitDraft.expiry_date} onChange={(event) => updatePermitField('expiry_date', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Case Type</span>
+                <input type="text" value={permitDraft.case_type} onChange={(event) => updatePermitField('case_type', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>LMIA / Exempt No.</span>
+                <input type="text" value={permitDraft.lmia_number} onChange={(event) => updatePermitField('lmia_number', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Employer</span>
+                <input type="text" value={permitDraft.employer} onChange={(event) => updatePermitField('employer', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Employment Location</span>
+                <input type="text" value={permitDraft.employment_location} onChange={(event) => updatePermitField('employment_location', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>Occupation</span>
+                <input type="text" value={permitDraft.occupation} onChange={(event) => updatePermitField('occupation', event.target.value)} />
+              </label>
+              <label className="admin-field">
+                <span>In Force From</span>
+                <input type="text" value={permitDraft.in_force_from} onChange={(event) => updatePermitField('in_force_from', event.target.value)} />
+              </label>
+              <label className="admin-field admin-field-full">
+                <span>Remarks</span>
+                <textarea rows="3" value={permitDraft.remarks} onChange={(event) => updatePermitField('remarks', event.target.value)} />
+              </label>
+            </div>
+          ) : null}
         </form>
 
-        <aside className="certificate-preview-column">
+        <aside className="certificate-builder-preview">
           {templateMode === 'ielts' ? (
             <div className="ielts-trf-preview">
             <div className="ielts-paper-page">
@@ -2517,7 +3259,7 @@ function CertificateBuilder() {
               </div>
             </div>
           </div>
-          ) : renderWorkPermitPreview()}
+          ) : templateMode === 'joboffer' ? renderJobOfferPreview() : renderWorkPermitPreview()}
 
           {templateMode === 'ielts' ? (
             <div className="certificate-records-panel">
@@ -2573,15 +3315,17 @@ function CertificateBuilder() {
             <div className="certificate-records-panel">
               <div className="admin-panel-card-header compact">
                 <div>
-                  <h3>Work Permit Preview</h3>
-                  <p>This mode shows the work permit layout and does not store records in Supabase.</p>
-                </div>
-              </div>
-              <p className="admin-empty">
-                Use the form above to update the work permit preview data.
-              </p>
-            </div>
-          )}
+          <h3>{templateMode === 'joboffer' ? 'Job Offer Preview' : 'Work Permit Preview'}</h3>
+          <p>
+            {templateMode === 'joboffer'
+              ? 'This mode shows the job offer layout and does not store records in Supabase.'
+              : 'This mode shows the work permit layout and does not store records in Supabase.'}
+          </p>
+        </div>
+      </div>
+      <p className="admin-empty">{templateMode === 'joboffer' ? 'Use the form above to update the job offer preview data.' : 'Use the form above to update the work permit preview data.'}</p>
+    </div>
+  )}
         </aside>
       </div>
     </section>

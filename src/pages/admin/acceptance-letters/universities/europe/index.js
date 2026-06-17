@@ -1,0 +1,16 @@
+import { eth_zurich_switzerland } from './eth-zurich-switzerland.js'
+import { epfl_switzerland } from './epfl-switzerland.js'
+import { university_of_copenhagen_denmark } from './university-of-copenhagen-denmark.js'
+import { university_of_amsterdam_netherlands } from './university-of-amsterdam-netherlands.js'
+import { technical_university_of_munich_germany } from './technical-university-of-munich-germany.js'
+import { university_of_paris_france } from './university-of-paris-france.js'
+import { university_of_barcelona_spain } from './university-of-barcelona-spain.js'
+import { university_of_rome_italy } from './university-of-rome-italy.js'
+import { university_of_oslo_norway } from './university-of-oslo-norway.js'
+import { university_of_helsinki_finland } from './university-of-helsinki-finland.js'
+import { university_of_vienna_austria } from './university-of-vienna-austria.js'
+import { ku_leuven_belgium } from './ku-leuven-belgium.js'
+import { university_of_stockholm_sweden } from './university-of-stockholm-sweden.js'
+import { university_of_porto_portugal } from './university-of-porto-portugal.js'
+
+export const europeUniversities = [eth_zurich_switzerland, epfl_switzerland, university_of_copenhagen_denmark, university_of_amsterdam_netherlands, technical_university_of_munich_germany, university_of_paris_france, university_of_barcelona_spain, university_of_rome_italy, university_of_oslo_norway, university_of_helsinki_finland, university_of_vienna_austria, ku_leuven_belgium, university_of_stockholm_sweden, university_of_porto_portugal]

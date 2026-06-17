@@ -1,124 +1,37 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  ArrowLeft,
-  Activity,
-    async function loadAdminData() {
-      const hasCachedData = Boolean(cachedDashboard)
-      if (!hasCachedData) {
-        setLoading(true)
-      }
-      setNotice(null)
+import { ArrowLeft, Activity, GraduationCap, Save, X } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../../lib/supabaseClient'
+import { fetchCached, clearCache } from '../../lib/dataCache'
+import { SITE_SETTING_FIELDS, buildSiteSettings, writeCachedSiteSettings } from '../../lib/siteSettings'
+import SEO from '../../components/SEO'
+import CertificateBuilder from './CertificateBuilder'
+import AcceptanceLetterBuilder from './AcceptanceLetterBuilder'
+import AnalyticsPanel from './AnalyticsPanel'
+import PageContentManager from './PageContentManager'
+import './AdminDashboard.css'
 
-      // Collect results individually so a single failing endpoint doesn't block the whole dashboard
-      let applicationsData = []
-      let eventsData = []
-      let postsData = []
-      let testimonialsData = []
-      let teamData = []
-      let adminProfilesData = []
-      let settingsData = []
+const EMPTY_EVENT_FORM = {
+  title: '',
+  date: '',
+  location: '',
+  description: '',
+  image_url: '',
+  register_url: '',
+  category: '',
+  is_online: false,
+}
 
-      try {
-        // applications
-        try {
-          const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
-          if (!applicationsResult.error) applicationsData = applicationsResult.data ?? []
-          else console.warn('[AdminDashboard] applications fetch failed', applicationsResult.error)
-        } catch (err) {
-          console.warn('[AdminDashboard] applications fetch threw', err)
-        }
+const EMPTY_TEAM_FORM = {
+  name: '',
+  role: '',
+  bio: '',
+  photo_url: '',
+  order_index: 0,
+}
 
-        // events
-        try {
-          const eventsResult = await supabase.from('events').select('*').order('date', { ascending: false })
-          if (!eventsResult.error) eventsData = eventsResult.data ?? []
-          else console.warn('[AdminDashboard] events fetch failed', eventsResult.error)
-        } catch (err) {
-          console.warn('[AdminDashboard] events fetch threw', err)
-        }
-
-        // posts
-        try {
-          const postsResult = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
-          if (!postsResult.error) postsData = postsResult.data ?? []
-          else console.warn('[AdminDashboard] posts fetch failed', postsResult.error)
-        } catch (err) {
-          console.warn('[AdminDashboard] posts fetch threw', err)
-        }
-
-        // testimonials
-        try {
-          const testimonialsResult = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
-          if (!testimonialsResult.error) testimonialsData = testimonialsResult.data ?? []
-          else console.warn('[AdminDashboard] testimonials fetch failed', testimonialsResult.error)
-        } catch (err) {
-          console.warn('[AdminDashboard] testimonials fetch threw', err)
-        }
-
-        // team (cached)
-        try {
-          teamData = await fetchCached(
-            'team_members',
-            async () => {
-              const { data, error } = await supabase.from('team_members').select('*').order('order_index', { ascending: true })
-              if (error) throw error
-              return data ?? []
-            },
-            5 * 60 * 1000,
-          )
-        } catch (err) {
-          console.warn('[AdminDashboard] team_members fetch failed', err)
-          teamData = []
-        }
-
-        // admin profiles
-        try {
-          const adminProfilesResult = await supabase
-            .from('profiles')
-            .select('id, email, full_name, phone, role, created_at')
-            .eq('role', 'admin')
-            .order('created_at', { ascending: false })
-          // Debug: log adminProfilesResult to diagnose empty results
-          // eslint-disable-next-line no-console
-          console.debug('[AdminDashboard] adminProfilesResult', adminProfilesResult)
-          if (!adminProfilesResult.error) adminProfilesData = adminProfilesResult.data ?? []
-          else console.warn('[AdminDashboard] adminProfiles fetch failed', adminProfilesResult.error)
-        } catch (err) {
-          console.warn('[AdminDashboard] adminProfiles fetch threw', err)
-          adminProfilesData = []
-        }
-
-        // settings (cached)
-        try {
-          settingsData = await fetchCached(
-            'site_settings',
-            async () => {
-              const { data, error } = await supabase.from('site_settings').select('*').order('key', { ascending: true })
-              if (error) throw error
-              return data ?? []
-            },
-            5 * 60 * 1000,
-          )
-        } catch (err) {
-          console.warn('[AdminDashboard] site_settings fetch failed', err)
-          settingsData = []
-        }
-      } catch (error) {
-        console.error('[AdminDashboard] Failed during admin data load:', error)
-      } finally {
-        if (!ignore) {
-          setApplications(applicationsData)
-          setEvents(eventsData)
-          setPosts(postsData)
-          setTestimonials(testimonialsData)
-          setTeamMembers(sortByOrderThenName(teamData ?? []))
-          setAdminProfiles(adminProfilesData)
-          setSettingsRows(settingsData)
-          setSettingsForm(buildSettingsForm(settingsData))
-          setLoading(false)
-        }
-      }
-    }
+const EMPTY_BLOG_FORM = {
   slug: '',
   excerpt: '',
   content: '',
@@ -210,6 +123,26 @@ function sortByOrderThenName(items) {
     return (left.name || '').localeCompare(right.name || '')
   })
 }
+
+const NAV_ITEMS = [
+  { key: 'overview', label: 'Overview', icon: Activity },
+  { key: 'applications', label: 'Applications', icon: Activity },
+  { key: 'events', label: 'Events', icon: Activity },
+  { key: 'blog', label: 'Blog Posts', icon: Activity },
+  { key: 'testimonials', label: 'Testimonials', icon: Activity },
+  { key: 'team', label: 'Team', icon: Activity },
+  { key: 'certificates', label: 'Certificates', icon: Activity },
+  { key: 'acceptance', label: 'Acceptance Letters', icon: GraduationCap },
+  { key: 'analytics', label: 'Analytics', icon: Activity },
+  { key: 'settings', label: 'Settings', icon: Activity },
+  { key: 'content', label: 'Content', icon: Activity },
+]
+
+const SETTINGS_SECTIONS = [
+  { key: 'basic', title: 'Basic', description: 'General site information (name, tagline, URL).' },
+  { key: 'contact', title: 'Contact', description: 'Contact details, phone, office location, and map zoom.' },
+  { key: 'social', title: 'Social', description: 'Links to social media profiles.' },
+]
 
 function AdminDashboard() {
   const cachedDashboard = readAdminDashboardCache()
@@ -896,6 +829,18 @@ function AdminDashboard() {
       } catch {
         // ignore
       }
+      try {
+        // Update local cached settings and notify other tabs/components
+        const nextSettingsObj = buildSiteSettings(nextRows)
+        writeCachedSiteSettings(nextSettingsObj)
+        try {
+          window.dispatchEvent(new CustomEvent('brightpath:site-settings-updated'))
+        } catch {
+          // ignore dispatch errors
+        }
+      } catch (cacheErr) {
+        // ignore caching errors
+      }
     } catch (error) {
       console.error('[AdminDashboard] Failed to save settings:', error)
       setNotice({ type: 'error', text: error.message || 'Could not save the settings.' })
@@ -1513,6 +1458,8 @@ function AdminDashboard() {
         return renderTeam()
       case 'certificates':
         return <CertificateBuilder />
+      case 'acceptance':
+        return <AcceptanceLetterBuilder />
       case 'analytics':
         return <AnalyticsPanel />
       case 'settings':

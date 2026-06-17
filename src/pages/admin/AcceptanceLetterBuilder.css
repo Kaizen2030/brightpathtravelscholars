@@ -1,0 +1,2287 @@
+.acceptance-letter-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.acceptance-letter-shell-header {
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.acceptance-letter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.acceptance-letter-notice {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: rgba(228, 231, 235, 0.7);
+  color: #1f2937;
+  font-size: 0.92rem;
+}
+
+.acceptance-letter-layout {
+  align-items: start;
+}
+
+.acceptance-university-selector {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.acceptance-university-count {
+  margin-top: 0.45rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: rgba(17, 37, 59, 0.62);
+  letter-spacing: 0.02em;
+}
+
+.acceptance-university-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  border: 1px solid rgba(17, 37, 59, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  padding-left: 0.85rem;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.acceptance-university-search-wrapper:focus-within {
+  border-color: rgba(17, 37, 59, 0.18);
+  box-shadow: none;
+}
+
+.acceptance-search-icon {
+  color: rgba(17, 37, 59, 0.42);
+  flex-shrink: 0;
+}
+
+.acceptance-university-search-input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  outline: none;
+  padding: 0.92rem 0.75rem;
+  font-size: 0.96rem;
+}
+
+.acceptance-dropdown-toggle {
+  display: grid;
+  place-items: center;
+  padding: 0.75rem 0.8rem;
+  border: 0;
+  background: transparent;
+  color: rgba(17, 37, 59, 0.55);
+  cursor: pointer;
+}
+
+.acceptance-university-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  max-height: 280px;
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid rgba(17, 37, 59, 0.12);
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(8, 18, 34, 0.14);
+  z-index: 20;
+}
+
+.acceptance-university-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 0;
+  border-bottom: 1px solid rgba(17, 37, 59, 0.06);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.acceptance-university-option:hover {
+  background: rgba(15, 91, 156, 0.05);
+}
+
+.acceptance-university-option.active {
+  background: rgba(140, 31, 45, 0.08);
+}
+
+.acceptance-university-group {
+  padding: 0.35rem 0;
+}
+
+.acceptance-university-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(17, 37, 59, 0.56);
+}
+
+.acceptance-university-group-header strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 91, 156, 0.08);
+  color: rgba(15, 91, 156, 0.95);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.acceptance-university-option .uni-name {
+  font-weight: 700;
+  color: #14263a;
+}
+
+.acceptance-university-option .uni-meta {
+  font-size: 0.82rem;
+  color: rgba(20, 38, 58, 0.62);
+  white-space: nowrap;
+}
+
+.acceptance-image-grid {
+  grid-column: 1 / -1;
+}
+
+.acceptance-letter-preview-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  padding: 0.95rem 1rem;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(15, 91, 156, 0.12), rgba(140, 31, 45, 0.08));
+  border: 1px solid rgba(17, 37, 59, 0.08);
+  color: #152235;
+}
+
+.acceptance-letter-preview-summary .summary-kicker {
+  display: inline-block;
+  margin-bottom: 0.28rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(17, 37, 59, 0.58);
+}
+
+.acceptance-letter-preview-summary strong {
+  display: block;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.acceptance-letter-preview-summary p,
+.acceptance-letter-preview-summary span {
+  margin: 0.18rem 0 0;
+  font-size: 0.86rem;
+  color: rgba(17, 37, 59, 0.7);
+}
+
+.acceptance-letter-preview-summary .summary-meta {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.acceptance-letter-preview {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: auto;
+  min-height: calc(100vh - 260px);
+  padding: 24px;
+  background: #f4f5f6;
+  border-radius: 24px;
+}
+
+.acceptance-letter-stage {
+  position: relative;
+  width: 595px;
+  height: 842px;
+  max-width: min(595px, calc(100vw - 64px));
+  max-height: min(842px, calc(100vh - 160px));
+  flex-shrink: 0;
+}
+
+.acceptance-letter-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(17, 37, 59, 0.06);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(16, 29, 46, 0.1);
+  color: #1d1b1f;
+  font-family: "Times New Roman", Times, Georgia, serif;
+}
+
+
+
+.acceptance-letter-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: stretch;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid rgba(17, 37, 59, 0.06);
+  background: transparent;
+}
+
+.acceptance-letter-header-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.acceptance-letter-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(17, 37, 59, 0.75);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.acceptance-letter-header-copy h3 {
+  margin: 0;
+  font-size: 1.7rem;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #1d1b1f;
+}
+
+.acceptance-letter-header-copy p {
+  margin: 0.35rem 0 0;
+  color: rgba(17, 37, 59, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.acceptance-letter-brand {
+  width: 104px;
+  min-height: 104px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  overflow: hidden;
+}
+
+.acceptance-letter-brand img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  display: block;
+}
+
+.acceptance-letter-brand span {
+  width: 80px;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(17, 37, 59, 0.08);
+  color: rgba(17, 37, 59, 0.9);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.acceptance-letter-header-panel,
+.acceptance-letter-header-banner,
+.acceptance-letter-header-editorial,
+.acceptance-letter-header-classic,
+.acceptance-letter-header-heritage,
+.acceptance-letter-header-crest {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.acceptance-letter-header-crest {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 20px;
+  padding-right: 0;
+}
+
+.acceptance-letter-header-crest .acceptance-letter-brand,
+.acceptance-letter-header-banner .acceptance-letter-brand,
+.acceptance-letter-header-panel .acceptance-letter-brand {
+  align-self: center;
+}
+
+.acceptance-letter-page-panel {
+  background: #ffffff;
+}
+
+.acceptance-letter-page-panel .acceptance-letter-header {
+  border-left: none;
+  border-bottom: 1px solid rgba(17, 37, 59, 0.08);
+  background: transparent;
+}
+
+.acceptance-letter-page-banner {
+  background: #ffffff;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-header {
+  padding-bottom: 18px;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-header {
+  padding: 24px;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-footer {
+  border-top: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-page-classic {
+  background: #ffffff;
+}
+
+.acceptance-letter-page-classic .acceptance-letter-header {
+  background: transparent;
+}
+
+.acceptance-letter-page-crest .acceptance-letter-header {
+  padding: 24px 24px 20px;
+  border: none;
+}
+
+.acceptance-letter-page-crest .acceptance-letter-brand {
+  box-shadow: none;
+}
+
+
+.acceptance-letter-page-banner .acceptance-letter-header {
+  background: transparent;
+  color: inherit;
+  padding: 24px;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-banner-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+
+.acceptance-letter-banner-label,
+.acceptance-letter-crest-badge,
+.acceptance-letter-heritage-mark,
+.acceptance-letter-ticket-badge {
+  display: inline-flex;
+  padding: 0;
+  background: transparent;
+  color: rgba(17, 37, 59, 0.72);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.acceptance-letter-banner-detail img,
+.acceptance-letter-brand-banner {
+  width: 82px;
+  height: 82px;
+  border-radius: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+}
+
+.acceptance-letter-body-banner {
+  padding: 22px 24px 20px;
+}
+
+.acceptance-letter-meta-row-banner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.acceptance-letter-conditions-banner,
+.acceptance-letter-conditions-panel,
+.acceptance-letter-conditions-editorial,
+.acceptance-letter-conditions-heritage {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(17, 37, 59, 0.08);
+  border-left: 3px solid var(--acceptance-accent, #27415e);
+  padding: 16px 18px;
+  border-radius: 0;
+}
+
+.acceptance-letter-signature-banner {
+  gap: 18px;
+  padding: 18px 24px 20px;
+}
+
+.acceptance-letter-page-panel .acceptance-letter-panel-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  padding: 22px 24px 18px;
+}
+
+.acceptance-letter-page-panel .acceptance-letter-side-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.acceptance-letter-detail-panel {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(17, 37, 59, 0.08);
+  border-radius: 0;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-editorial-mast {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 24px 0;
+  border-bottom: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-body-editorial {
+  padding: 22px 24px 16px;
+}
+
+.acceptance-letter-crest-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  color: rgba(17, 37, 59, 0.7);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.acceptance-letter-body-crest {
+  padding: 0 24px 16px;
+}
+
+.acceptance-letter-details-crest {
+  padding: 18px 0 0;
+}
+
+.acceptance-letter-page-heritage {
+  background: #ffffff;
+}
+
+.acceptance-letter-heritage-banner {
+  padding: 22px 24px 18px;
+  border-left: none;
+  background: transparent;
+}
+
+.acceptance-letter-heritage-mark {
+  background: transparent;
+  color: rgba(17, 37, 59, 0.72);
+}
+
+.acceptance-letter-body-heritage {
+  padding: 18px 24px 16px;
+}
+
+.acceptance-letter-details-heritage .acceptance-letter-detail {
+  background: rgba(17, 37, 59, 0.03);
+}
+
+.acceptance-letter-crest-mark {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(17, 37, 59, 0.06);
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-page-ticket {
+  background: #ffffff;
+}
+
+.acceptance-letter-ticket-top {
+  padding: 22px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  border-bottom: 1px solid rgba(17, 37, 59, 0.06);
+}
+
+.acceptance-letter-ticket-badge {
+  display: inline-flex;
+  padding: 0;
+  background: transparent;
+  color: rgba(17, 37, 59, 0.72);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.acceptance-letter-ticket-meta {
+  text-align: right;
+  font-size: 0.8rem;
+  color: rgba(17, 37, 59, 0.65);
+}
+
+.acceptance-letter-body-ticket {
+  padding: 18px 24px 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.acceptance-letter-ticket-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.acceptance-letter-content-ticket {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 0;
+  border: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-page-manitoba {
+  background: #eef0f5;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.acceptance-letter-manitoba-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 28px 46px 22px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-manitoba-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 30px;
+}
+
+.acceptance-letter-manitoba-branding {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.acceptance-letter-manitoba-brand {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.acceptance-letter-manitoba-brand img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.acceptance-letter-manitoba-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #214d9c, #15336d);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.acceptance-letter-manitoba-brand-copy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.acceptance-letter-manitoba-brand-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1b2a4a;
+  line-height: 1.15;
+}
+
+.acceptance-letter-manitoba-brand-dept {
+  font-size: 0.7rem;
+  color: rgba(27, 42, 74, 0.72);
+  letter-spacing: 0.02em;
+}
+
+.acceptance-letter-manitoba-contact {
+  text-align: right;
+  font-size: 0.56rem;
+  line-height: 1.55;
+  color: rgba(27, 42, 74, 0.82);
+}
+
+.acceptance-letter-manitoba-contact-line {
+  margin: 0;
+}
+
+.acceptance-letter-manitoba-contact .acceptance-text-block {
+  margin: 0;
+  font-size: 0.56rem;
+  line-height: 1.55;
+  color: rgba(27, 42, 74, 0.82);
+}
+
+.acceptance-letter-manitoba-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-bottom: 24px;
+  font-size: 0.72rem;
+  line-height: 1.72;
+  color: #111827;
+}
+
+.acceptance-letter-manitoba-meta-col {
+  display: grid;
+  gap: 8px;
+}
+
+.acceptance-letter-manitoba-meta-col strong {
+  font-weight: 700;
+}
+
+.acceptance-letter-manitoba-title {
+  margin: 4px 0 20px;
+  text-align: center;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #111827;
+}
+
+.acceptance-letter-manitoba-body {
+  flex: 1;
+  display: grid;
+  gap: 12px;
+  font-size: 0.72rem;
+  line-height: 1.75;
+  color: #111827;
+}
+
+.acceptance-letter-manitoba-salutation {
+  margin-bottom: 2px;
+}
+
+.acceptance-letter-manitoba-paragraph {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.acceptance-letter-manitoba-signoff {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 10px;
+}
+
+.acceptance-letter-manitoba-closing {
+  font-size: 0.72rem;
+}
+
+.acceptance-letter-manitoba-signature-line {
+  position: relative;
+  min-height: 46px;
+}
+
+.acceptance-letter-manitoba-signature-line img {
+  max-height: 42px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.acceptance-letter-manitoba-script {
+  display: inline-block;
+  font-family: 'Brush Script MT', 'Segoe Script', cursive;
+  font-size: 2rem;
+  color: #111827;
+  line-height: 1;
+}
+
+.acceptance-letter-manitoba-signature-name,
+.acceptance-letter-manitoba-signature-title,
+.acceptance-letter-manitoba-signature-unit {
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.acceptance-letter-manitoba-signature-name {
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.acceptance-letter-manitoba-footnotes {
+  margin-top: 26px;
+  padding-top: 14px;
+  display: grid;
+  gap: 10px;
+  font-size: 0.45rem;
+  line-height: 1.45;
+  color: rgba(27, 42, 74, 0.76);
+}
+
+.acceptance-letter-manitoba-footnotes ol {
+  margin: 0;
+  padding-left: 14px;
+}
+
+.acceptance-letter-manitoba-footer-link {
+  text-align: right;
+  font-size: 0.52rem;
+  color: rgba(17, 37, 59, 0.72);
+}
+
+.acceptance-letter-manitoba-editor {
+  grid-column: 1 / -1;
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(33, 77, 156, 0.05);
+  border: 1px solid rgba(33, 77, 156, 0.12);
+}
+
+.acceptance-letter-manitoba-editor-title {
+  margin-bottom: 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(17, 37, 59, 0.72);
+}
+
+.acceptance-letter-page-ottawa {
+  background: #d5d8de;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.acceptance-letter-page-saskatchewan {
+  background: #d5d8de;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.acceptance-letter-saskatchewan-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 36px 48px 40px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.acceptance-letter-saskatchewan-letterhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 36px;
+}
+
+.acceptance-letter-saskatchewan-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.acceptance-letter-saskatchewan-logo-image,
+.acceptance-letter-saskatchewan-shield-svg {
+  width: 38px;
+  height: 44px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.acceptance-letter-saskatchewan-logo-image {
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.acceptance-letter-saskatchewan-uni-name-block {
+  line-height: 1.2;
+}
+
+.acceptance-letter-saskatchewan-uni-line1 {
+  font-size: 8.5px;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: #2d5a1b;
+  font-weight: 700;
+}
+
+.acceptance-letter-saskatchewan-uni-line2 {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #2d5a1b;
+  line-height: 1.1;
+}
+
+.acceptance-letter-saskatchewan-contact-block {
+  text-align: right;
+  font-size: 8px;
+  line-height: 1.7;
+  color: #444;
+}
+
+.acceptance-letter-saskatchewan-contact-block a {
+  color: #2d5a1b;
+  text-decoration: none;
+}
+
+.acceptance-letter-saskatchewan-date,
+.acceptance-letter-saskatchewan-recipient,
+.acceptance-letter-saskatchewan-body {
+  color: #1a1a1a;
+}
+
+.acceptance-letter-saskatchewan-date {
+  font-size: 11px;
+  margin-bottom: 18px;
+}
+
+.acceptance-letter-saskatchewan-recipient {
+  font-size: 11px;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.acceptance-letter-saskatchewan-body {
+  font-size: 11px;
+  line-height: 1.8;
+  flex: 1;
+}
+
+.acceptance-letter-saskatchewan-body p {
+  margin-bottom: 14px;
+}
+
+.acceptance-letter-saskatchewan-body a {
+  color: #2d5a1b;
+  text-decoration: underline;
+}
+
+.acceptance-letter-saskatchewan-program-details {
+  margin: 4px 0 18px;
+  font-size: 11px;
+  line-height: 1.9;
+}
+
+.acceptance-letter-saskatchewan-field-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 6px;
+}
+
+.acceptance-letter-saskatchewan-field-label {
+  font-weight: 700;
+  min-width: 195px;
+}
+
+.acceptance-letter-saskatchewan-field-value {
+  font-weight: 700;
+}
+
+.acceptance-letter-saskatchewan-section-heading {
+  font-size: 12px;
+  font-weight: 900;
+  color: #2d5a1b;
+  margin: 6px 0 10px;
+}
+
+.acceptance-letter-saskatchewan-deadline-heading {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 18px 0 10px;
+  color: #1a1a1a;
+}
+
+.acceptance-letter-ottawa-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 30px 52px 28px;
+  background: #ffffff;
+  border: 1px solid rgba(17, 37, 59, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.acceptance-letter-ottawa-letterhead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.acceptance-letter-ottawa-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.acceptance-letter-ottawa-logo {
+  width: 42px;
+  height: 42px;
+  color: #1a1a1a;
+  display: grid;
+  place-items: center;
+}
+
+.acceptance-letter-ottawa-logo img,
+.acceptance-letter-ottawa-logo svg {
+  width: 42px;
+  height: 42px;
+  display: block;
+}
+
+.acceptance-letter-ottawa-wordmark {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #1a1a1a;
+}
+
+.acceptance-letter-ottawa-dept-row {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  width: 100%;
+  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #bbb;
+  padding: 5px 0;
+  gap: 0;
+}
+
+.acceptance-letter-ottawa-dept-col {
+  flex: 1;
+  text-align: center;
+  font-size: 8.5px;
+  line-height: 1.55;
+  color: #333;
+  padding: 0 16px;
+}
+
+.acceptance-letter-ottawa-dept-col .acceptance-text-block {
+  margin: 0;
+  font-size: 8.5px;
+  line-height: 1.55;
+  color: #333;
+}
+
+.acceptance-letter-ottawa-dept-text {
+  white-space: pre-wrap;
+}
+
+.acceptance-letter-ottawa-dept-text h4 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 9px;
+}
+
+.acceptance-letter-ottawa-dept-divider {
+  width: 1px;
+  background: #bbb;
+  flex-shrink: 0;
+}
+
+.acceptance-letter-ottawa-date {
+  font-size: 11px;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.acceptance-letter-ottawa-recipient {
+  font-size: 11px;
+  line-height: 1.7;
+  margin-bottom: 14px;
+  color: #1a1a1a;
+}
+
+.acceptance-letter-ottawa-recipient-line {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.acceptance-letter-ottawa-student-number {
+  font-size: 11px;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+}
+
+.acceptance-letter-ottawa-salutation {
+  font-size: 11px;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+.acceptance-letter-ottawa-body {
+  flex: 1;
+  display: grid;
+  gap: 13px;
+  font-size: 11px;
+  line-height: 1.8;
+  color: #1f1f1f;
+}
+
+.acceptance-letter-ottawa-body p {
+  margin: 0;
+}
+
+.acceptance-letter-ottawa-program-block {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.8;
+  margin: 4px 0 16px;
+}
+
+.acceptance-letter-ottawa-program-line {
+  margin: 0;
+}
+
+.acceptance-letter-ottawa-signoff {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.acceptance-letter-ottawa-closing {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.acceptance-letter-ottawa-signature-script {
+  min-height: 34px;
+}
+
+.acceptance-letter-ottawa-signature-script img {
+  max-height: 30px;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.acceptance-letter-ottawa-signature-script span {
+  display: inline-block;
+  font-family: 'Brush Script MT', cursive;
+  font-size: 26px;
+  color: #2a2a2a;
+  margin: 18px 0 2px;
+}
+
+.acceptance-letter-ottawa-signature-name,
+.acceptance-letter-ottawa-signature-title,
+.acceptance-letter-ottawa-signature-unit {
+  font-size: 11px;
+  color: #1f1f1f;
+}
+
+.acceptance-letter-ottawa-footer {
+  margin-top: auto;
+  padding-top: 28px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  font-size: 7.5px;
+  color: #666;
+  line-height: 1.65;
+  border-top: 1px solid #ccc;
+}
+
+.acceptance-letter-ottawa-footer-col {
+  text-align: center;
+}
+
+.acceptance-letter-ottawa-footer-line {
+  margin: 0;
+  font-size: 7.5px;
+  line-height: 1.65;
+  color: #666;
+}
+
+.acceptance-letter-ottawa-editor {
+  grid-column: 1 / -1;
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border-radius: 16px;
+  background: rgba(227, 24, 55, 0.05);
+  border: 1px solid rgba(227, 24, 55, 0.12);
+}
+
+.acceptance-letter-ottawa-editor-title {
+  margin-bottom: 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(17, 37, 59, 0.72);
+}
+
+.acceptance-letter-signature-ticket {
+  padding: 16px 24px 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: center;
+}
+
+.acceptance-letter-ticket-stamp {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid var(--acceptance-accent, #27415e);
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.acceptance-letter-tech-box-header,
+.acceptance-letter-space-tech-header,
+.acceptance-letter-gift-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 24px;
+  background: transparent;
+  border-bottom: 1px solid rgba(17, 37, 59, 0.06);
+}
+
+.acceptance-letter-tech-box-header h3,
+.acceptance-letter-space-tech-header h3,
+.acceptance-letter-gift-box-header h3 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.acceptance-letter-tech-box-tag,
+.acceptance-letter-space-tech-tag,
+.acceptance-letter-gift-box-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(17, 37, 59, 0.06);
+  color: rgba(17, 37, 59, 0.72);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.acceptance-letter-space-tech-aside,
+.acceptance-letter-gift-box-panel {
+  padding: 24px;
+  background: transparent;
+  border-top: 1px solid rgba(17, 37, 59, 0.06);
+}
+
+.acceptance-letter-space-tech-grid {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 18px;
+  padding: 22px 24px 18px;
+}
+
+.acceptance-letter-space-tech-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.acceptance-letter-space-tech-aside {
+  display: grid;
+  gap: 14px;
+}
+
+.acceptance-letter-space-tech-panel {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(17, 37, 59, 0.08);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.acceptance-letter-space-tech-panel strong {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.acceptance-letter-page-ubc,
+.acceptance-letter-page-mcgill {
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  min-height: auto;
+  max-height: none;
+}
+
+.acceptance-letter-page-mcgill .acceptance-letter-mcgill-sheet {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
+  padding: 40px 54px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.acceptance-letter-mcgill-headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  border-bottom: 1px solid #c8102e;
+  padding-bottom: 20px;
+}
+
+.acceptance-letter-mcgill-headmark {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acceptance-letter-mcgill-wordmark {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 42px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: #2d121c;
+  line-height: 1;
+}
+
+.acceptance-letter-mcgill-tagline {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #c8102e;
+}
+
+.acceptance-letter-mcgill-address-block {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #1d1b1f;
+}
+
+.acceptance-letter-mcgill-sender-dept {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.acceptance-letter-mcgill-top-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 12px;
+}
+
+.acceptance-letter-mcgill-date-line,
+.acceptance-letter-mcgill-subject-line {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  color: #1d1b1f;
+}
+
+.acceptance-letter-mcgill-subject-line {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.acceptance-letter-mcgill-recipient-block {
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 20px 0 18px;
+  white-space: pre-wrap;
+}
+
+.acceptance-letter-mcgill-recipient-block div {
+  margin-bottom: 2px;
+}
+
+.acceptance-letter-mcgill-salutation {
+  font-size: 12px;
+  margin-bottom: 18px;
+}
+
+.acceptance-letter-mcgill-copy {
+  font-size: 12px;
+  line-height: 1.85;
+  display: grid;
+  gap: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.acceptance-letter-mcgill-copy p {
+  margin: 0;
+}
+
+.acceptance-letter-mcgill-details {
+  display: grid;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fbfbfb;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #1d1b1f;
+}
+
+.acceptance-letter-mcgill-details strong {
+  color: #1d1b1f;
+  font-weight: 700;
+}
+
+.acceptance-letter-mcgill-signature {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+}
+
+.acceptance-letter-mcgill-signature-script {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 18px;
+  font-style: italic;
+}
+
+.acceptance-letter-mcgill-signature-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.acceptance-letter-mcgill-signature-title {
+  font-size: 11px;
+}
+
+.acceptance-letter-mcgill-footer {
+  margin-top: auto;
+  font-size: 9px;
+  color: #555;
+  line-height: 1.6;
+}
+
+.acceptance-letter-mcgill-sender-block {
+  display: grid;
+  gap: 10px;
+  line-height: 1.6;
+  color: #1d1b1f;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+}
+
+.acceptance-letter-mcgill-sender-dept {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.acceptance-letter-mcgill-sender-address div {
+  margin-bottom: 2px;
+}
+
+.acceptance-letter-mcgill-date-line,
+.acceptance-letter-mcgill-recipient-block,
+.acceptance-letter-mcgill-salutation,
+.acceptance-letter-mcgill-copy,
+.acceptance-letter-mcgill-signature,
+.acceptance-letter-mcgill-footer {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #1d1b1f;
+}
+
+.acceptance-letter-mcgill-date-line {
+  font-size: 11px;
+  margin-top: 8px;
+}
+
+.acceptance-letter-mcgill-recipient-block {
+  font-size: 11px;
+  line-height: 1.75;
+  margin: 16px 0 18px;
+}
+
+.acceptance-letter-mcgill-recipient-block div {
+  margin-bottom: 2px;
+}
+
+.acceptance-letter-mcgill-salutation {
+  font-size: 11px;
+  margin-bottom: 18px;
+}
+
+.acceptance-letter-mcgill-copy {
+  font-size: 11px;
+  line-height: 1.9;
+  display: grid;
+  gap: 14px;
+}
+
+.acceptance-letter-mcgill-copy p {
+  margin: 0;
+}
+
+.acceptance-letter-mcgill-signature {
+  display: grid;
+  gap: 6px;
+  margin-top: 26px;
+}
+
+.acceptance-letter-mcgill-signature-script {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 16px;
+  font-style: italic;
+}
+
+.acceptance-letter-mcgill-signature-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.acceptance-letter-mcgill-signature-title {
+  font-size: 11px;
+}
+
+.acceptance-letter-mcgill-footer {
+  margin-top: auto;
+  font-size: 8.5px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.acceptance-letter-mcgill-editor {
+  border: 1px solid rgba(200, 16, 46, 0.18);
+  border-radius: 18px;
+  padding: 18px;
+  background: rgba(248, 225, 229, 0.6);
+  margin-bottom: 18px;
+}
+
+.acceptance-letter-mcgill-editor-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: #2d121c;
+}
+
+.acceptance-letter-page-ubc .acceptance-letter-ubc-sheet {
+  width: 100%;
+  min-height: 1000px;
+  background: #ffffff;
+  padding: 44px 56px 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: none;
+}
+
+.acceptance-letter-ubc-letterhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  border-bottom: 2.5px solid #002145;
+  padding-bottom: 18px;
+}
+
+.acceptance-letter-ubc-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acceptance-letter-ubc-crest-svg {
+  width: 52px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.acceptance-letter-ubc-name-block {
+  line-height: 1.15;
+}
+
+.acceptance-letter-ubc-top,
+.acceptance-letter-ubc-sub {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #002145;
+}
+
+.acceptance-letter-ubc-top {
+  letter-spacing: 2px;
+}
+
+.acceptance-letter-ubc-main {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.3px;
+  font-weight: 700;
+  color: #002145;
+  margin-top: 0px;
+}
+
+.acceptance-letter-ubc-dept-block {
+  text-align: right;
+  font-size: 8.5px;
+  line-height: 1.75;
+  color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  margin-top: 4px;
+}
+
+.acceptance-letter-ubc-dept-title {
+  font-weight: 700;
+  font-size: 9px;
+  color: #002145;
+  margin-bottom: 3px;
+}
+
+.acceptance-letter-ubc-dept-block a {
+  color: #002145;
+  text-decoration: none;
+}
+
+.acceptance-letter-ubc-date-line,
+.acceptance-letter-ubc-recipient-block,
+.acceptance-letter-ubc-subject-line,
+.acceptance-letter-ubc-salutation,
+.acceptance-letter-ubc-body-text,
+.acceptance-letter-ubc-signature-block,
+.acceptance-letter-ubc-footer-text {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.acceptance-letter-ubc-date-line {
+  font-size: 11px;
+  margin-bottom: 20px;
+}
+
+.acceptance-letter-ubc-recipient-block {
+  font-size: 11px;
+  line-height: 1.75;
+  margin-bottom: 22px;
+}
+
+.acceptance-letter-ubc-recipient-block div {
+  margin-bottom: 2px;
+}
+
+.acceptance-letter-ubc-subject-line {
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-decoration: underline;
+}
+
+.acceptance-letter-ubc-salutation {
+  font-size: 11px;
+  margin-bottom: 14px;
+}
+
+.acceptance-letter-ubc-body-text {
+  font-size: 11px;
+  line-height: 1.85;
+  color: #1a1a1a;
+  flex: 1;
+}
+
+.acceptance-letter-ubc-body-text p {
+  margin-bottom: 15px;
+}
+
+.acceptance-letter-ubc-body-text a {
+  color: #002145;
+  text-decoration: underline;
+}
+
+.acceptance-letter-ubc-program-details {
+  margin: 6px 0 20px 16px;
+  font-size: 11px;
+  line-height: 2;
+}
+
+.acceptance-letter-ubc-program-details .field-row {
+  display: flex;
+}
+
+.acceptance-letter-ubc-program-details .field-label {
+  min-width: 210px;
+  font-weight: 700;
+}
+
+.acceptance-letter-ubc-program-details .field-value {
+  flex: 1;
+}
+
+.acceptance-letter-ubc-conditions-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: underline;
+  margin: 20px 0 12px;
+}
+
+.acceptance-letter-ubc-signature-block {
+  margin-top: 28px;
+  font-size: 11px;
+  line-height: 1.75;
+}
+
+.acceptance-letter-ubc-signature-name {
+  font-style: italic;
+  font-size: 15px;
+  margin: 8px 0 2px;
+  font-family: "Times New Roman", Times, serif;
+  color: #002145;
+}
+
+.acceptance-letter-ubc-signature-title {
+  font-weight: 700;
+}
+
+.acceptance-letter-ubc-footer-rule {
+  border: none;
+  border-top: 1.5px solid #002145;
+  margin: 32px 0 10px;
+}
+
+.acceptance-letter-ubc-footer-text {
+  font-size: 7.5px;
+  color: #555;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.acceptance-letter-gift-box-body {
+  padding: 22px 24px 18px;
+}
+
+.acceptance-letter-gift-box-panel {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.acceptance-letter-gift-box-panel .acceptance-letter-meta-card {
+  background: rgba(17, 37, 59, 0.04);
+}
+
+.acceptance-letter-gift-box-accent {
+  padding: 18px;
+  border-radius: 0;
+  background: rgba(17, 37, 59, 0.03);
+  color: rgba(17, 37, 59, 0.82);
+}
+
+.acceptance-letter-ticket-stamp span,
+.acceptance-letter-stamp span {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.acceptance-letter-page-panel .acceptance-letter-header {
+  border-bottom: none;
+}
+
+.acceptance-letter-page-panel .acceptance-letter-body {
+  padding: 20px 0 0;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-header {
+  background: transparent;
+  box-shadow: none;
+}
+
+.acceptance-letter-page-crest .acceptance-letter-brand {
+  min-width: 96px;
+  min-height: 96px;
+}
+
+.acceptance-letter-page-heritage .acceptance-letter-signature {
+  padding: 20px 24px 24px;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-signature-block {
+  align-self: center;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-body {
+  padding: 18px 24px 0;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-details-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-signature {
+  padding: 16px 24px 20px;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-footer,
+.acceptance-letter-page-crest .acceptance-letter-footer,
+.acceptance-letter-page-heritage .acceptance-letter-footer,
+.acceptance-letter-page-ticket .acceptance-letter-footer {
+  padding: 14px 24px 18px;
+}
+
+.acceptance-letter-page .acceptance-letter-footer {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.acceptance-letter-page-classic .acceptance-letter-footer {
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.acceptance-letter-page-banner .acceptance-letter-header-copy h3,
+.acceptance-letter-page-crest .acceptance-letter-crest-title h3,
+.acceptance-letter-page-heritage .acceptance-letter-heritage-title h3,
+.acceptance-letter-page-ticket .acceptance-letter-ticket-top h3 {
+  font-size: 1.65rem;
+}
+
+.acceptance-letter-page-heritage .acceptance-letter-heritage-title {
+  margin-top: 0.75rem;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-ticket-meta strong {
+  display: block;
+  margin-top: 0.45rem;
+}
+
+.acceptance-letter-page-editorial .acceptance-letter-header-copy h3 {
+  font-size: 1.7rem;
+}
+
+.acceptance-letter-page-crest .acceptance-letter-crest-title p,
+.acceptance-letter-page-banner .acceptance-letter-banner-top p,
+.acceptance-letter-page-heritage .acceptance-letter-heritage-title p,
+.acceptance-letter-page-ticket .acceptance-letter-ticket-meta span {
+  color: rgba(17, 37, 59, 0.72);
+}
+
+.acceptance-letter-page-heritage .acceptance-letter-details-grid {
+  gap: 12px;
+}
+
+.acceptance-letter-page-heritage .acceptance-letter-detail {
+  padding: 14px 14px 12px;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-body {
+  gap: 14px;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-signature,
+.acceptance-letter-page-crest .acceptance-letter-signature,
+.acceptance-letter-page-heritage .acceptance-letter-signature,
+.acceptance-letter-page-ticket .acceptance-letter-signature {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-stamp,
+.acceptance-letter-page-crest .acceptance-letter-stamp,
+.acceptance-letter-page-heritage .acceptance-letter-crest-mark {
+  align-self: center;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-ticket-stamp {
+  width: 76px;
+  height: 76px;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-signature-block,
+.acceptance-letter-page-crest .acceptance-letter-signature-block,
+.acceptance-letter-page-heritage .acceptance-letter-signature-block,
+.acceptance-letter-page-ticket .acceptance-letter-signature-block {
+  flex: 1;
+}
+
+.acceptance-letter-page-banner .acceptance-letter-footer,
+.acceptance-letter-page-crest .acceptance-letter-footer,
+.acceptance-letter-page-heritage .acceptance-letter-footer,
+.acceptance-letter-page-ticket .acceptance-letter-footer {
+  border-top: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-page-crest .acceptance-letter-footer {
+  padding-top: 18px;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-footer {
+  padding-top: 16px;
+}
+
+.acceptance-letter-page-heritage .acceptance-letter-header,
+.acceptance-letter-page-banner .acceptance-letter-header,
+.acceptance-letter-page-panel .acceptance-letter-header,
+.acceptance-letter-page-editorial .acceptance-letter-header,
+.acceptance-letter-page-crest .acceptance-letter-header {
+  border-radius: 0;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-ticket-top {
+  border-radius: 0;
+}
+
+.acceptance-letter-page-ticket .acceptance-letter-content-ticket {
+  min-height: 170px;
+}
+
+.acceptance-letter-signature-panel {
+  display: grid;
+  grid-template-columns: 98px minmax(0, 1fr) 112px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 16px 24px 18px;
+  border-radius: 0;
+}
+
+.acceptance-letter-signature-panel .acceptance-letter-signature-block {
+  padding-left: 6px;
+}
+
+.acceptance-letter-signature-banner {
+  grid-template-columns: 1fr;
+  gap: 18px;
+  padding: 18px 24px 22px;
+  border-top: 4px solid var(--acceptance-accent, #27415e);
+}
+
+.acceptance-letter-signature-classic {
+  grid-template-columns: 98px minmax(0, 1fr) 112px;
+  border-top: 1px solid rgba(17, 37, 59, 0.12);
+  padding-top: 20px;
+}
+
+.acceptance-letter-signature-crest {
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 20px 24px 22px;
+}
+
+.acceptance-letter-stamp.has-image {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.9);
+  transform: rotate(0deg);
+}
+
+.acceptance-letter-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin: 0 18px 18px;
+  padding: 12px 16px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(17, 37, 59, 0.08);
+  color: rgba(29, 27, 31, 0.72);
+  font-size: 0.78rem;
+}
+
+.acceptance-letter-meta-row {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px 24px 0;
+}
+
+.acceptance-letter-meta-card {
+  padding: 12px 14px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-meta-card span {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(29, 27, 31, 0.52);
+}
+
+.acceptance-letter-meta-card strong {
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: var(--acceptance-page-ink, #1d1b1f);
+}
+
+.acceptance-letter-body {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 14px;
+  padding: 22px 24px 16px;
+}
+
+.acceptance-letter-greeting {
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--acceptance-page-ink, #1d1b1f);
+}
+
+.acceptance-text-block {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.68;
+  color: rgba(29, 27, 31, 0.86);
+  white-space: pre-wrap;
+}
+
+.acceptance-text-block.has-heading {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.acceptance-text-block.has-heading h4 {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--acceptance-accent-ink, #173044);
+}
+
+.acceptance-text-block.has-heading p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.68;
+}
+
+.acceptance-letter-details {
+  padding: 14px;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(17, 37, 59, 0.08);
+}
+
+.acceptance-letter-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.acceptance-letter-detail {
+  padding: 12px 12px 10px;
+  border-radius: 0;
+  background: rgba(17, 37, 59, 0.03);
+}
+
+.acceptance-letter-detail span {
+  display: block;
+  margin-bottom: 0.28rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(29, 27, 31, 0.52);
+}
+
+.acceptance-letter-detail strong {
+  font-size: 0.92rem;
+  color: var(--acceptance-page-ink, #1d1b1f);
+}
+
+.acceptance-letter-conditions {
+  display: grid;
+  gap: 0.55rem;
+  padding: 14px 16px;
+  border-left: 4px solid var(--acceptance-accent, #27415e);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.acceptance-letter-conditions h4 {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--acceptance-accent-ink, #173044);
+}
+
+.acceptance-letter-closing {
+  padding-top: 2px;
+}
+
+.acceptance-letter-signature {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 98px minmax(0, 1fr) 112px;
+  gap: 14px;
+  align-items: end;
+  padding: 8px 24px 18px;
+}
+
+.acceptance-letter-seal {
+  width: 98px;
+  height: 98px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 2px solid rgba(17, 37, 59, 0.1);
+  box-shadow: 0 6px 18px rgba(16, 29, 46, 0.08);
+  overflow: hidden;
+}
+
+.acceptance-letter-seal img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 14px;
+}
+
+.acceptance-letter-seal-fallback {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--acceptance-accent, #27415e);
+  color: #fff;
+  font-weight: 900;
+  letter-spacing: -0.05em;
+}
+
+.acceptance-letter-signature-block {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.acceptance-letter-signature-label {
+  font-size: 0.88rem;
+  color: rgba(29, 27, 31, 0.62);
+}
+
+.acceptance-letter-signature-line {
+  position: relative;
+  height: 42px;
+  border-bottom: 2px dotted rgba(29, 27, 31, 0.8);
+}
+
+.acceptance-letter-signature-line.has-image {
+  border-bottom-color: rgba(29, 27, 31, 0.92);
+}
+
+.acceptance-letter-signature-line img {
+  position: absolute;
+  left: 8px;
+  bottom: -2px;
+  max-height: 40px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.acceptance-letter-script {
+  position: absolute;
+  left: 8px;
+  bottom: 2px;
+  font-family: 'Brush Script MT', 'Segoe Script', cursive;
+  font-size: 2rem;
+  color: var(--acceptance-accent, #27415e);
+}
+
+.acceptance-letter-signatory-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--acceptance-page-ink, #1d1b1f);
+}
+
+.acceptance-letter-signatory-title {
+  font-size: 0.88rem;
+  color: rgba(29, 27, 31, 0.72);
+}
+
+.acceptance-letter-stamp {
+  justify-self: end;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 4px solid var(--acceptance-accent, #27415e);
+  display: grid;
+  place-items: center;
+  color: var(--acceptance-accent, #27415e);
+  font-weight: 900;
+  font-size: 0.88rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 20px rgba(16, 29, 46, 0.09);
+  transform: rotate(-9deg);
+}
+
+.acceptance-letter-stamp img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 10px;
+}
+
+.acceptance-letter-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin: 0 18px 18px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(17, 37, 59, 0.08);
+  color: rgba(29, 27, 31, 0.72);
+  font-size: 0.78rem;
+}
+
+.acceptance-letter-footer strong {
+  font-size: 0.82rem;
+  color: var(--acceptance-accent-ink, #173044);
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 1100px) {
+  .acceptance-letter-meta-row,
+  .acceptance-letter-details-grid,
+  .acceptance-letter-signature {
+    grid-template-columns: 1fr;
+  }
+
+  .acceptance-letter-preview-summary {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acceptance-letter-preview-summary .summary-meta {
+    text-align: left;
+    white-space: normal;
+  }
+
+  .acceptance-letter-header,
+  .acceptance-letter-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .acceptance-letter-brand,
+  .acceptance-letter-stamp,
+  .acceptance-letter-seal {
+    justify-self: start;
+  }
+
+  .acceptance-letter-manitoba-header,
+  .acceptance-letter-manitoba-meta-grid {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .acceptance-letter-manitoba-header {
+    gap: 14px;
+  }
+
+  .acceptance-letter-manitoba-contact {
+    text-align: left;
+  }
+
+  .acceptance-letter-manitoba-sheet {
+    padding: 24px 26px 20px;
+  }
+
+  .acceptance-letter-ottawa-sheet {
+    padding: 24px 28px 22px;
+  }
+
+  .acceptance-letter-ottawa-dept-row,
+  .acceptance-letter-ottawa-footer {
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .acceptance-letter-ottawa-footer {
+    align-items: stretch;
+  }
+
+  .acceptance-letter-ottawa-footer-col {
+    text-align: left;
+  }
+}

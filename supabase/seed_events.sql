@@ -64,7 +64,7 @@ values
     'Atlanta Open Day: UK, Canada & Australia',
     '2026-06-12T13:00:00-04:00',
     'Buckhead, Atlanta',
-    'Meet the Nexora team for one-on-one destination guidance, university shortlisting, and a live review of current admissions pathways.',
+    'Meet the Brightpath team for one-on-one destination guidance, university shortlisting, and a live review of current admissions pathways.',
     '',
     '/contact',
     'university_open_day',

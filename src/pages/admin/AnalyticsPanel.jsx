@@ -229,6 +229,42 @@ function AnalyticsPanel() {
     }
   }, [range, refreshToken])
 
+  useEffect(() => {
+    // Subscribe to realtime inserts for analytics_events and analytics_sessions
+    const channel = supabase.channel('analytics_realtime')
+
+    channel
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'analytics_events' }, (payload) => {
+        try {
+          const next = payload?.new
+          if (!next) return
+          setEvents((current) => [next, ...current])
+          setLastUpdated(new Date())
+        } catch (err) {
+          // ignore
+        }
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'analytics_sessions' }, (payload) => {
+        try {
+          const next = payload?.new
+          if (!next) return
+          setSessions((current) => [next, ...current])
+          setLastUpdated(new Date())
+        } catch (err) {
+          // ignore
+        }
+      })
+      .subscribe()
+
+    return () => {
+      try {
+        channel.unsubscribe()
+      } catch (err) {
+        // ignore
+      }
+    }
+  }, [])
+
   const analytics = useMemo(() => {
     const liveThreshold = Date.now() - 5 * 60 * 1000
     const liveSessions = sessions.filter((session) => {

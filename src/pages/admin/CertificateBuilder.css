@@ -110,6 +110,58 @@
   padding: 0.5rem;
 }
 
+.signature-pad-field {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.signature-pad-field > span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.signature-pad-wrap {
+  border-radius: 18px;
+  padding: 0.7rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(238, 242, 248, 0.92)),
+    radial-gradient(circle at top left, rgba(78, 182, 240, 0.12), transparent 55%);
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.signature-pad-canvas {
+  width: 100%;
+  height: 150px;
+  display: block;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.82)),
+    repeating-linear-gradient(
+      180deg,
+      rgba(33, 33, 33, 0.04) 0,
+      rgba(33, 33, 33, 0.04) 1px,
+      transparent 1px,
+      transparent 34px
+    );
+  border: 1px solid rgba(10, 31, 68, 0.12);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.signature-pad-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.signature-pad-field small {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(26, 26, 46, 0.66);
+}
+
 .ielts-paper-page {
   width: 794px;
   min-height: 1123px;
@@ -1497,6 +1549,497 @@
   white-space: pre-wrap;
 }
 
+.job-offer-preview {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 24px;
+  background: #e6e6e4;
+  border-radius: 24px;
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  box-shadow: var(--shadow);
+}
+
+.job-offer-preview * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.job-offer-stage {
+  position: relative;
+  width: min(820px, 100%);
+  aspect-ratio: 595 / 842;
+  flex-shrink: 0;
+}
+
+.job-offer-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  --job-offer-page-bg: #f5f5f4;
+  background: var(--job-offer-page-bg);
+  border: 1px solid #d6d6d2;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.14);
+  color: #141414;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.job-offer-page::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24px;
+  background: var(--job-offer-page-bg, #f5f5f4);
+  z-index: 8;
+  pointer-events: none;
+}
+
+.job-offer-header-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  object-position: top left;
+  display: block;
+  z-index: 0;
+}
+
+.job-offer-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.job-offer-watermark-ring {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  border: 4px solid rgba(179, 51, 51, 0.035);
+  transform: translate(-50%, -50%);
+}
+
+.job-offer-watermark-text {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  transform: translate(-50%, -50%) rotate(-11deg);
+  color: rgba(198, 67, 67, 0.03);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 84px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.job-offer-top-row {
+  position: relative;
+  z-index: 2;
+  display: block;
+  padding: 264px 28px 0 28px;
+}
+
+.job-offer-meta {
+  width: min(360px, 54%);
+}
+
+.job-offer-reference {
+  white-space: pre-wrap;
+  font-size: 10px;
+  line-height: 1.16;
+  color: #222;
+}
+
+.job-offer-headshot {
+  position: absolute;
+  right: 26px;
+  top: 234px;
+  width: 150px;
+  display: flex;
+  justify-content: flex-end;
+  z-index: 3;
+}
+
+.job-offer-headshot-frame {
+  position: relative;
+  width: 138px;
+  height: 176px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(255, 234, 205, 0.95) 0 11%, rgba(255, 234, 205, 0) 12%),
+    radial-gradient(circle at 50% 39%, rgba(150, 83, 53, 0.98) 0 12%, rgba(150, 83, 53, 0.02) 13%),
+    radial-gradient(circle at 50% 48%, rgba(239, 185, 126, 0.98) 0 15%, rgba(239, 185, 126, 0.04) 16%),
+    radial-gradient(circle at 50% 60%, rgba(115, 63, 35, 0.92) 0 18%, rgba(115, 63, 35, 0.02) 19%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0 55%, #fdfdfd 55% 100%);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+.job-offer-headshot-frame.has-image {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.job-offer-headshot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.job-offer-company-logo {
+  position: absolute;
+  top: 18px;
+  right: 32px;
+  z-index: 3;
+  width: 120px;
+  min-width: 120px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(0, 0, 0, 0.07);
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  text-align: center;
+  color: #444;
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.job-offer-company-logo.has-image {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.job-offer-company-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.job-offer-company-logo.has-image img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.job-offer-headshot-frame::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  width: 80px;
+  height: 96px;
+  transform: translateX(-50%);
+  border-radius: 45% 45% 38% 38%;
+  background:
+    radial-gradient(circle at 50% 28%, #1d0d07 0 7%, rgba(29, 13, 7, 0) 8%),
+    radial-gradient(circle at 38% 49%, rgba(255, 248, 243, 0.85) 0 2px, rgba(255, 248, 243, 0) 3px),
+    radial-gradient(circle at 62% 49%, rgba(255, 248, 243, 0.85) 0 2px, rgba(255, 248, 243, 0) 3px),
+    radial-gradient(circle at 50% 44%, rgba(0, 0, 0, 0.28) 0 2px, rgba(0, 0, 0, 0) 3px),
+    radial-gradient(circle at 50% 34%, rgba(255, 206, 154, 0.98) 0 23%, rgba(213, 122, 58, 0.95) 35%, rgba(99, 48, 22, 0.95) 60%, rgba(0, 0, 0, 0) 61%);
+}
+
+.job-offer-headshot-frame::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 142px;
+  height: 102px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.96) 0 2px, rgba(255, 255, 255, 0) 3px),
+    radial-gradient(circle at 50% 10%, rgba(255, 248, 243, 0.98) 0 36px, rgba(255, 248, 243, 0) 37px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0 9px, #ffffff 10px 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.job-offer-headshot-frame.has-image::before,
+.job-offer-headshot-frame.has-image::after {
+  display: none;
+}
+
+.job-offer-headshot-frame.has-image .job-offer-headshot-image {
+  object-fit: contain;
+  object-position: center top;
+}
+
+.job-offer-heading-block {
+  position: relative;
+  z-index: 2;
+  padding: 20px 28px 0;
+}
+
+.job-offer-heading {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.job-offer-salutation {
+  margin-top: 3px;
+  font-size: 13px;
+  color: #474747;
+}
+
+.job-offer-stage, .job-offer-page {
+  position: relative;
+}
+
+.job-offer-body {
+  position: relative;
+  z-index: 3;
+  padding: 18px 176px 392px 28px;
+  overflow: visible;
+}
+
+.job-offer-body-inner {
+  display: grid;
+  gap: 5px;
+  max-width: 100%;
+}
+
+.job-offer-text-block {
+  font-size: 8.8px;
+  line-height: 1.24;
+  color: #202020;
+  white-space: pre-wrap;
+}
+
+.job-offer-text-block.has-heading {
+  display: grid;
+  gap: 3px;
+}
+
+.job-offer-text-block.has-heading h4 {
+  margin: 0;
+  font-size: 9.2px;
+  line-height: 1.12;
+  font-weight: 800;
+  color: #1a1a1a;
+}
+
+.job-offer-text-block.has-heading p {
+  font-size: 8.8px;
+  line-height: 1.24;
+  color: #222;
+  white-space: pre-wrap;
+}
+
+/* Ensure job-offer body text is always visible in the preview and export */
+.job-offer-body {
+  position: relative;
+  z-index: 3;
+  /* keep the lower content clear of the signature and stamp area */
+  padding: 18px 176px 392px 28px;
+  overflow: visible;
+}
+
+.job-offer-page * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Keep job-offer text clearly visible without removing header pseudo-elements */
+.job-offer-body,
+.job-offer-body-inner,
+.job-offer-text-block,
+.job-offer-heading {
+  color: #111 !important;
+  position: relative;
+  z-index: 5;
+}
+
+.job-offer-watermark,
+.job-offer-watermark-ring,
+.job-offer-watermark-text {
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+.job-offer-signature-area {
+  position: absolute;
+  left: 28px;
+  right: 24px;
+  bottom: 44px;
+  z-index: 9;
+  display: grid;
+  grid-template-columns: minmax(160px, 1.15fr) minmax(160px, 1fr) 122px;
+  align-items: end;
+  gap: 10px;
+}
+
+.job-offer-signature-column {
+  display: grid;
+  gap: 4px;
+  align-content: end;
+}
+
+.job-offer-signature-label {
+  font-size: 10px;
+  line-height: 1.2;
+  color: #262626;
+  white-space: pre-wrap;
+}
+
+.job-offer-signature-line {
+  position: relative;
+  height: 42px;
+  border-bottom: 2px dotted #222;
+  overflow: visible;
+}
+
+.job-offer-signature-line.has-image {
+  border-bottom-color: #222;
+}
+
+.job-offer-script-signature {
+  position: absolute;
+  left: 14px;
+  bottom: 1px;
+  font-family: 'Brush Script MT', 'Segoe Script', cursive;
+  font-size: 34px;
+  color: #4eb6f0;
+  opacity: 0.92;
+}
+
+.job-offer-signature-image {
+  position: absolute;
+  left: 10px;
+  bottom: 0;
+  max-width: 155px;
+  max-height: 40px;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.job-offer-signature-name {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #111;
+}
+
+.job-offer-applicant-signature {
+  display: grid;
+  gap: 4px;
+  align-items: end;
+}
+
+.job-offer-applicant-line {
+  height: 26px;
+  border-bottom: 2px dotted #222;
+}
+
+.job-offer-applicant-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  color: #2a2a2a;
+}
+
+.job-offer-stamp {
+  justify-self: end;
+  width: 108px;
+  height: 108px;
+  border: 4px solid #c31414;
+  border-radius: 50%;
+  padding: 9px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.09);
+}
+
+.job-offer-stamp.has-image {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.job-offer-stamp-inner {
+  width: 100%;
+  height: 100%;
+  border: 2px solid #c31414;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  color: #c31414;
+  transform: rotate(-10deg);
+  overflow: hidden;
+}
+
+.job-offer-stamp-inner.has-image {
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  background: transparent;
+  color: inherit;
+  gap: 0;
+}
+
+.job-offer-stamp-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.job-offer-stamp-title {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.job-offer-stamp-date {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.job-offer-footer {
+  position: absolute;
+  left: 28px;
+  right: 28px;
+  bottom: 12px;
+  z-index: 9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.job-offer-helpline {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: #111;
+}
+
 .conditions-box,
 .remarks-box {
   border: 1px solid #aaa;
@@ -1633,11 +2176,27 @@
     overflow: visible !important;
   }
 
+  .job-offer-preview {
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
   .no-print {
     display: none !important;
   }
 
   .work-permit-page {
+    box-shadow: none !important;
+    margin: 0 auto !important;
+  }
+
+  .job-offer-stage {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .job-offer-page {
     box-shadow: none !important;
     margin: 0 auto !important;
   }

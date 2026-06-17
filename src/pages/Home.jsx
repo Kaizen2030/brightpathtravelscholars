@@ -257,6 +257,13 @@ function Home() {
     }
   }, [primaryHeroImage])
 
+  const whyPanelBackground = buildOverlayBackground(
+    whySection.media_url,
+    HERO_FALLBACK_IMAGE,
+    'rgba(91, 44, 137, 0.58)',
+    'rgba(53, 21, 83, 0.36)'
+  )
+
   return (
     <div className="home-page">
       <SEO
@@ -434,17 +441,7 @@ function Home() {
         <section id="why_nexora" className="home-section home-why">
           <div className="container home-why-grid">
             <div className="home-why-visual">
-                <div
-                    className="home-why-panel"
-                    style={{
-                      background: buildOverlayBackground(
-                        whySection.media_url,
-                        HERO_FALLBACK_IMAGE,
-                        'rgba(91, 44, 137, 0.58)',
-                        'rgba(53, 21, 83, 0.36)',
-                      ),
-                    }}
-              >
+                <div className="home-why-panel" style={{ background: whyPanelBackground }}>
                 <div className="home-why-badge">
                   <AnimatedCount value={whyVisualValue} suffix={whyVisualSuffix} className="home-why-badge-number" />
                   <span>{whySection.settings?.visual_badge_label}</span>
