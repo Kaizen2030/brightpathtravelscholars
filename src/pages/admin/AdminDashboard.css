@@ -2009,3 +2009,131 @@
     font-size: 0.92rem;
   }
 }
+
+/* ── Application type badges ── */
+.admin-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.admin-type-badge--study {
+  background: rgba(91, 44, 137, 0.12);
+  color: #5b2c89;
+}
+.admin-type-badge--job {
+  background: rgba(212, 175, 55, 0.18);
+  color: #7a5f00;
+}
+
+/* ── View button ── */
+.admin-view-btn {
+  padding: 0.3rem 0.85rem !important;
+  font-size: 0.8rem !important;
+}
+
+/* ── Application detail modal ── */
+.admin-app-modal {
+  width: min(720px, 95vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-app-modal .admin-modal-header h3 {
+  margin-top: 0.35rem;
+  font-size: 1.2rem;
+}
+
+.admin-app-modal-date {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: rgba(26, 26, 46, 0.55);
+}
+
+.admin-app-modal-body {
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.admin-app-section {
+  border: 1px solid rgba(10, 31, 68, 0.08);
+  border-radius: 0.85rem;
+  padding: 1rem 1.15rem;
+  background: #fafbff;
+}
+
+.admin-app-section h4 {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(26, 26, 46, 0.45);
+  margin-bottom: 0.85rem;
+}
+
+.admin-app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.admin-app-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-app-grid span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(26, 26, 46, 0.45);
+}
+
+.admin-app-grid strong {
+  font-size: 0.92rem;
+  color: #1a1a2e;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.admin-app-notes {
+  margin-top: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.admin-app-notes span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(26, 26, 46, 0.45);
+}
+
+.admin-app-notes p {
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  line-height: 1.65;
+  background: #fff;
+  border: 1px solid rgba(10,31,68,0.09);
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  white-space: pre-wrap;
+}
+
+.admin-app-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}

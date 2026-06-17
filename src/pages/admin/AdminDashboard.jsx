@@ -49,7 +49,6 @@ const EMPTY_TESTIMONIAL_FORM = {
   review_text: '',
   is_published: false,
 }
-
 const APPLICATION_STATUSES = ['pending', 'reviewing', 'accepted', 'rejected']
 
 const ADMIN_ACTIVE_SECTION_STORAGE_KEY = 'brightpath-admin-active-section'
@@ -183,6 +182,7 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(!cachedDashboard)
   const [notice, setNotice] = useState(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [selectedApplication, setSelectedApplication] = useState(null)
   const [applications, setApplications] = useState(cachedDashboard?.applications ?? [])
   const [events, setEvents] = useState(cachedDashboard?.events ?? [])
   const [posts, setPosts] = useState(cachedDashboard?.posts ?? [])
@@ -256,7 +256,7 @@ function AdminDashboard() {
 
     async function loadAdminData() {
       const hasCachedData = Boolean(cachedDashboard)
-      if (!hasCachedData || refreshKey > 0) {
+      if (!hasCachedData) {
         setLoading(true)
       }
       setNotice(null)
@@ -274,14 +274,10 @@ function AdminDashboard() {
 
         // Fetch sequentially to avoid too many concurrent network requests
         const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
-        // eslint-disable-next-line no-console
-        console.debug('[AdminDashboard] applicationsResult', applicationsResult)
         if (applicationsResult.error) throw applicationsResult.error
         if (ignore) return
 
         const jobApplicationsResult = await supabase.from('job_applications').select('*').order('created_at', { ascending: false })
-        // eslint-disable-next-line no-console
-        console.debug('[AdminDashboard] jobApplicationsResult', jobApplicationsResult)
         if (jobApplicationsResult.error) throw jobApplicationsResult.error
         if (ignore) return
 
@@ -365,7 +361,7 @@ function AdminDashboard() {
     return () => {
       ignore = true
     }
-  }, [isAdmin, refreshKey, user?.id])
+  }, [isAdmin, user?.id, refreshKey])
 
   const overviewStats = useMemo(
     () => [
@@ -1009,59 +1005,216 @@ function AdminDashboard() {
 
   function renderApplications() {
     return (
-      <section className="admin-panel-card">
-        <div className="admin-panel-card-header">
-          <h2>Applications</h2>
-          <p>{applications.length} submissions</p>
-        </div>
-        <div className="admin-table-wrap">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Scholarship</th>
-                <th>Destination</th>
-                <th>University</th>
-                <th>Intake</th>
-                <th>Status</th>
-                <th>Date Applied</th>
-              </tr>
-            </thead>
-            <tbody>
-              {applications.map((application) => (
-                <tr key={application.id}>
-                  <td data-label="Name">{application.full_name}</td>
-                  <td data-label="Email">{application.email}</td>
-                  <td data-label="Phone">{application.phone || 'Not provided'}</td>
-                  <td data-label="Scholarship">{getApplicationScholarship(application)}</td>
-                  <td data-label="Destination">{application.destination || (application.application_type === 'job' ? 'Work abroad' : 'Pending')}</td>
-                  <td data-label="University">{application.institution || 'Not specified'}</td>
-                  <td data-label="Intake">{application.intake || 'Pending'}</td>
-                  <td data-label="Status">
+      <>
+        <section className="admin-panel-card">
+          <div className="admin-panel-card-header">
+            <div>
+              <h2>Applications</h2>
+              <p>{applications.length} submissions</p>
+            </div>
+            <button
+              type="button"
+              className="admin-btn admin-btn-soft"
+              onClick={() => {
+                try { window.sessionStorage.removeItem(ADMIN_DASHBOARD_CACHE_STORAGE_KEY) } catch { /* ignore */ }
+                setRefreshKey((k) => k + 1)
+              }}
+            >
+              ↻ Refresh
+            </button>
+          </div>
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Type</th>
+                  <th>Destination</th>
+                  <th>Status</th>
+                  <th>Date Applied</th>
+                  <th>View</th>
+                </tr>
+              </thead>
+              <tbody>
+                {applications.map((application) => (
+                  <tr key={application.id}>
+                    <td data-label="Name">{application.full_name}</td>
+                    <td data-label="Email">{application.email}</td>
+                    <td data-label="Phone">{application.phone || 'Not provided'}</td>
+                    <td data-label="Type">
+                      <span className={`admin-type-badge admin-type-badge--${application.application_type === 'job' ? 'job' : 'study'}`}>
+                        {application.application_type === 'job' ? 'Work' : 'Study'}
+                      </span>
+                    </td>
+                    <td data-label="Destination">
+                      {application.destination || (application.application_type === 'job' ? 'Work abroad' : 'Pending')}
+                    </td>
+                    <td data-label="Status">
+                      <select
+                        className="admin-select"
+                        value={application.status || 'pending'}
+                        onChange={(event) => handleApplicationStatusChange(application.id, event.target.value)}
+                      >
+                        {APPLICATION_STATUSES.map((status) => (
+                          <option key={status} value={status}>{humanizeKey(status)}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td data-label="Date Applied">{formatDate(application.created_at)}</td>
+                    <td data-label="View">
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-soft admin-view-btn"
+                        onClick={() => setSelectedApplication(application)}
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {!applications.length ? <p className="admin-empty">No applications available.</p> : null}
+          </div>
+        </section>
+
+        {selectedApplication ? (
+          <div className="admin-modal-backdrop" onClick={() => setSelectedApplication(null)}>
+            <div className="admin-modal admin-app-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="admin-modal-header">
+                <div>
+                  <span className={`admin-type-badge admin-type-badge--${selectedApplication.application_type === 'job' ? 'job' : 'study'}`}>
+                    {selectedApplication.application_type === 'job' ? 'Work Application' : 'Study Application'}
+                  </span>
+                  <h3>{selectedApplication.full_name}</h3>
+                  <p className="admin-app-modal-date">Applied {formatDate(selectedApplication.created_at)}</p>
+                </div>
+                <button type="button" className="admin-icon-btn" onClick={() => setSelectedApplication(null)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="admin-app-modal-body">
+                {/* Personal Info */}
+                <div className="admin-app-section">
+                  <h4>Personal Information</h4>
+                  <div className="admin-app-grid">
+                    <div><span>Full Name</span><strong>{selectedApplication.full_name || '—'}</strong></div>
+                    <div><span>Email</span><strong>{selectedApplication.email || '—'}</strong></div>
+                    <div><span>Phone</span><strong>{selectedApplication.phone || '—'}</strong></div>
+                    {selectedApplication.application_type !== 'job' && (
+                      <>
+                        <div><span>Date of Birth</span><strong>{selectedApplication.dob || '—'}</strong></div>
+                        <div><span>Nationality</span><strong>{selectedApplication.nationality || '—'}</strong></div>
+                        <div><span>City</span><strong>{selectedApplication.city || '—'}</strong></div>
+                      </>
+                    )}
+                    {selectedApplication.application_type === 'job' && (
+                      <>
+                        <div><span>Date of Birth</span><strong>{selectedApplication.date_of_birth || '—'}</strong></div>
+                        <div><span>Country of Residence</span><strong>{selectedApplication.country_of_residence || '—'}</strong></div>
+                        <div><span>Passport Number</span><strong>{selectedApplication.passport_number || '—'}</strong></div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Study-specific */}
+                {selectedApplication.application_type !== 'job' && (
+                  <div className="admin-app-section">
+                    <h4>Academic Background</h4>
+                    <div className="admin-app-grid">
+                      <div><span>Highest Qualification</span><strong>{selectedApplication.highest_qualification || '—'}</strong></div>
+                      <div><span>Year Completed</span><strong>{selectedApplication.year_completed || '—'}</strong></div>
+                      <div><span>Institution</span><strong>{selectedApplication.institution || '—'}</strong></div>
+                      <div><span>Grade / GPA</span><strong>{selectedApplication.grade || '—'}</strong></div>
+                      <div><span>English Test</span><strong>{selectedApplication.english_test || '—'}</strong></div>
+                      <div><span>English Score</span><strong>{selectedApplication.english_score || '—'}</strong></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Job-specific */}
+                {selectedApplication.application_type === 'job' && (
+                  <div className="admin-app-section">
+                    <h4>Work Background</h4>
+                    <div className="admin-app-grid">
+                      <div><span>Education Level</span><strong>{selectedApplication.education_level || '—'}</strong></div>
+                      <div><span>Years of Experience</span><strong>{selectedApplication.years_experience || '—'}</strong></div>
+                      <div><span>Current Occupation</span><strong>{selectedApplication.current_occupation || '—'}</strong></div>
+                      <div><span>English Proficiency</span><strong>{selectedApplication.english_proficiency || '—'}</strong></div>
+                      <div><span>French Proficiency</span><strong>{selectedApplication.french_proficiency || '—'}</strong></div>
+                      <div><span>Valid Passport</span><strong>{selectedApplication.has_valid_passport ? 'Yes' : 'No'}</strong></div>
+                      <div><span>Can Relocate in 3 months</span><strong>{selectedApplication.available_to_relocate ? 'Yes' : 'No'}</strong></div>
+                      <div><span>Heard From</span><strong>{selectedApplication.heard_from || '—'}</strong></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Study preferences */}
+                {selectedApplication.application_type !== 'job' && (
+                  <div className="admin-app-section">
+                    <h4>Study Preferences</h4>
+                    <div className="admin-app-grid">
+                      <div><span>Destination</span><strong>{selectedApplication.destination || '—'}</strong></div>
+                      <div><span>Intake</span><strong>{selectedApplication.intake || '—'}</strong></div>
+                      <div><span>Course Type</span><strong>{selectedApplication.course_type || '—'}</strong></div>
+                      <div><span>Field of Study</span><strong>{selectedApplication.field_of_study || '—'}</strong></div>
+                      <div><span>Budget Range</span><strong>{selectedApplication.budget_range || '—'}</strong></div>
+                      <div><span>Wants Scholarship</span><strong>{selectedApplication.wants_scholarship ? 'Yes' : 'No'}</strong></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Job target */}
+                {selectedApplication.application_type === 'job' && (
+                  <div className="admin-app-section">
+                    <h4>Job Target</h4>
+                    <div className="admin-app-grid">
+                      <div><span>Job ID</span><strong>{selectedApplication.job_id || '—'}</strong></div>
+                      <div><span>Destination</span><strong>{selectedApplication.destination || '—'}</strong></div>
+                    </div>
+                    {selectedApplication.notes && (
+                      <div className="admin-app-notes">
+                        <span>Cover Letter / Notes</span>
+                        <p>{selectedApplication.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Status control */}
+                <div className="admin-app-section">
+                  <h4>Application Status</h4>
+                  <div className="admin-app-status-row">
                     <select
                       className="admin-select"
-                      value={application.status || 'pending'}
-                      onChange={(event) =>
-                        handleApplicationStatusChange(application.id, event.target.value)
-                      }
+                      value={selectedApplication.status || 'pending'}
+                      onChange={(event) => {
+                        handleApplicationStatusChange(selectedApplication.id, event.target.value)
+                        setSelectedApplication((current) => ({ ...current, status: event.target.value }))
+                      }}
                     >
                       {APPLICATION_STATUSES.map((status) => (
-                        <option key={status} value={status}>
-                          {humanizeKey(status)}
-                        </option>
+                        <option key={status} value={status}>{humanizeKey(status)}</option>
                       ))}
                     </select>
-                  </td>
-                  <td data-label="Date Applied">{formatDate(application.created_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!applications.length ? <p className="admin-empty">No applications available.</p> : null}
-        </div>
-      </section>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-soft"
+                      onClick={() => setSelectedApplication(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </>
     )
   }
 
