@@ -192,7 +192,8 @@
 .about-values-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1.3rem;
+  align-items: stretch;
 }
 
 .about-value-card {
@@ -201,6 +202,24 @@
   background: var(--white);
   border: 1px solid rgba(10, 31, 68, 0.08);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 100%;
+}
+
+.about-value-card h3 {
+  margin-top: 1rem;
+  color: var(--navy);
+  font-size: 1.22rem;
+  line-height: 1.25;
+}
+
+.about-value-card p {
+  margin-top: 0.75rem;
+  color: rgba(26, 26, 46, 0.72);
+  line-height: 1.75;
+  font-size: 0.97rem;
 }
 
 .about-value-icon {
@@ -241,6 +260,9 @@
   background: var(--white);
   border: 1px solid rgba(10, 31, 68, 0.08);
   box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .about-team-photo,
@@ -282,7 +304,7 @@
   margin-top: 0.8rem;
   color: rgba(26, 26, 46, 0.7);
   font-size: 0.95rem;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .about-stats-bar {
@@ -385,20 +407,18 @@
     padding: 4rem 0;
   }
 
-  .about-story-grid {
-    grid-template-columns: 1fr;
+  .about-section-header {
+    max-width: 100%;
   }
 
+  .about-story-grid,
   .about-purpose-grid {
     grid-template-columns: 1fr;
   }
 
   .about-values-grid,
+  .about-team-grid,
   .about-stats-bar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .about-team-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -417,8 +437,32 @@
   }
 
   .about-purpose-card,
-  .about-cta-panel {
-    padding: 1.45rem;
+  .about-cta-panel,
+  .about-value-card,
+  .about-team-card {
+    padding: 1.35rem;
+  }
+
+  .about-values-grid,
+  .about-team-grid,
+  .about-stats-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .about-value-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .about-value-card p,
+  .about-team-card p {
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
+  .about-team-photo,
+  .about-team-avatar {
+    width: 5.4rem;
+    height: 5.4rem;
   }
 
   .about-cta-actions,
