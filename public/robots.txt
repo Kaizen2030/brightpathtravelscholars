@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://brightpathtravelscholars.com/sitemap.xml
+
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /update-password
+Disallow: /auth/callback
+Disallow: /auth/reset-password
+Disallow: /password-reset
