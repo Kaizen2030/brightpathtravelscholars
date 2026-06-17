@@ -49,6 +49,9 @@ const EMPTY_TESTIMONIAL_FORM = {
   review_text: '',
   is_published: false,
 }
+
+const APPLICATION_STATUSES = ['pending', 'reviewing', 'accepted', 'rejected']
+
 const ADMIN_ACTIVE_SECTION_STORAGE_KEY = 'brightpath-admin-active-section'
 const ADMIN_DASHBOARD_CACHE_STORAGE_KEY = 'brightpath-admin-dashboard-cache-v1'
 
