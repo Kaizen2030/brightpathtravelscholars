@@ -179,6 +179,7 @@ function AdminDashboard() {
   })
   const [loading, setLoading] = useState(!cachedDashboard)
   const [notice, setNotice] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
   const [applications, setApplications] = useState(cachedDashboard?.applications ?? [])
   const [events, setEvents] = useState(cachedDashboard?.events ?? [])
   const [posts, setPosts] = useState(cachedDashboard?.posts ?? [])
@@ -252,7 +253,7 @@ function AdminDashboard() {
 
     async function loadAdminData() {
       const hasCachedData = Boolean(cachedDashboard)
-      if (!hasCachedData) {
+      if (!hasCachedData || refreshKey > 0) {
         setLoading(true)
       }
       setNotice(null)
@@ -270,10 +271,14 @@ function AdminDashboard() {
 
         // Fetch sequentially to avoid too many concurrent network requests
         const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
+        // eslint-disable-next-line no-console
+        console.debug('[AdminDashboard] applicationsResult', applicationsResult)
         if (applicationsResult.error) throw applicationsResult.error
         if (ignore) return
 
         const jobApplicationsResult = await supabase.from('job_applications').select('*').order('created_at', { ascending: false })
+        // eslint-disable-next-line no-console
+        console.debug('[AdminDashboard] jobApplicationsResult', jobApplicationsResult)
         if (jobApplicationsResult.error) throw jobApplicationsResult.error
         if (ignore) return
 
@@ -357,7 +362,7 @@ function AdminDashboard() {
     return () => {
       ignore = true
     }
-  }, [cachedDashboard, isAdmin, user?.id])
+  }, [isAdmin, refreshKey, user?.id])
 
   const overviewStats = useMemo(
     () => [
