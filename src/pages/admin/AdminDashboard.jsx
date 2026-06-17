@@ -108,6 +108,26 @@ function extractScholarshipInterest(value) {
   return match?.[1]?.trim() || ''
 }
 
+function normalizeJobApplication(raw) {
+  return {
+    ...raw,
+    id: `job-${raw.id}`,
+    source_id: raw.id,
+    application_type: 'job',
+    field_of_study: raw.field_of_study ?? '',
+    destination: raw.destination || 'Work abroad',
+    institution: raw.institution || raw.job_id || 'Work abroad',
+    intake: raw.intake || raw.years_experience || 'Pending',
+  }
+}
+
+function getApplicationScholarship(application) {
+  if (application.application_type === 'job') {
+    return 'Work application'
+  }
+  return extractScholarshipInterest(application.field_of_study) || 'General application'
+}
+
 function buildSettingsForm(rows) {
   return SITE_SETTING_FIELDS.reduce((accumulator, item) => {
     const existing = rows.find((row) => row.key === item.key)
@@ -253,6 +273,10 @@ function AdminDashboard() {
         if (applicationsResult.error) throw applicationsResult.error
         if (ignore) return
 
+        const jobApplicationsResult = await supabase.from('job_applications').select('*').order('created_at', { ascending: false })
+        if (jobApplicationsResult.error) throw jobApplicationsResult.error
+        if (ignore) return
+
         const eventsResult = await supabase.from('events').select('*').order('date', { ascending: false })
         if (eventsResult.error) throw eventsResult.error
         if (ignore) return
@@ -301,7 +325,11 @@ function AdminDashboard() {
           5 * 60 * 1000,
         )
 
-        setApplications(applicationsResult.data ?? [])
+        const normalizedJobApplications = (jobApplicationsResult.data ?? []).map(normalizeJobApplication)
+        setApplications([
+          ...(applicationsResult.data ?? []),
+          ...normalizedJobApplications,
+        ].sort((left, right) => new Date(right.created_at) - new Date(left.created_at)))
         setEvents(eventsResult.data ?? [])
         setPosts(postsResult.data ?? [])
         setTestimonials(testimonialsResult.data ?? [])
@@ -431,14 +459,12 @@ function AdminDashboard() {
       current.map((item) => (item.id === applicationId ? { ...item, status: nextStatus } : item)),
     )
 
+    const applicationRecord = applications.find((item) => item.id === applicationId)
+    const tableName = applicationRecord?.application_type === 'job' ? 'job_applications' : 'applications'
+    const recordId = applicationRecord?.application_type === 'job' ? applicationRecord.source_id : applicationId
+
     try {
-      const { error } = await supabase.from('applications').update({ status: nextStatus }).eq('id', applicationId)
-
-      if (error) throw error
-
-      setNotice({ type: 'success', text: 'Application status updated.' })
-    } catch (error) {
-      console.error('[AdminDashboard] Failed to update application status:', error)
+      const { error } = await supabase.from(tableName).update({ status: nextStatus }).eq('id', recordId)
       setApplications(previousApplications)
       setNotice({ type: 'error', text: error.message || 'Could not update the application status.' })
     }
@@ -996,8 +1022,8 @@ function AdminDashboard() {
                   <td data-label="Name">{application.full_name}</td>
                   <td data-label="Email">{application.email}</td>
                   <td data-label="Phone">{application.phone || 'Not provided'}</td>
-                  <td data-label="Scholarship">{extractScholarshipInterest(application.field_of_study) || 'General application'}</td>
-                  <td data-label="Destination">{application.destination || 'Pending'}</td>
+                  <td data-label="Scholarship">{getApplicationScholarship(application)}</td>
+                  <td data-label="Destination">{application.destination || (application.application_type === 'job' ? 'Work abroad' : 'Pending')}</td>
                   <td data-label="University">{application.institution || 'Not specified'}</td>
                   <td data-label="Intake">{application.intake || 'Pending'}</td>
                   <td data-label="Status">
