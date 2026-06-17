@@ -29,7 +29,7 @@ function Dashboard() {
   const { user, profile, loading: authLoading, updateProfile } = useAuth()
   const { settings: siteSettings } = useSiteSettings()
   const navigate = useNavigate()
-  const [application, setApplication] = useState(null)
+  const [applications, setApplications] = useState([])
   const [registeredEvents, setRegisteredEvents] = useState([])
   const [dataLoading, setDataLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -62,13 +62,27 @@ function Dashboard() {
       setDataLoading(true)
 
       try {
-        const { data: applicationsData } = await supabase
-          .from('applications')
-          .select('*')
-          .eq('email', user.email)
-          .order('created_at', { ascending: false })
+        // Fetch both study and job applications
+        const [studyResult, jobResult] = await Promise.all([
+          supabase
+            .from('applications')
+            .select('*')
+            .eq('email', user.email)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('job_applications')
+            .select('*')
+            .eq('email', user.email)
+            .order('created_at', { ascending: false }),
+        ])
 
-        const latestApplication = applicationsData?.[0] || null
+        const studyApps = (studyResult.data ?? []).map((a) => ({ ...a, application_type: 'study' }))
+        const jobApps = (jobResult.data ?? []).map((a) => ({ ...a, application_type: 'job' }))
+
+        // Merge and sort by most recent first
+        const allApps = [...studyApps, ...jobApps].sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at),
+        )
 
         const { data: registrationsData } = await supabase
           .from('event_registrations')
@@ -77,7 +91,7 @@ function Dashboard() {
           .order('created_at', { ascending: false })
 
         let eventsData = []
-        const eventIds = (registrationsData || []).map((registration) => registration.event_id).filter(Boolean)
+        const eventIds = (registrationsData || []).map((r) => r.event_id).filter(Boolean)
 
         if (eventIds.length) {
           const { data } = await supabase
@@ -91,30 +105,23 @@ function Dashboard() {
 
         if (ignore) return
 
-        const eventMap = new Map(eventsData.map((event) => [event.id, event]))
+        const eventMap = new Map(eventsData.map((e) => [e.id, e]))
         const joinedEvents = (registrationsData || [])
-          .map((registration) => ({
-            ...registration,
-            event: eventMap.get(registration.event_id) || null,
-          }))
-          .filter((registration) => registration.event)
+          .map((r) => ({ ...r, event: eventMap.get(r.event_id) || null }))
+          .filter((r) => r.event)
 
-        setApplication(latestApplication)
+        setApplications(allApps)
         setRegisteredEvents(joinedEvents)
       } catch (error) {
         console.error('[Dashboard] Failed to load dashboard data:', error)
       } finally {
-        if (!ignore) {
-          setDataLoading(false)
-        }
+        if (!ignore) setDataLoading(false)
       }
     }
 
     loadDashboardData()
 
-    return () => {
-      ignore = true
-    }
+    return () => { ignore = true }
   }, [user?.email])
 
   const firstName = useMemo(() => {
@@ -150,6 +157,8 @@ function Dashboard() {
       </div>
     )
   }
+
+  const latestApplication = applications[0] || null
 
   return (
     <div className="dashboard-page">
@@ -208,37 +217,59 @@ function Dashboard() {
         <div className="container">
           <span className="section-badge dashboard-hero-badge">Dashboard</span>
           <h1>Welcome back, {firstName}.</h1>
-          <p>Track your application, review your upcoming event registrations, and keep your profile current.</p>
+          <p>Track your applications, review your upcoming event registrations, and keep your profile current.</p>
         </div>
       </section>
 
       <AnimatedSection>
         <section className="dashboard-section">
           <div className="container dashboard-grid">
+
+            {/* Applications card - shows all, latest highlighted */}
             <article className="dashboard-card dashboard-status-card">
               <div className="dashboard-card-header">
-                <h2>Application Status</h2>
-                <span className={`dashboard-status-badge ${application?.status || 'pending'}`}>
-                  {STATUS_LABELS[application?.status] || 'No Application Yet'}
-                </span>
+                <h2>My Applications</h2>
+                {latestApplication && (
+                  <span className={`dashboard-status-badge ${latestApplication.status || 'pending'}`}>
+                    {STATUS_LABELS[latestApplication.status] || 'Pending'}
+                  </span>
+                )}
               </div>
 
               {dataLoading ? (
-                <p>Loading your latest application...</p>
-              ) : application ? (
-                <div className="dashboard-status-content">
-                  <p>
-                    <strong>Destination:</strong> {application.destination}
-                  </p>
-                  <p>
-                    <strong>Intake:</strong> {application.intake}
-                  </p>
-                  <p>
-                    <strong>Course Type:</strong> {application.course_type}
-                  </p>
-                  <p>
-                    <strong>Date Applied:</strong> {formatDate(application.created_at)}
-                  </p>
+                <p>Loading your applications...</p>
+              ) : applications.length ? (
+                <div className="dashboard-apps-list">
+                  {applications.map((app) => (
+                    <div key={app.id} className="dashboard-app-item">
+                      <div className="dashboard-app-item-top">
+                        <span className={`dashboard-type-badge dashboard-type-badge--${app.application_type}`}>
+                          {app.application_type === 'job' ? 'Work' : 'Study'}
+                        </span>
+                        <span className={`dashboard-status-badge ${app.status || 'pending'}`}>
+                          {STATUS_LABELS[app.status] || 'Pending'}
+                        </span>
+                      </div>
+
+                      {app.application_type === 'study' ? (
+                        <div className="dashboard-app-details">
+                          <p><strong>Destination:</strong> {app.destination || '—'}</p>
+                          <p><strong>Intake:</strong> {app.intake || '—'}</p>
+                          <p><strong>Course Type:</strong> {app.course_type || '—'}</p>
+                          <p><strong>Field:</strong> {app.field_of_study || '—'}</p>
+                        </div>
+                      ) : (
+                        <div className="dashboard-app-details">
+                          <p><strong>Job ID:</strong> {app.job_id || '—'}</p>
+                          <p><strong>Occupation:</strong> {app.current_occupation || '—'}</p>
+                          <p><strong>Experience:</strong> {app.years_experience || '—'}</p>
+                          <p><strong>Relocate Ready:</strong> {app.available_to_relocate ? 'Yes' : 'No'}</p>
+                        </div>
+                      )}
+
+                      <p className="dashboard-app-date">Applied {formatDate(app.created_at)}</p>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="dashboard-empty">
