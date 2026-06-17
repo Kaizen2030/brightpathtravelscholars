@@ -465,6 +465,11 @@ function AdminDashboard() {
 
     try {
       const { error } = await supabase.from(tableName).update({ status: nextStatus }).eq('id', recordId)
+      if (error) throw error
+
+      setNotice({ type: 'success', text: 'Application status updated.' })
+    } catch (error) {
+      console.error('[AdminDashboard] Failed to update application status:', error)
       setApplications(previousApplications)
       setNotice({ type: 'error', text: error.message || 'Could not update the application status.' })
     }
