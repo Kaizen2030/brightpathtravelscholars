@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Activity, GraduationCap, Save, X } from 'lucide-react'
+import { ArrowLeft, Activity, GraduationCap, Save, ShieldCheck, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -272,75 +272,80 @@ function AdminDashboard() {
           console.warn('[AdminDashboard] supabase.getSession() failed', sessErr)
         }
 
-        // Fetch sequentially to avoid too many concurrent network requests
-        const applicationsResult = await supabase.from('applications').select('*').order('created_at', { ascending: false })
-        if (applicationsResult.error) throw applicationsResult.error
+        const resources = await Promise.all([
+          ['applications', () => supabase.from('applications').select('*').order('created_at', { ascending: false })],
+          ['job applications', () => supabase.from('job_applications').select('*').order('created_at', { ascending: false })],
+          ['events', () => supabase.from('events').select('*').order('date', { ascending: false })],
+          ['blog posts', () => supabase.from('blog_posts').select('*').order('created_at', { ascending: false })],
+          ['testimonials', () => supabase.from('testimonials').select('*').order('created_at', { ascending: false })],
+          ['team members', () => fetchCached(
+            'team_members',
+            async () => {
+              const { data, error } = await supabase.from('team_members').select('*').order('order_index', { ascending: true })
+              if (error) throw error
+              return data ?? []
+            },
+            5 * 60 * 1000,
+          )],
+          ['admin profiles', () => supabase
+            .from('profiles')
+            .select('id, email, full_name, phone, role, created_at')
+            .eq('role', 'admin')
+            .order('created_at', { ascending: false })],
+          ['site settings', () => fetchCached(
+            'site_settings',
+            async () => {
+              const { data, error } = await supabase.from('site_settings').select('*').order('key', { ascending: true })
+              if (error) throw error
+              return data ?? []
+            },
+            5 * 60 * 1000,
+          )],
+        ].map(async ([name, load]) => {
+          try {
+            const result = await load()
+            if (result?.error) throw result.error
+            return { name, data: result?.data ?? result ?? [], error: null }
+          } catch (error) {
+            return { name, data: null, error }
+          }
+        }))
+
         if (ignore) return
 
-        const jobApplicationsResult = await supabase.from('job_applications').select('*').order('created_at', { ascending: false })
-        if (jobApplicationsResult.error) throw jobApplicationsResult.error
-        if (ignore) return
+        const byName = Object.fromEntries(resources.map((resource) => [resource.name, resource]))
+        if (!byName.applications.error || !byName['job applications'].error) {
+          setApplications((currentApplications) => {
+            const scholarshipApplications = byName.applications.error
+              ? currentApplications.filter((item) => item.application_type !== 'job')
+              : byName.applications.data
+            const jobApplications = byName['job applications'].error
+              ? currentApplications.filter((item) => item.application_type === 'job')
+              : byName['job applications'].data.map(normalizeJobApplication)
 
-        const eventsResult = await supabase.from('events').select('*').order('date', { ascending: false })
-        if (eventsResult.error) throw eventsResult.error
-        if (ignore) return
-
-        const postsResult = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false })
-        if (postsResult.error) throw postsResult.error
-        if (ignore) return
-
-        const testimonialsResult = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
-        if (testimonialsResult.error) throw testimonialsResult.error
-        if (ignore) return
-
-        const teamData = await fetchCached(
-          'team_members',
-          async () => {
-            const { data, error } = await supabase.from('team_members').select('*').order('order_index', { ascending: true })
-            if (error) throw error
-            return data ?? []
-          },
-          5 * 60 * 1000,
-        )
-        if (ignore) return
-
-        const adminProfilesResult = await supabase
-          .from('profiles')
-          .select('id, email, full_name, phone, role, created_at')
-          .eq('role', 'admin')
-          .order('created_at', { ascending: false })
-        // Debug: log adminProfilesResult to diagnose empty results
-        // eslint-disable-next-line no-console
-        console.debug('[AdminDashboard] adminProfilesResult', adminProfilesResult)
-        if (adminProfilesResult.error) {
-          // eslint-disable-next-line no-console
-          console.error('[AdminDashboard] adminProfiles fetch error', adminProfilesResult.error)
-          throw adminProfilesResult.error
+            return [...scholarshipApplications, ...jobApplications]
+              .sort((left, right) => new Date(right.created_at) - new Date(left.created_at))
+          })
         }
-        if (ignore) return
+        if (!byName.events.error) setEvents(byName.events.data)
+        if (!byName['blog posts'].error) setPosts(byName['blog posts'].data)
+        if (!byName.testimonials.error) setTestimonials(byName.testimonials.data)
+        if (!byName['team members'].error) setTeamMembers(sortByOrderThenName(byName['team members'].data))
+        if (!byName['admin profiles'].error) setAdminProfiles(byName['admin profiles'].data)
+        if (!byName['site settings'].error) {
+          setSettingsRows(byName['site settings'].data)
+          setSettingsForm(buildSettingsForm(byName['site settings'].data))
+        }
 
-        const nextSettings = await fetchCached(
-          'site_settings',
-          async () => {
-            const { data, error } = await supabase.from('site_settings').select('*').order('key', { ascending: true })
-            if (error) throw error
-            return data ?? []
-          },
-          5 * 60 * 1000,
-        )
-
-        const normalizedJobApplications = (jobApplicationsResult.data ?? []).map(normalizeJobApplication)
-        setApplications([
-          ...(applicationsResult.data ?? []),
-          ...normalizedJobApplications,
-        ].sort((left, right) => new Date(right.created_at) - new Date(left.created_at)))
-        setEvents(eventsResult.data ?? [])
-        setPosts(postsResult.data ?? [])
-        setTestimonials(testimonialsResult.data ?? [])
-        setTeamMembers(sortByOrderThenName(teamData ?? []))
-        setAdminProfiles(adminProfilesResult.data ?? [])
-        setSettingsRows(nextSettings)
-        setSettingsForm(buildSettingsForm(nextSettings))
+        const failedResources = resources.filter((resource) => resource.error)
+        if (failedResources.length) {
+          setNotice({
+            type: 'error',
+            text: `Some admin data could not load: ${failedResources
+              .map(({ name, error }) => `${name}: ${error.message || 'request failed'}`)
+              .join('; ')}`,
+          })
+        }
       } catch (error) {
         console.error('[AdminDashboard] Failed to load admin data:', error)
         if (!ignore) {

@@ -3,6 +3,7 @@ import { supabaseAnonKey, supabaseUrl } from './supabaseClient'
 
 const analyticsSupabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    storageKey: 'brightpath-analytics-auth-token',
     autoRefreshToken: false,
     detectSessionInUrl: false,
     persistSession: false,
