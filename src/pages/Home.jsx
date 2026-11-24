@@ -22,7 +22,9 @@ import SEO from '../components/SEO'
 import { UPCOMING_EVENT_FALLBACKS } from '../lib/eventCatalog'
 import { mergeDestinationCards } from '../lib/destinationGuides'
 import { HERO_FALLBACK_IMAGES, HERO_FALLBACK_IMAGE, getDestinationFallbackImage, getEventFallbackImage } from '../lib/fallbackImages'
-import { buildJobApplyPath, buildJobDetailPath, JOB_CATALOG } from '../lib/jobCatalog'
+import { buildJobApplyPath, buildJobDetailPath } from '../lib/jobCatalog'
+import { getJobImageUrl } from '../lib/jobMedia'
+import { useJobs } from '../lib/jobsStore'
 import { usePageSections } from '../hooks/usePageSections'
 import { useSiteSettings } from '../hooks/useSiteSettings'
 import { buildOverlayBackground } from '../lib/mediaStyles'
@@ -91,6 +93,7 @@ function buildHeroStyle(heroSection) {
 function Home() {
   const { sections } = usePageSections('home')
   const { settings: siteSettings } = useSiteSettings()
+  const { jobs: allJobs } = useJobs()
   const [events, setEvents] = useState([])
   const [eventsLoading, setEventsLoading] = useState(true)
   const [testimonials, setTestimonials] = useState(FALLBACK_TESTIMONIALS)
@@ -222,7 +225,10 @@ function Home() {
   const whyVisualValue = Number(whySection.settings?.visual_badge_value ?? 98)
   const whyVisualSuffix = whySection.settings?.visual_badge_suffix ?? '%'
   const homeDestinations = useMemo(() => mergeDestinationCards(destinationsSection.items ?? []), [destinationsSection.items])
-  const featuredWorkJobs = useMemo(() => JOB_CATALOG.filter((job) => job.featured).slice(0, 3), [])
+  const featuredWorkJobs = useMemo(
+    () => allJobs.filter((job) => job.featured && job.status !== 'closed').slice(0, 3),
+    [allJobs],
+  )
   const homeSteps = howItWorks.items ?? []
   const ctaSecondaryUrl = ctaSection.secondary_btn_url || siteSettings.whatsapp_url || WHATSAPP_URL
   const ctaSecondaryIsExternal = ctaSecondaryUrl.startsWith('http')
@@ -559,7 +565,7 @@ function Home() {
 
             <div className="home-work-grid">
               {featuredWorkJobs.map((job) => {
-                const imageUrl = `https://source.unsplash.com/featured/800x500/?${encodeURIComponent(job.imageKeyword)}`
+                const imageUrl = getJobImageUrl(job)
 
                 return (
                   <article key={job.id} className="home-work-card">

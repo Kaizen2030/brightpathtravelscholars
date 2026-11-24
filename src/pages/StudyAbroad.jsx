@@ -11,51 +11,13 @@ import {
   buildScholarshipApplyPath,
   buildScholarshipDetailPath,
   getScholarshipByTitle,
+  SCHOLARSHIP_CARD_FALLBACKS as SCHOLARSHIP_FALLBACKS,
 } from '../lib/scholarshipCatalog'
 import { buildUniversityDetailPath, getUniversityByName } from '../lib/universityCatalog'
 import { supabase } from '../lib/supabaseClient'
 import './StudyAbroad.css'
 
 const STEP_ICONS = [Globe, GraduationCap, ShieldCheck, Plane, ChevronRight]
-
-const SCHOLARSHIP_FALLBACKS = [
-  {
-    id: 'sch-1',
-    university: 'University of Essex',
-    name: 'Regional Excellence Scholarship',
-    amount: 'Up to GBP 5,000',
-    deadline: '2026-07-15',
-    eligibility: 'For international applicants joining eligible undergraduate and postgraduate programmes.',
-    apply_url: '/contact',
-  },
-  {
-    id: 'sch-2',
-    university: 'Deakin University',
-    name: 'Vice-Chancellor Merit Award',
-    amount: '25% tuition reduction',
-    deadline: '2026-08-10',
-    eligibility: 'Strong academic performance and successful offer holders.',
-    apply_url: '/contact',
-  },
-  {
-    id: 'sch-3',
-    university: 'University of Manitoba',
-    name: 'International Student Entrance Scholarship',
-    amount: 'CAD 3,000',
-    deadline: '2026-05-30',
-    eligibility: 'For new international students entering selected full-time programmes.',
-    apply_url: '/contact',
-  },
-  {
-    id: 'sch-4',
-    university: 'Middlesex Dubai',
-    name: 'Academic Excellence Scholarship',
-    amount: 'Up to 20%',
-    deadline: '2026-09-01',
-    eligibility: 'For students with strong grades and complete admission documents.',
-    apply_url: '/contact',
-  },
-]
 
 const SCHOLARSHIP_GUIDE_SECTIONS = [
   {

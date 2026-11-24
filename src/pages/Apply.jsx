@@ -17,7 +17,8 @@ import SEO from '../components/SEO'
 import { useAuth } from '../context/AuthContext'
 import { usePageSections } from '../hooks/usePageSections'
 import { getScholarshipBySlug } from '../lib/scholarshipCatalog'
-import { buildJobApplyPath, buildJobDetailPath, getJobById, JOB_COUNTRY_OPTIONS } from '../lib/jobCatalog'
+import { buildJobApplyPath, buildJobDetailPath, JOB_COUNTRY_OPTIONS } from '../lib/jobCatalog'
+import { useJobs } from '../lib/jobsStore'
 import { supabase } from '../lib/supabaseClient'
 import './Apply.css'
 
@@ -561,10 +562,11 @@ function Apply() {
   const wizardSettings = useMemo(() => wizard.settings ?? {}, [wizard.settings])
   const requestedDestination = searchParams.get('destination') || ''
   const requestedUniversity = searchParams.get('university') || ''
+  const { jobs: availableJobs, loading: jobsLoading } = useJobs()
   const selectedJob = useMemo(() => {
     if (applicationType !== 'job') return null
-    return getJobById(jobId)
-  }, [applicationType, jobId])
+    return availableJobs.find((job) => job.id === jobId) || null
+  }, [applicationType, availableJobs, jobId])
   const selectedScholarship = useMemo(() => {
     const querySlug = searchParams.get('scholarship')
     return getScholarshipBySlug(scholarshipSlug || querySlug || '')
@@ -741,6 +743,9 @@ function Apply() {
 
   if (applicationType === 'job') {
     if (!selectedJob) {
+      if (jobsLoading) {
+        return <div className="route-status">Loading job...</div>
+      }
       return <Navigate to="/work-abroad" replace />
     }
 

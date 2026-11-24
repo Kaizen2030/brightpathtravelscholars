@@ -5,6 +5,7 @@ import { ChevronDown, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabaseClient'
 import { SITE_NAME } from '../lib/siteConfig'
+import { useSiteSettings } from '../hooks/useSiteSettings'
 
 const destinationLinks = [
   { to: '/study-abroad/uk', label: 'UK' },
@@ -29,6 +30,8 @@ const primaryLinks = [
 
 function Navbar() {
   const { user, profile, isAdmin } = useAuth()
+  const { settings: siteSettings } = useSiteSettings()
+  const siteName = siteSettings.site_name?.trim() || SITE_NAME
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -130,9 +133,9 @@ function Navbar() {
     <>
       <header className={`brightpath-nav${scrolled ? ' scrolled' : ''}`}>
         <div className="container brightpath-nav-inner">
-          <Link to="/" className="brightpath-logo" aria-label={`${SITE_NAME} home`}>
+          <Link to="/" className="brightpath-logo" aria-label={`${siteName} home`}>
             <img src="/favicon.ico" alt="" aria-hidden="true" className="brightpath-logo-image" />
-            <span className="brightpath-logo-text">{SITE_NAME}</span>
+            <span className="brightpath-logo-text">{siteName}</span>
           </Link>
 
           <div className="brightpath-nav-desktop" ref={navInteractiveRef}>
@@ -282,9 +285,9 @@ function Navbar() {
         aria-hidden={!menuOpen}
       >
         <div className="brightpath-mobile-header">
-          <Link to="/" className="brightpath-logo" aria-label={`${SITE_NAME} home`}>
+          <Link to="/" className="brightpath-logo" aria-label={`${siteName} home`}>
             <img src="/favicon.ico" alt="" aria-hidden="true" className="brightpath-logo-image" />
-            <span className="brightpath-logo-text">{SITE_NAME}</span>
+            <span className="brightpath-logo-text">{siteName}</span>
           </Link>
           <button
             type="button"

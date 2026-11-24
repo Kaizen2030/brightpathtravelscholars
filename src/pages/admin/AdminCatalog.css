@@ -1,0 +1,209 @@
+/* Shared styles for the Jobs and Scholarships admin managers. */
+
+.catalog-filters {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) repeat(3, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.catalog-import-card {
+  border: 1px dashed rgba(91, 44, 137, 0.35);
+  background: rgba(91, 44, 137, 0.04);
+}
+
+.catalog-thumb {
+  width: 72px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #f1ecf6;
+  display: block;
+}
+
+.catalog-subtext {
+  margin-top: 0.2rem;
+  font-size: 0.82rem;
+  color: #6b6480;
+}
+
+.catalog-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.catalog-tag {
+  display: inline-block;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: #efe9f6;
+  color: var(--navy);
+  margin-left: 0.25rem;
+}
+
+.catalog-tags .catalog-tag {
+  margin-left: 0;
+}
+
+.catalog-tag.featured {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.catalog-tag.hidden {
+  background: #fde8e8;
+  color: #a12828;
+}
+
+.catalog-status {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: capitalize;
+  background: #e5f6ec;
+  color: #1d7a45;
+  white-space: nowrap;
+}
+
+.catalog-status.closing_soon {
+  background: #fff4d6;
+  color: #8a5a00;
+}
+
+.catalog-status.closed {
+  background: #fde8e8;
+  color: #a12828;
+}
+
+.catalog-row-hidden td {
+  opacity: 0.55;
+}
+
+.catalog-actions {
+  flex-wrap: wrap;
+}
+
+.catalog-actions .admin-btn {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  text-decoration: none;
+}
+
+.catalog-modal {
+  width: min(100%, 920px);
+}
+
+.catalog-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.catalog-span-2 {
+  grid-column: 1 / -1;
+}
+
+.catalog-hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
+  color: #6b6480;
+}
+
+.catalog-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.4rem;
+  padding: 0.8rem 1rem;
+  border-radius: 14px;
+  background: #f7f4fb;
+}
+
+.catalog-image-editor {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.catalog-image-preview {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #f1ecf6;
+}
+
+.catalog-image-controls {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.catalog-file-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.catalog-file-btn input[type='file'] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.catalog-library {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 0.9rem;
+  border-radius: 14px;
+  background: #f7f4fb;
+}
+
+.catalog-library-group strong {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--navy);
+  font-size: 0.85rem;
+}
+
+.catalog-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.5rem;
+}
+
+.catalog-library-item {
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+}
+
+.catalog-library-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.catalog-library-item.selected,
+.catalog-library-item:hover {
+  border-color: var(--navy);
+}
+
+@media (max-width: 860px) {
+  .catalog-filters,
+  .catalog-form,
+  .catalog-image-editor {
+    grid-template-columns: 1fr;
+  }
+}

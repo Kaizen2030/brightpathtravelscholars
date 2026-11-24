@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, Activity, GraduationCap, Save, ShieldCheck, X } from 'lucide-react'
+import { ArrowLeft, Activity, Award, Briefcase, GraduationCap, Save, ShieldCheck, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabaseClient'
@@ -10,7 +10,13 @@ import CertificateBuilder from './CertificateBuilder'
 import AcceptanceLetterBuilder from './AcceptanceLetterBuilder'
 import AnalyticsPanel from './AnalyticsPanel'
 import PageContentManager from './PageContentManager'
+import JobsManager from './JobsManager'
+import ScholarshipsManager from './ScholarshipsManager'
+import FALLBACK_TEAM from '../../lib/fallbackTeam'
 import './AdminDashboard.css'
+
+// Must match the categories the public Events page knows how to label and filter.
+const EVENT_CATEGORIES = ['university_open_day', 'visa_talk', 'pre_departure', 'webinar', 'scholarship']
 
 const EMPTY_EVENT_FORM = {
   title: '',
@@ -19,7 +25,7 @@ const EMPTY_EVENT_FORM = {
   description: '',
   image_url: '',
   register_url: '',
-  category: '',
+  category: EVENT_CATEGORIES[0],
   is_online: false,
 }
 
@@ -149,6 +155,8 @@ function sortByOrderThenName(items) {
 const NAV_ITEMS = [
   { key: 'overview', label: 'Overview', icon: Activity },
   { key: 'applications', label: 'Applications', icon: Activity },
+  { key: 'jobs', label: 'Jobs', icon: Briefcase },
+  { key: 'scholarships', label: 'Scholarships', icon: Award },
   { key: 'events', label: 'Events', icon: Activity },
   { key: 'blog', label: 'Blog Posts', icon: Activity },
   { key: 'testimonials', label: 'Testimonials', icon: Activity },
@@ -1534,7 +1542,7 @@ function AdminDashboard() {
     const previewSiteUrl = settingsForm.site_url?.trim() || 'https://brightpathtravelscholars.com'
     const previewContactEmail = settingsForm.contact_email?.trim() || 'info@brightpathtravelscholars.com'
     const previewContactPhone = settingsForm.contact_phone?.trim() || '+1 (555) 123-4567'
-    const previewWhatsAppUrl = settingsForm.whatsapp_url?.trim() || 'https://wa.me/15551234567'
+    const previewWhatsAppUrl = settingsForm.whatsapp_url?.trim() || 'https://wa.me/18149274526'
     const previewSocialLinks = [
       { label: 'Facebook', url: settingsForm.facebook_url?.trim() || '' },
       { label: 'Instagram', url: settingsForm.instagram_url?.trim() || '' },
@@ -1663,6 +1671,10 @@ function AdminDashboard() {
         return renderSettings()
       case 'content':
         return <PageContentManager />
+      case 'jobs':
+        return <JobsManager />
+      case 'scholarships':
+        return <ScholarshipsManager />
       case 'overview':
       default:
         return renderOverview()

@@ -28,7 +28,8 @@ export const JOB_CATEGORY_OPTIONS = [
   'Warehouse',
 ]
 
-const BASE_POSTED_DATE = new Date('2026-05-01T00:00:00Z')
+// Catalog jobs are dated backwards from this day so listings stay current.
+const BASE_POSTED_DATE = new Date('2026-11-20T00:00:00Z')
 
 function slugify(value = '') {
   return String(value)
@@ -102,7 +103,7 @@ function buildBenefits(job) {
   ]
 }
 
-function createJob(country, tuple, index, countryOffset = 0) {
+function createJob(country, tuple, index, countryOffset = 0, options = {}) {
   const [
     id,
     title,
@@ -121,10 +122,13 @@ function createJob(country, tuple, index, countryOffset = 0) {
     imageKeyword,
     featured = false,
     status = 'open',
+    imageUrl = '',
   ] = tuple
 
   const meta = getCountryMetaInternal(country)
-  const offset = countryOffset + index * 2
+  const baseDate = options.baseDate ? new Date(`${options.baseDate}T00:00:00Z`) : BASE_POSTED_DATE
+  const stepDays = options.stepDays ?? 2
+  const offset = countryOffset + Math.floor(index * stepDays)
 
   return {
     id,
@@ -166,9 +170,10 @@ function createJob(country, tuple, index, countryOffset = 0) {
       accommodationProvided,
     }),
     employer,
-    postedDate: addDays(BASE_POSTED_DATE, offset),
-    deadline: addDays(BASE_POSTED_DATE, offset + 45 + (status === 'closing_soon' ? 7 : 0)),
+    postedDate: addDays(baseDate, -Math.floor(offset / 2)),
+    deadline: addDays(baseDate, -Math.floor(offset / 2) + (status === 'closing_soon' ? 60 : 90)),
     imageKeyword,
+    imageUrl,
     featured,
     status,
   }
@@ -190,6 +195,60 @@ const CANADA_JOBS = [
   ['canada-carpenter-013', 'Carpenter', 'British Columbia', 'skilled', 'Construction', 'CAD $58,000 - $79,000/year', 7, '3+ years', 'Trade certificate', 'English required', true, false, '2 years renewable', 'Pacific Build Co', 'canada carpenter tools', true, 'open'],
   ['canada-fruit-farm-supervisor-014', 'Fruit Farm Supervisor', 'Nova Scotia', 'skilled', 'Agriculture', 'CAD $54,000 - $72,000/year', 4, '2+ years', 'College diploma', 'English required', true, true, 'Seasonal renewable', 'Atlantic Orchards', 'fruit farm canada', false, 'closing_soon'],
   ['canada-pharmacy-assistant-015', 'Pharmacy Assistant', 'Ontario', 'skilled', 'Healthcare', 'CAD $43,000 - $56,000/year', 11, '1+ year', 'Certificate or diploma', 'English required', true, false, 'Permanent', 'Heritage Pharmacy Group', 'pharmacy assistant canada', true, 'open'],
+]
+
+// Canada expansion — Nov 2026. Hourly ranges benchmarked against 2026 provincial minimum wages,
+// Job Bank prevailing (median) wages and ESDC SAWP agricultural wage floors.
+const CANADA_EXPANSION_JOBS = [
+  // Nursing
+  ['canada-registered-nurse-toronto-101', 'Registered Nurse', 'Toronto, Ontario', 'skilled', 'Healthcare', 'CAD $42 - $52/hour', 10, '2+ years', "Bachelor's Degree in Nursing", 'English required (IELTS 7.0)', true, false, 'Permanent', 'Lakeshore General Health', 'nurse hospital toronto', true, 'open'],
+  ['canada-registered-nurse-vancouver-102', 'Registered Nurse', 'Vancouver, British Columbia', 'skilled', 'Healthcare', 'CAD $45 - $58/hour', 8, '2+ years', "Bachelor's Degree in Nursing", 'English required (IELTS 7.0)', true, false, 'Permanent', 'Pacific Coast Health Authority', 'nurse hospital vancouver', true, 'open'],
+  ['canada-registered-nurse-calgary-103', 'Registered Nurse', 'Calgary, Alberta', 'skilled', 'Healthcare', 'CAD $43 - $56/hour', 9, '2+ years', "Bachelor's Degree in Nursing", 'English required (IELTS 7.0)', true, false, 'Permanent', 'Foothills Community Care', 'nurse hospital calgary', false, 'open'],
+  ['canada-registered-nurse-halifax-104', 'Registered Nurse', 'Halifax, Nova Scotia', 'skilled', 'Healthcare', 'CAD $40 - $50/hour', 7, '2+ years', "Bachelor's Degree in Nursing", 'English required (IELTS 7.0)', true, true, 'Permanent', 'Atlantic Shore Health Centre', 'nurse hospital halifax', false, 'closing_soon'],
+  ['canada-registered-practical-nurse-ottawa-105', 'Registered Practical Nurse', 'Ottawa, Ontario', 'skilled', 'Healthcare', 'CAD $31 - $37/hour', 8, '1+ year', 'Practical Nursing Diploma', 'English required', true, false, 'Permanent', 'Capital Region Long-Term Care', 'practical nurse ottawa', false, 'open'],
+  ['canada-licensed-practical-nurse-edmonton-106', 'Licensed Practical Nurse', 'Edmonton, Alberta', 'skilled', 'Healthcare', 'CAD $30 - $38/hour', 8, '1+ year', 'Practical Nursing Diploma', 'English required', true, false, 'Permanent', 'River Valley Continuing Care', 'practical nurse edmonton', false, 'open'],
+  ['canada-licensed-practical-nurse-saskatoon-107', 'Licensed Practical Nurse', 'Saskatoon, Saskatchewan', 'skilled', 'Healthcare', 'CAD $32 - $39/hour', 6, '1+ year', 'Practical Nursing Diploma', 'English required', true, true, 'Permanent', 'Prairie Lights Health', 'practical nurse saskatoon', false, 'open'],
+  ['canada-nursing-attendant-montreal-108', 'Nursing Attendant (Préposé aux bénéficiaires)', 'Montreal, Quebec', 'unskilled', 'Healthcare', 'CAD $22 - $27/hour', 12, 'No experience required', 'High School Diploma + PAB training', 'French required', true, true, '2 years renewable', 'Mont-Royal Soins de Santé', 'nursing attendant montreal', false, 'open'],
+
+  // Caregivers & personal support
+  ['canada-personal-support-worker-mississauga-109', 'Personal Support Worker', 'Mississauga, Ontario', 'unskilled', 'Healthcare', 'CAD $20 - $26/hour', 15, '6+ months', 'PSW Certificate', 'English required', true, false, '2 years renewable', 'Credit River Home Care', 'personal support worker', true, 'open'],
+  ['canada-personal-support-worker-hamilton-110', 'Personal Support Worker', 'Hamilton, Ontario', 'unskilled', 'Healthcare', 'CAD $20 - $25/hour', 12, '6+ months', 'PSW Certificate', 'English required', true, false, '2 years renewable', 'Escarpment Senior Living', 'personal support worker hamilton', false, 'open'],
+  ['canada-health-care-assistant-surrey-111', 'Health Care Assistant', 'Surrey, British Columbia', 'unskilled', 'Healthcare', 'CAD $25 - $29/hour', 10, '6+ months', 'HCA Certificate', 'English required', true, false, '2 years renewable', 'Fraser Valley Care Homes', 'health care assistant surrey', false, 'open'],
+  ['canada-health-care-aide-winnipeg-112', 'Health Care Aide', 'Winnipeg, Manitoba', 'unskilled', 'Healthcare', 'CAD $19 - $24/hour', 14, 'No experience required', 'High School Diploma', 'English required', true, true, '2 years renewable', 'Red River Personal Care', 'health care aide winnipeg', false, 'open'],
+  ['canada-home-support-worker-victoria-113', 'Home Support Worker (Caregiver)', 'Victoria, British Columbia', 'unskilled', 'Healthcare', 'CAD $22 - $27/hour', 9, '1+ year', 'Caregiving certificate preferred', 'English required', true, false, '2 years renewable', 'Island Home Support Services', 'home caregiver elderly', true, 'open'],
+  ['canada-live-in-caregiver-toronto-114', 'Live-in Caregiver (Elderly)', 'Toronto, Ontario', 'unskilled', 'Healthcare', 'CAD $18 - $22/hour', 10, '1+ year', 'High School Diploma', 'English required', true, true, '2 years renewable', 'Maple Family Care Placements', 'live in caregiver elderly', false, 'open'],
+  ['canada-home-child-care-provider-calgary-115', 'Home Child Care Provider (Nanny)', 'Calgary, Alberta', 'unskilled', 'Healthcare', 'CAD $17 - $21/hour', 12, '1+ year', 'High School Diploma', 'English required', true, true, '2 years renewable', 'Chinook Family Services', 'nanny child care', false, 'open'],
+  ['canada-elderly-caregiver-moncton-116', 'Elderly Caregiver', 'Moncton, New Brunswick', 'unskilled', 'Healthcare', 'CAD $17 - $21/hour', 8, 'No experience required', 'High School Diploma', 'English or French basic', true, true, '2 years renewable', 'Petitcodiac Senior Care', 'caregiver elderly home', false, 'open'],
+  ['canada-home-support-worker-charlottetown-117', 'Home Support Worker', 'Charlottetown, Prince Edward Island', 'unskilled', 'Healthcare', 'CAD $18 - $22/hour', 6, 'No experience required', 'High School Diploma', 'English required', true, true, '2 years renewable', 'Island Comfort Home Care', 'home support worker', false, 'closing_soon'],
+
+  // Warehouse
+  ['canada-warehouse-associate-brampton-118', 'Warehouse Associate', 'Brampton, Ontario', 'unskilled', 'Warehouse', 'CAD $18.50 - $22/hour', 25, 'No experience required', 'Secondary school', 'English basic', true, false, '1 year renewable', 'Peel Region Fulfilment', 'warehouse associate', true, 'open'],
+  ['canada-warehouse-picker-packer-mississauga-119', 'Warehouse Picker / Packer', 'Mississauga, Ontario', 'unskilled', 'Warehouse', 'CAD $18 - $21/hour', 30, 'No experience required', 'Secondary school', 'English basic', true, false, '1 year renewable', 'Pearson Gateway Logistics', 'warehouse picker packer', false, 'open'],
+  ['canada-forklift-operator-calgary-120', 'Forklift Operator', 'Calgary, Alberta', 'skilled', 'Warehouse', 'CAD $21 - $27/hour', 10, '1+ year', 'Forklift certificate', 'English required', true, false, '1 year renewable', 'Bow River Distribution', 'forklift operator warehouse', false, 'open'],
+  ['canada-warehouse-associate-delta-121', 'Warehouse Associate', 'Delta, British Columbia', 'unskilled', 'Warehouse', 'CAD $20 - $24/hour', 18, 'No experience required', 'Secondary school', 'English basic', true, false, '1 year renewable', 'Fraser Port Logistics', 'warehouse port logistics', false, 'open'],
+  ['canada-order-picker-montreal-122', 'Order Picker (Préparateur de commandes)', 'Montreal, Quebec', 'unskilled', 'Warehouse', 'CAD $18 - $22/hour', 20, 'No experience required', 'Secondary school', 'French basic', true, true, '1 year renewable', 'Saint-Laurent Entrepôts', 'warehouse order picker', false, 'open'],
+  ['canada-shipping-receiving-clerk-winnipeg-123', 'Shipping & Receiving Clerk', 'Winnipeg, Manitoba', 'unskilled', 'Warehouse', 'CAD $18 - $23/hour', 8, '6+ months', 'High School Diploma', 'English required', true, true, '1 year renewable', 'Prairie Crossroads Supply', 'shipping receiving warehouse', false, 'open'],
+  ['canada-material-handler-edmonton-124', 'Warehouse Material Handler', 'Edmonton, Alberta', 'unskilled', 'Warehouse', 'CAD $18 - $23/hour', 16, 'No experience required', 'Secondary school', 'English basic', true, false, '1 year renewable', 'Yellowhead Supply Chain', 'warehouse material handler', false, 'closing_soon'],
+
+  // Fruit picking & farm
+  ['canada-fruit-picker-kelowna-125', 'Fruit Picker (Cherries & Apples)', 'Kelowna, British Columbia', 'unskilled', 'Agriculture', 'CAD $17.85 - $19.50/hour', 40, 'No experience required', 'Basic schooling', 'English basic', true, true, 'Seasonal (Apr - Oct) renewable', 'Okanagan Valley Orchards', 'fruit picking orchard', true, 'open'],
+  ['canada-berry-picker-abbotsford-126', 'Berry Picker', 'Abbotsford, British Columbia', 'unskilled', 'Agriculture', 'CAD $17.85 - $19/hour', 35, 'No experience required', 'Basic schooling', 'English basic', true, true, 'Seasonal (May - Sep) renewable', 'Fraser Valley Berry Farms', 'berry picking farm', false, 'open'],
+  ['canada-apple-picker-annapolis-valley-127', 'Apple Orchard Picker', 'Annapolis Valley, Nova Scotia', 'unskilled', 'Agriculture', 'CAD $17 - $18.50/hour', 30, 'No experience required', 'Basic schooling', 'English basic', true, true, 'Seasonal (Aug - Nov) renewable', 'Valley Harvest Orchards', 'apple picking orchard', false, 'open'],
+  ['canada-fruit-picker-niagara-128', 'Fruit & Vineyard Picker', 'Niagara-on-the-Lake, Ontario', 'unskilled', 'Agriculture', 'CAD $17.60 - $19/hour', 40, 'No experience required', 'Basic schooling', 'English basic', true, true, 'Seasonal (Jun - Nov) renewable', 'Niagara Bench Fruit Growers', 'vineyard fruit picking', true, 'open'],
+  ['canada-greenhouse-worker-leamington-129', 'Greenhouse Worker', 'Leamington, Ontario', 'unskilled', 'Agriculture', 'CAD $17.60 - $20/hour', 50, 'No experience required', 'Basic schooling', 'English basic', true, true, '8 months renewable', 'Sun Parlour Greenhouses', 'greenhouse vegetable worker', false, 'open'],
+  ['canada-strawberry-picker-quebec-130', 'Strawberry Picker', 'Île d\'Orléans, Quebec', 'unskilled', 'Agriculture', 'CAD $16.60 - $18.50/hour', 30, 'No experience required', 'Basic schooling', 'French basic', true, true, 'Seasonal (Jun - Oct) renewable', 'Ferme Île-Verte', 'strawberry picking farm', false, 'open'],
+  ['canada-blueberry-harvester-pei-131', 'Blueberry Harvester', 'Prince Edward Island', 'unskilled', 'Agriculture', 'CAD $16.50 - $18/hour', 25, 'No experience required', 'Basic schooling', 'English basic', true, true, 'Seasonal (Jul - Sep) renewable', 'Island Wild Blueberries', 'blueberry harvest', false, 'open'],
+  ['canada-cherry-picker-creston-132', 'Cherry Picker', 'Creston, British Columbia', 'unskilled', 'Agriculture', 'CAD $17.85 - $19.50/hour', 20, 'No experience required', 'Basic schooling', 'English basic', true, true, 'Seasonal (Jun - Aug) renewable', 'Kootenay Cherry Growers', 'cherry picking orchard', false, 'closing_soon'],
+
+  // Drivers
+  ['canada-az-truck-driver-mississauga-133', 'Long Haul Truck Driver (AZ)', 'Mississauga, Ontario', 'skilled', 'Transport', 'CAD $65,000 - $85,000/year', 15, '2+ years', 'Class AZ licence (or equivalent)', 'English required', true, false, 'Permanent', 'Trans-Ontario Freightlines', 'long haul truck driver', true, 'open'],
+  ['canada-class1-truck-driver-edmonton-134', 'Class 1 Truck Driver', 'Edmonton, Alberta', 'skilled', 'Transport', 'CAD $30 - $36/hour', 12, '2+ years', 'Class 1 licence (or equivalent)', 'English required', true, false, 'Permanent', 'Northern Lights Haulage', 'class 1 truck driver', false, 'open'],
+  ['canada-long-haul-truck-driver-winnipeg-135', 'Long Haul Truck Driver', 'Winnipeg, Manitoba', 'skilled', 'Transport', 'CAD $62,000 - $82,000/year', 14, '2+ years', 'Class 1 licence (or equivalent)', 'English required', true, true, 'Permanent', 'Centre Canada Carriers', 'truck driver highway', false, 'open'],
+  ['canada-tractor-trailer-driver-st-johns-136', 'Tractor-Trailer Driver', "St. John's, Newfoundland and Labrador", 'skilled', 'Transport', 'CAD $26 - $32/hour', 6, '2+ years', 'Class 1 licence (or equivalent)', 'English required', true, true, 'Permanent', 'Avalon Freight Services', 'tractor trailer driver', false, 'open'],
+  ['canada-delivery-driver-vancouver-137', 'Delivery Driver', 'Vancouver, British Columbia', 'unskilled', 'Transport', 'CAD $19 - $24/hour', 20, '1+ year driving', 'Valid driver\'s licence', 'English required', true, false, '1 year renewable', 'Burrard Last-Mile Delivery', 'delivery van driver', false, 'open'],
+  ['canada-delivery-van-driver-ottawa-138', 'Delivery Van Driver', 'Ottawa, Ontario', 'unskilled', 'Transport', 'CAD $18.50 - $23/hour', 15, '1+ year driving', 'Valid driver\'s licence', 'English required', true, false, '1 year renewable', 'Rideau Courier Group', 'delivery van courier', false, 'open'],
+  ['canada-courier-driver-quebec-city-139', 'Courier Driver (Livreur)', 'Quebec City, Quebec', 'unskilled', 'Transport', 'CAD $18 - $22/hour', 10, '1+ year driving', 'Valid driver\'s licence', 'French required', true, false, '1 year renewable', 'Vieux-Québec Express', 'courier delivery driver', false, 'open'],
+  ['canada-transit-bus-driver-regina-140', 'Transit Bus Driver', 'Regina, Saskatchewan', 'skilled', 'Transport', 'CAD $27 - $33/hour', 8, '2+ years', 'Class 2 licence (or equivalent)', 'English required', true, false, 'Permanent', 'Queen City Transit Partners', 'bus driver city', false, 'open'],
 ]
 
 const USA_JOBS = [
@@ -261,10 +320,13 @@ const JOB_SEED_GROUPS = [
   { country: 'UAE', rows: UAE_JOBS },
   { country: 'France', rows: FRANCE_JOBS },
   { country: 'Netherlands', rows: NETHERLANDS_JOBS },
+  { country: 'Canada', rows: CANADA_EXPANSION_JOBS, options: { baseDate: '2026-11-22', stepDays: 0.5 } },
 ]
 
 export const JOB_CATALOG = JOB_SEED_GROUPS.flatMap((group, groupIndex) =>
-  group.rows.map((row, rowIndex) => createJob(group.country, row, rowIndex, groupIndex * 10)),
+  group.rows.map((row, rowIndex) =>
+    createJob(group.country, row, rowIndex, group.options ? 0 : groupIndex * 10, group.options),
+  ),
 )
 
 export function getJobById(jobId) {

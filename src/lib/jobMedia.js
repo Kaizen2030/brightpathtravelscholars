@@ -1,4 +1,23 @@
 const JOB_IMAGE_POOLS = {
+  FruitPicking: [
+    'https://images.pexels.com/photos/19162212/pexels-photo-19162212.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/29043496/pexels-photo-29043496.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/5529011/pexels-photo-5529011.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/9936557/pexels-photo-9936557.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/5529541/pexels-photo-5529541.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/5529509/pexels-photo-5529509.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  ],
+  Caregiving: [
+    'https://images.pexels.com/photos/29373893/pexels-photo-29373893.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/18459193/pexels-photo-18459193.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/29372734/pexels-photo-29372734.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  ],
+  Delivery: [
+    'https://images.pexels.com/photos/6169127/pexels-photo-6169127.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/6407382/pexels-photo-6407382.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/24589141/pexels-photo-24589141.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/6169579/pexels-photo-6169579.jpeg?auto=compress&cs=tinysrgb&w=1200',
+  ],
   Agriculture: [
     'https://images.pexels.com/photos/18860448/pexels-photo-18860448.jpeg?auto=compress&cs=tinysrgb&w=1200',
     'https://images.pexels.com/photos/26762732/pexels-photo-26762732.jpeg?auto=compress&cs=tinysrgb&w=1200',
@@ -69,7 +88,9 @@ const JOB_IMAGE_POOLS = {
   Transport: [
     'https://images.pexels.com/photos/33824581/pexels-photo-33824581.jpeg?auto=compress&cs=tinysrgb&w=1200',
     'https://images.pexels.com/photos/33824602/pexels-photo-33824602.jpeg?auto=compress&cs=tinysrgb&w=1200',
-    'https://images.pexels.com/photos/18301310/pexels-photo-18301310.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/27099096/pexels-photo-27099096.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/2199293/pexels-photo-2199293.jpeg?auto=compress&cs=tinysrgb&w=1200',
+    'https://images.pexels.com/photos/11087837/pexels-photo-11087837.jpeg?auto=compress&cs=tinysrgb&w=1200',
   ],
   Warehouse: [
     'https://images.pexels.com/photos/16045331/pexels-photo-16045331.jpeg?auto=compress&cs=tinysrgb&w=1200',
@@ -83,6 +104,18 @@ const JOB_IMAGE_POOLS = {
 }
 
 const JOB_IMAGE_TITLE_OVERRIDES = [
+  {
+    match: ['fruit picker', 'berry picker', 'apple orchard', 'orchard picker', 'strawberry picker', 'blueberry harvester', 'cherry picker', 'vineyard picker'],
+    pool: JOB_IMAGE_POOLS.FruitPicking,
+  },
+  {
+    match: ['caregiver', 'personal support worker', 'health care aide', 'health care assistant', 'home support worker', 'nanny', 'nursing attendant'],
+    pool: JOB_IMAGE_POOLS.Caregiving,
+  },
+  {
+    match: ['delivery driver', 'delivery van driver', 'courier driver'],
+    pool: JOB_IMAGE_POOLS.Delivery,
+  },
   {
     match: ['registered nurse', 'certified nursing assistant', 'care assistant', 'aged care worker', 'child care assistant', 'pharmacy assistant'],
     pool: JOB_IMAGE_POOLS.Healthcare,
@@ -249,6 +282,19 @@ function pickImageFromPool(pool, seed) {
 }
 
 export function getJobImageUrl(job) {
+  const customImage = String(job?.imageUrl || job?.image_url || '').trim()
+  if (customImage) return customImage
   const pool = resolveJobPool(job)
   return pickImageFromPool(pool, `${job?.title || job?.id || 'job'}:${job?.region || ''}:${job?.country || 'global'}`)
+}
+
+/** Every stock image grouped by theme, for the admin image picker. */
+export const JOB_IMAGE_LIBRARY = Object.entries(JOB_IMAGE_POOLS).map(([group, images]) => ({
+  group,
+  images: [...new Set(images)],
+}))
+
+/** The image a job gets automatically when no custom image is set. */
+export function getDefaultJobImageUrl(job) {
+  return getJobImageUrl({ ...job, imageUrl: '', image_url: '' })
 }

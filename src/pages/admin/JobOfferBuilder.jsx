@@ -95,7 +95,6 @@ function buildJobOfferPreview(record) {
     signoff: record.signoff || '',
     signature_label: record.signature_label || '',
     signature_name: record.signature_name || '',
-    signature_image_url: record.signature_image_url || '',
     applicant_label: record.applicant_label || '',
     helpline_text: record.helpline_text || '',
     canada_mark_text: record.canada_mark_text || '',

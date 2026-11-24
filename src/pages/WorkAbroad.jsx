@@ -22,12 +22,12 @@ import {
   buildJobApplyPath,
   buildJobDetailPath,
   buildWorkAbroadPath,
+  getCountryMeta,
   getCountryMetaBySlug,
-  getJobCategories,
-  JOB_CATALOG,
   JOB_COUNTRY_OPTIONS,
 } from '../lib/jobCatalog'
 import { getJobImageUrl } from '../lib/jobMedia'
+import { useJobs } from '../lib/jobsStore'
 import './WorkAbroad.css'
 
 const TYPE_OPTIONS = [
@@ -112,6 +112,18 @@ function daysUntil(value) {
   return Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+function getJobArea(job) {
+  const parts = String(job.region || '')
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+  return parts.length ? parts[parts.length - 1] : ''
+}
+
+function isPastDeadline(job) {
+  return Boolean(job.deadline) && daysUntil(job.deadline) < 0
+}
+
 function JobCard({ job }) {
   const visualStyle = useMemo(
     () => ({
@@ -122,7 +134,7 @@ function JobCard({ job }) {
 
   const deadlineDays = daysUntil(job.deadline)
   const isUrgent = deadlineDays >= 0 && deadlineDays <= 7
-  const isClosed = job.status === 'closed'
+  const isClosed = job.status === 'closed' || isPastDeadline(job)
 
   return (
     <article className="work-job-card">
@@ -162,7 +174,9 @@ function JobCard({ job }) {
             <CalendarDays size={14} />
             Deadline {formatDate(job.deadline)}
           </span>
-          <span className={`work-job-status ${job.status}`}>{isClosed ? 'Closed' : job.status.replace(/_/g, ' ')}</span>
+          <span className={`work-job-status ${isClosed ? 'closed' : job.status}`}>
+            {isClosed ? 'Closed' : job.status.replace(/_/g, ' ')}
+          </span>
         </div>
 
         <div className="work-job-actions">
@@ -170,10 +184,16 @@ function JobCard({ job }) {
             View Job
             <ChevronRight size={16} />
           </Link>
-          <Link to={buildJobApplyPath(job.id)} className={`work-job-link primary${isClosed ? ' disabled' : ''}`}>
-            Apply Now
-            <ArrowRight size={16} />
-          </Link>
+          {isClosed ? (
+            <span className="work-job-link primary disabled" aria-disabled="true">
+              Closed
+            </span>
+          ) : (
+            <Link to={buildJobApplyPath(job.id)} className="work-job-link primary">
+              Apply Now
+              <ArrowRight size={16} />
+            </Link>
+          )}
         </div>
       </div>
     </article>
@@ -190,32 +210,52 @@ function WorkAbroad() {
   const cta = sections.cta
 
   const [countryFilter, setCountryFilter] = useState(routeCountryMeta?.country || 'All Countries')
+  const { jobs: allJobs } = useJobs()
   const [categoryFilter, setCategoryFilter] = useState('All Categories')
+  const [areaFilter, setAreaFilter] = useState('All Locations')
   const [salaryFilter, setSalaryFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     setCountryFilter(routeCountryMeta?.country || 'All Countries')
+    setAreaFilter('All Locations')
   }, [routeCountryMeta?.country])
 
-  const categories = useMemo(() => ['All Categories', ...getJobCategories()], [])
-  const countryCards = useMemo(
-    () =>
-      JOB_COUNTRY_OPTIONS.map((item) => ({
-        ...item,
-        count: JOB_CATALOG.filter((job) => job.country === item.country).length,
-      })),
-    [],
+  const categories = useMemo(
+    () => [
+      'All Categories',
+      ...[...new Set(allJobs.map((job) => job.category).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    ],
+    [allJobs],
   )
+  const countryCards = useMemo(() => {
+    const knownCountries = new Set(JOB_COUNTRY_OPTIONS.map((item) => item.country))
+    const extraCountries = [...new Set(allJobs.map((job) => job.country))]
+      .filter((country) => country && !knownCountries.has(country))
+      .map((country) => getCountryMeta(country))
+
+    return [...JOB_COUNTRY_OPTIONS, ...extraCountries]
+      .map((item) => ({
+        ...item,
+        count: allJobs.filter((job) => job.country === item.country).length,
+      }))
+      .filter((item) => item.count > 0)
+  }, [allJobs])
+  const areaOptions = useMemo(() => {
+    if (countryFilter === 'All Countries') return []
+    const areas = allJobs.filter((job) => job.country === countryFilter).map(getJobArea).filter(Boolean)
+    return [...new Set(areas)].sort((a, b) => a.localeCompare(b))
+  }, [allJobs, countryFilter])
 
   const jobs = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
     const now = new Date()
 
-    return [...JOB_CATALOG]
+    return [...allJobs]
       .filter((job) => {
         const matchesCountry = countryFilter === 'All Countries' || job.country === countryFilter
+        const matchesArea = areaFilter === 'All Locations' || getJobArea(job) === areaFilter
         const matchesCategory = categoryFilter === 'All Categories' || job.category === categoryFilter
         const matchesSalary = salaryFilter === 'all' || job.salaryPeriod === salaryFilter
         const matchesType = typeFilter === 'all' || job.type === typeFilter
@@ -224,23 +264,25 @@ function WorkAbroad() {
           job.title.toLowerCase().includes(query) ||
           job.employer.toLowerCase().includes(query) ||
           job.region.toLowerCase().includes(query) ||
-          job.country.toLowerCase().includes(query)
+          job.country.toLowerCase().includes(query) ||
+          job.category.toLowerCase().includes(query)
 
-        return matchesCountry && matchesCategory && matchesSalary && matchesType && matchesQuery
+        return matchesCountry && matchesArea && matchesCategory && matchesSalary && matchesType && matchesQuery
       })
       .sort((left, right) => {
         const statusRank = { open: 0, closing_soon: 1, closed: 2 }
-        const leftRank = statusRank[left.status] ?? 3
-        const rightRank = statusRank[right.status] ?? 3
+        const leftRank = isPastDeadline(left) ? 2 : (statusRank[left.status] ?? 3)
+        const rightRank = isPastDeadline(right) ? 2 : (statusRank[right.status] ?? 3)
         if (leftRank !== rightRank) return leftRank - rightRank
+        if (Boolean(left.featured) !== Boolean(right.featured)) return left.featured ? -1 : 1
 
         const leftDeadline = left.deadline ? new Date(left.deadline).getTime() : now.getTime()
         const rightDeadline = right.deadline ? new Date(right.deadline).getTime() : now.getTime()
         return leftDeadline - rightDeadline
       })
-  }, [categoryFilter, countryFilter, searchTerm, salaryFilter, typeFilter])
+  }, [allJobs, areaFilter, categoryFilter, countryFilter, searchTerm, salaryFilter, typeFilter])
 
-  const resultsLabel = `Showing ${jobs.length} of ${JOB_CATALOG.length} jobs`
+  const resultsLabel = `Showing ${jobs.length} of ${allJobs.length} jobs`
   const trustPills = hero.settings?.trust_pills?.length
     ? hero.settings.trust_pills
     : [
@@ -251,12 +293,14 @@ function WorkAbroad() {
 
   function handleCountrySelect(nextCountry) {
     setCountryFilter(nextCountry)
+    setAreaFilter('All Locations')
     navigate(nextCountry === 'All Countries' ? '/work-abroad' : buildWorkAbroadPath(nextCountry))
   }
 
   function resetFilters() {
     setCountryFilter('All Countries')
     setCategoryFilter('All Categories')
+    setAreaFilter('All Locations')
     setSalaryFilter('all')
     setTypeFilter('all')
     setSearchTerm('')
@@ -319,7 +363,7 @@ function WorkAbroad() {
               <label className="work-country-filter work-filter-field work-filter-country">
                 <span>Country</span>
                 <select value={countryFilter} onChange={(event) => handleCountrySelect(event.target.value)}>
-                  <option value="All Countries">All Countries ({JOB_CATALOG.length} jobs)</option>
+                  <option value="All Countries">All Countries ({allJobs.length} jobs)</option>
                   {countryCards.map((country) => (
                     <option key={country.slug} value={country.country}>
                       {country.country} ({country.count} jobs)
@@ -327,6 +371,20 @@ function WorkAbroad() {
                   ))}
                 </select>
               </label>
+
+              {areaOptions.length > 1 ? (
+                <label className="work-filter-field work-filter-category">
+                  <span>Province / Region</span>
+                  <select value={areaFilter} onChange={(event) => setAreaFilter(event.target.value)}>
+                    <option value="All Locations">All Locations</option>
+                    {areaOptions.map((area) => (
+                      <option key={area} value={area}>
+                        {area}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
 
               <label className="work-filter-field work-filter-category">
                 <span>Category</span>

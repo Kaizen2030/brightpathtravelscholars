@@ -301,7 +301,7 @@ function Dashboard() {
                   </div>
                 </Link>
                 <a
-                  href={siteSettings.whatsapp_url || 'https://wa.me/15551234567'}
+                  href={siteSettings.whatsapp_url || 'https://wa.me/18149274526'}
                   target="_blank"
                   rel="noreferrer"
                   className="dashboard-action-tile"

@@ -41,7 +41,7 @@ function Footer() {
         {
           icon: Phone,
           label: settings.contact_phone || '+1 (555) 123-4567',
-          href: settings.whatsapp_url || 'https://wa.me/15551234567',
+          href: settings.whatsapp_url || 'https://wa.me/18149274526',
         },
       { icon: Clock3, label: 'Mon-Fri 8:30AM-5PM, Sat 8:30AM-3PM' },
     ],

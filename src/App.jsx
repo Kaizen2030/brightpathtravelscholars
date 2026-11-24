@@ -5,23 +5,23 @@ import { recordPageView, touchAnalyticsSession, isAnalyticsDisabled } from './li
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
-import About from './pages/About'
-import Events from './pages/Events'
-import StudyAbroad from './pages/StudyAbroad'
-import WorkAbroad from './pages/WorkAbroad'
-import Community from './pages/Community'
-import Contact from './pages/Contact'
-import Apply from './pages/Apply'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import ForgotPassword from './pages/ForgotPassword'
-import ResetPassword from './pages/ResetPassword'
-import Dashboard from './pages/Dashboard'
-import Blog from './pages/Blog'
-import BlogPost from './pages/BlogPost'
-import ScholarshipDetail from './pages/ScholarshipDetail'
-import UniversityDetail from './pages/UniversityDetail'
-import JobDetail from './pages/JobDetail'
+const About = lazy(() => import('./pages/About'))
+const Events = lazy(() => import('./pages/Events'))
+const StudyAbroad = lazy(() => import('./pages/StudyAbroad'))
+const WorkAbroad = lazy(() => import('./pages/WorkAbroad'))
+const Community = lazy(() => import('./pages/Community'))
+const Contact = lazy(() => import('./pages/Contact'))
+const Apply = lazy(() => import('./pages/Apply'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
+const ResetPassword = lazy(() => import('./pages/ResetPassword'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Blog = lazy(() => import('./pages/Blog'))
+const BlogPost = lazy(() => import('./pages/BlogPost'))
+const ScholarshipDetail = lazy(() => import('./pages/ScholarshipDetail'))
+const UniversityDetail = lazy(() => import('./pages/UniversityDetail'))
+const JobDetail = lazy(() => import('./pages/JobDetail'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 import ErrorBoundary from './components/ErrorBoundary'
 
@@ -74,12 +74,11 @@ function AnalyticsTracker() {
   const { user } = useAuth()
   const lastTrackedRouteRef = useRef('')
 
-  if (isAnalyticsDisabled()) return null
-
+  // Hooks must run on every render; the disabled check lives inside each effect.
   useEffect(() => {
     const pathname = `${location.pathname}${location.search}`
 
-    if (location.pathname.startsWith('/admin')) {
+    if (isAnalyticsDisabled() || location.pathname.startsWith('/admin')) {
       return undefined
     }
 
@@ -109,11 +108,12 @@ function AnalyticsTracker() {
   useEffect(() => {
     const pathname = `${location.pathname}${location.search}`
 
-    if (location.pathname.startsWith('/admin')) {
+    if (isAnalyticsDisabled() || location.pathname.startsWith('/admin')) {
       return undefined
     }
 
     const heartbeat = () => {
+      if (isAnalyticsDisabled()) return
       void touchAnalyticsSession({
         pathname,
         title: document.title,
@@ -144,6 +144,7 @@ function AppLayout() {
       <AnalyticsTracker />
       {!isAdminPage && <Navbar />}
       <main className={isAdminPage ? 'app-main admin-main' : 'app-main'}>
+        <Suspense fallback={<div className="route-status">Loading...</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -191,6 +192,7 @@ function AppLayout() {
           <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </main>
       {!isAdminPage && <Footer />}
     </div>

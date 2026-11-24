@@ -16,10 +16,9 @@ import {
   buildJobDetailPath,
   buildWorkAbroadPath,
   getCountryMeta,
-  getJobById,
-  JOB_CATALOG,
 } from '../lib/jobCatalog'
 import { getJobImageUrl } from '../lib/jobMedia'
+import { useJobs } from '../lib/jobsStore'
 import './JobDetail.css'
 
 function formatDate(value) {
@@ -59,15 +58,19 @@ function SimilarJobCard({ job }) {
 
 function JobDetail() {
   const { jobId } = useParams()
-  const job = getJobById(jobId)
+  const { jobs, loading } = useJobs()
+  const job = jobs.find((item) => item.id === jobId) || null
   const countryMeta = job ? getCountryMeta(job.country) : null
 
   if (!job) {
+    if (loading) {
+      return <div className="route-status">Loading job details...</div>
+    }
     return <Navigate to="/work-abroad" replace />
   }
 
   const isClosed = job.status === 'closed'
-  const similarJobs = JOB_CATALOG.filter((item) => item.country === job.country && item.id !== job.id).slice(0, 3)
+  const similarJobs = jobs.filter((item) => item.country === job.country && item.id !== job.id).slice(0, 3)
   const heroImage = getJobImageUrl(job)
 
   return (
